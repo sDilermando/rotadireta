@@ -3,129 +3,105 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Rota Direta</title>
+    <title>Rota Direta - Seguro</title>
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-    
+
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
     <style>
-        /* --- ESTILO "STARTUP UNICORNIO" --- */
-        :root { --bg:#f0f2f5; --surface:#fff; --dark:#1e1e2d; --gold:#ffcc00; --green:#00c853; --red:#ff3b30; --blue:#007aff; }
+        :root { --bg:#f4f4f9; --surface:#fff; --dark:#1a1a2e; --gold:#ffcc00; --green:#00c853; --red:#ff3b30; }
         * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
         body { margin: 0; padding: 0; width: 100%; height: 100vh; background: var(--bg); font-family: 'Montserrat', sans-serif; overflow: hidden; display: flex; flex-direction: column; }
 
         /* LOADING */
-        #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--surface); z-index: 99999; display: flex; justify-content: center; align-items: center; flex-direction: column; color: #888; font-weight: 600; }
+        #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--surface); z-index: 10000; display: flex; justify-content: center; align-items: center; color: #888; font-weight: bold; }
 
-        /* SPLASH SCREEN (CADASTRO) */
-        #splash { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--surface); z-index: 5000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; }
-        .logo { font-size: 2.5rem; font-weight: 900; color: var(--dark); margin-bottom: 30px; letter-spacing: -1px; }
+        /* TELA INICIAL (SPLASH) - SEMPRE APARECE NO REFRESH */
+        #splash { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--surface); z-index: 5000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+        .logo { font-size: 2.5rem; font-weight: 900; color: var(--dark); margin-bottom: 40px; }
         .logo span { color: var(--gold); }
-        .btn-start { width: 100%; max-width: 320px; padding: 18px; margin: 10px 0; border: none; border-radius: 12px; font-size: 1rem; font-weight: 800; cursor: pointer; transition: transform 0.2s; box-shadow: 0 4px 15px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center; gap: 10px; }
-        .btn-start:active { transform: scale(0.97); }
-        .b-dark { background: var(--dark); color: #fff; }
-        .b-light { background: #fff; color: var(--dark); border: 2px solid var(--dark); }
+        
+        .btn-big { width: 100%; max-width: 320px; padding: 18px; margin-bottom: 15px; border: none; border-radius: 12px; font-size: 1rem; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.2s; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .btn-big:active { transform: scale(0.98); }
+        .b-drv { background: var(--dark); color: white; }
+        .b-pas { background: white; color: var(--dark); border: 2px solid var(--dark); }
 
-        /* INTERFACE APP */
+        /* APP */
         #app-ui { display: none; flex: 1; position: relative; }
         #map { width: 100%; height: 100%; z-index: 1; }
 
-        /* DISCLAIMER TOPO */
-        .legal-bar { position: absolute; top: 0; left: 0; width: 100%; background: rgba(30,30,45,0.9); color: #ccc; font-size: 0.55rem; padding: 5px; text-align: center; z-index: 2000; backdrop-filter: blur(4px); }
+        /* BARRA LATERAL (BOTÕES PEQUENOS) */
+        .side-bar { position: absolute; top: 80px; right: 15px; z-index: 1000; display: flex; flex-direction: column; gap: 10px; }
+        .btn-icon { width: 45px; height: 45px; border-radius: 50%; border: none; background: white; box-shadow: 0 3px 10px rgba(0,0,0,0.2); font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--dark); }
+        .btn-panic { background: var(--red); color: white; animation: pulse 2s infinite; }
 
-        /* BARRA LATERAL (COMPARTILHAR) */
-        .side-bar { position: absolute; top: 100px; right: 15px; z-index: 1000; display: flex; flex-direction: column; gap: 10px; }
-        .btn-icon { width: 40px; height: 40px; border-radius: 50%; border: none; background: var(--surface); box-shadow: 0 2px 10px rgba(0,0,0,0.2); color: var(--dark); font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        .btn-icon:active { transform: scale(0.9); }
-        .btn-locate { color: var(--blue); }
-        .btn-share { color: var(--dark); }
-        .btn-panic { background: var(--red); color: white; animation: pulse 2s infinite; border: 2px solid white; }
-
-        /* STATUS MOTORISTA (RODAPÉ) */
-        .driver-dock { position: absolute; bottom: 30px; left: 20px; right: 20px; background: var(--surface); padding: 15px; border-radius: 16px; z-index: 1000; box-shadow: 0 10px 30px rgba(0,0,0,0.15); display: none; text-align: center; }
-        .status-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .btn-action { padding: 15px; border-radius: 10px; border: none; font-weight: 800; font-size: 0.9rem; cursor: pointer; text-transform: uppercase; }
-        .s-online { background: var(--green); color: white; }
-        .s-busy { background: var(--gold); color: black; }
-        .s-offline { background: #eee; color: #777; }
+        /* PAINEL MOTORISTA */
+        .driver-dock { position: absolute; bottom: 30px; left: 20px; right: 20px; background: white; padding: 20px; border-radius: 20px; z-index: 1000; text-align: center; display: none; box-shadow: 0 5px 20px rgba(0,0,0,0.2); }
+        .btn-status { width: 100%; padding: 15px; border: none; border-radius: 10px; font-weight: 800; font-size: 1rem; text-transform: uppercase; cursor: pointer; }
+        .s-off { background: #eee; color: #777; }
+        .s-on { background: var(--green); color: white; }
         
-        /* BOTÃO DE RESET (VOLTAR A FICAR LIVRE) */
-        .btn-reset { width: 100%; margin-top: 10px; padding: 12px; background: var(--blue); color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; display: none; }
-
-        /* PIN (MARCADOR NO MAPA) */
+        /* PIN */
         .pin-wrap { position: relative; width: 60px; height: 60px; }
-        .pin-label { position: absolute; top: -20px; left: 50%; transform: translateX(-50%); background: var(--green); color: white; font-size: 0.6rem; font-weight: 900; padding: 4px 8px; border-radius: 6px; white-space: nowrap; box-shadow: 0 2px 4px rgba(0,0,0,0.2); text-transform: uppercase; }
-        .pin-car { width: 50px; height: 50px; background-image: url('https://cdn-icons-png.flaticon.com/512/3202/3202926.png'); background-size: contain; background-repeat: no-repeat; background-position: center; margin: 0 auto; filter: drop-shadow(0 4px 3px rgba(0,0,0,0.3)); }
+        .pin-label { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); background: var(--green); color: white; font-size: 0.6rem; font-weight: 900; padding: 3px 6px; border-radius: 4px; white-space: nowrap; }
+        .pin-car { width: 40px; height: 40px; background-image: url('https://cdn-icons-png.flaticon.com/512/3202/3202926.png'); background-size: contain; background-repeat: no-repeat; margin: 0 auto; filter: drop-shadow(0 4px 2px rgba(0,0,0,0.3)); }
         
-        /* ESTADOS DO PIN */
-        .status-occupied .pin-label { background: var(--gold); color: black; }
-        .status-occupied .pin-car { filter: grayscale(100%); }
-        .status-alert .pin-label { background: var(--red); animation: blink 0.5s infinite; }
-        .status-alert .pin-car { filter: sepia(1) hue-rotate(-50deg) saturate(5); } /* Fica Vermelho */
+        .status-ocupado .pin-label { background: var(--gold); color: black; }
+        .status-alerta .pin-label { background: var(--red); animation: blink 0.5s infinite; }
+        .status-alerta .pin-car { filter: sepia(1) hue-rotate(-50deg) saturate(5); }
 
         @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255, 59, 48, 0.7); } 70% { box-shadow: 0 0 0 15px rgba(255, 59, 48, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 59, 48, 0); } }
         @keyframes blink { 50% { opacity: 0; } }
-
+        
+        .legal { position: absolute; bottom: 10px; width: 100%; text-align: center; font-size: 0.6rem; color: #999; }
     </style>
 </head>
 <body>
 
-    <div class="legal-bar">
-        O Rota Direta é uma plataforma de conexão. Não nos responsabilizamos por corridas, objetos perdidos ou conduta de usuários. Uso por conta e risco. © Gemini Tech
-    </div>
-
-    <div id="loading"><i class="fas fa-satellite-dish fa-spin fa-2x"></i><br><br>Iniciando Sistema...</div>
+    <div id="loading">Conectando...</div>
 
     <div id="splash">
         <div class="logo">ROTA <span>DIRETA</span></div>
-        <p style="color:#666; font-size:0.9rem; margin-bottom:30px; max-width:300px;">Mobilidade Urbana Inteligente.<br>Conectando você ao seu destino.</p>
         
-        <button class="btn-start b-dark" onclick="cadastrarMotorista()">
+        <button class="btn-big b-drv" onclick="acaoMotorista()">
             <i class="fas fa-car"></i> SOU MOTORISTA
         </button>
-        <button class="btn-start b-light" onclick="cadastrarPassageiro()">
+        
+        <button class="btn-big b-pas" onclick="acaoPassageiro()">
             <i class="fas fa-user"></i> SOU PASSAGEIRO
         </button>
-        
-        <div style="margin-top:40px; font-size:0.7rem; color:#aaa;">
-            Ao continuar, você concorda com nossos Termos de Uso.<br>
-            <span onclick="resetarApp()" style="text-decoration:underline; cursor:pointer;">Resetar / Sair</span>
+
+        <div class="legal">
+            Termos de Uso e Política de Privacidade.<br>
+            © Gemini Tech - Uso Seguro
         </div>
     </div>
 
     <div id="app-ui">
-        
         <div class="side-bar">
-            <button class="btn-icon btn-share" onclick="compartilharApp()"><i class="fas fa-share-alt"></i></button>
-            <button class="btn-icon btn-locate" onclick="meuLocal()"><i class="fas fa-crosshairs"></i></button>
-            <button class="btn-icon btn-panic" onclick="acionarPanico()"><i class="fas fa-exclamation-triangle"></i></button>
+            <button class="btn-icon" onclick="compartilhar()"><i class="fas fa-share-alt"></i></button>
+            <button class="btn-icon" onclick="meuLocal()"><i class="fas fa-crosshairs"></i></button>
+            <button class="btn-icon btn-panic" onclick="panico()"><i class="fas fa-exclamation-triangle"></i></button>
+            <button class="btn-icon" onclick="location.reload()" style="color:red"><i class="fas fa-sign-out-alt"></i></button>
         </div>
 
         <div id="map"></div>
 
         <div class="driver-dock" id="driverDock">
-            <div class="status-grid">
-                <button id="btnOnline" class="btn-action s-offline" onclick="toggleOnline()">Ficar Online</button>
-                <div style="font-size:0.7rem; color:#555; display:flex; align-items:center; justify-content:center;">
-                    Status: <b id="txtStatus" style="margin-left:5px;">OFFLINE</b>
-                </div>
-            </div>
-            <button id="btnLiberar" class="btn-reset" onclick="liberarCarro()">
-                <i class="fas fa-check"></i> FINALIZAR CORRIDA (FICAR LIVRE)
-            </button>
+            <button id="btnOnline" class="btn-status s-off" onclick="toggleOnline()">FICAR ONLINE</button>
+            <p id="txtStatus" style="font-size:0.8rem; color:#777; margin-top:10px;">Status: OFFLINE</p>
         </div>
-
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        // --- 1. CONFIGURAÇÃO (FIREBASE) ---
+        // CONFIGURAÇÃO FIREBASE
         const firebaseConfig = {
             apiKey: "AIzaSyBxbRiYNuGde5nwJIaoeRItWdZGR221cpY",
             authDomain: "rota-direta.firebaseapp.com",
@@ -139,112 +115,165 @@
         const db = firebase.database();
         const auth = firebase.auth();
 
-        // --- 2. VARIÁVEIS GLOBAIS ---
         let map, currentUser, userType, isOnline = false, watchId, markers = {};
-        let myLat = -23.55, myLng = -46.63;
-        let inactivityTimer;
 
-        // --- 3. TERMOS DE USO (JURÍDICO) ---
-        const TERMOS_LEGAIS = `
-            <div style="text-align:left; font-size:0.8rem; height:200px; overflow-y:scroll; border:1px solid #eee; padding:10px;">
-                <strong>TERMOS DE USO E ISENÇÃO DE RESPONSABILIDADE</strong><br><br>
-                1. <strong>INTERMEDIAÇÃO:</strong> O "Rota Direta" é apenas uma ferramenta tecnológica de conexão. Não somos uma empresa de transporte.<br>
-                2. <strong>RESPONSABILIDADE:</strong> O Usuário (Motorista e Passageiro) é o único responsável por seus atos, segurança, dados fornecidos e cumprimento das leis de trânsito.<br>
-                3. <strong>ISENÇÃO:</strong> O desenvolvedor (Gemini Tech) se isenta de qualquer responsabilidade civil ou criminal sobre danos, furtos, acidentes ou desentendimentos ocorridos através do uso do app.<br>
-                4. <strong>DADOS:</strong> Você garante que as informações fornecidas (Placa, Telefone, Nome) são verdadeiras.<br><br>
-                Ao clicar em "CONCORDO", você aceita estes termos irrestritamente.
-            </div>
-            <div style="margin-top:10px; display:flex; align-items:center; gap:10px;">
-                <input type="checkbox" id="checkTermos"> <label for="checkTermos" style="font-size:0.9rem;">Li e Concordo</label>
-            </div>
-        `;
-
-        // --- 4. INICIALIZAÇÃO ---
         window.onload = () => {
+            // Autentica silenciosamente mas NÃO sai da tela Splash
             auth.signInAnonymously().then(() => {
                 document.getElementById('loading').style.display = 'none';
-                verificarCache();
-            });
-            resetTimer();
-            document.onclick = resetTimer; // Monitora atividade
+                console.log("Firebase Conectado. Aguardando escolha do usuário.");
+            }).catch(e => alert("Erro Net: " + e.message));
         };
 
-        function verificarCache() {
-            // Verifica se já tem cadastro
-            const drv = localStorage.getItem('rd_driver_v5');
-            const pas = localStorage.getItem('rd_pass_v5');
-
-            if (drv) iniciarApp('driver', JSON.parse(drv));
-            else if (pas) iniciarApp('passenger', JSON.parse(pas));
-            else document.getElementById('splash').style.display = 'flex';
+        // --- LÓGICA DO MOTORISTA ---
+        function acaoMotorista() {
+            // 1. Verifica se já tem cadastro salvo
+            const salvo = localStorage.getItem('rd_driver_v6');
+            
+            if(salvo) {
+                // JÁ TEM CADASTRO -> PEDE SENHA
+                const dados = JSON.parse(salvo);
+                Swal.fire({
+                    title: `Olá, ${dados.nome.split(' ')[0]}`,
+                    text: 'Digite sua Senha PIN para entrar:',
+                    input: 'password',
+                    inputAttributes: { maxlength: 4, inputmode: 'numeric', style: 'text-align:center; font-size:2rem; letter-spacing:5px;' },
+                    showDenyButton: true,
+                    denyButtonText: 'Esqueci a Senha',
+                    confirmButtonText: 'ENTRAR', confirmButtonColor: '#1a1a2e'
+                }).then((res) => {
+                    if(res.isConfirmed) {
+                        if(res.value == dados.pin) {
+                            entrarApp('driver', dados);
+                        } else {
+                            Swal.fire('Senha Incorreta', '', 'error');
+                        }
+                    } else if (res.isDenied) {
+                        recuperarSenha(dados);
+                    }
+                });
+            } else {
+                // NÃO TEM CADASTRO -> REGISTRAR
+                cadastrarMotorista();
+            }
         }
 
-        // --- 5. CADASTROS (COM VALIDAÇÃO) ---
         async function cadastrarMotorista() {
-            const { value: accept } = await Swal.fire({
-                title: 'Termos de Uso', html: TERMOS_LEGAIS, confirmButtonText: 'ENVIAR', confirmButtonColor: '#222',
+            // Termos de Uso
+            const { isConfirmed } = await Swal.fire({
+                title: 'Termos de Uso',
+                html: '<div style="font-size:0.8rem; text-align:left; max-height:150px; overflow:auto;">O aplicativo é uma ferramenta de conexão. O usuário é responsável por seus atos, dados e segurança. O criador se isenta de responsabilidade legal sobre incidentes. Ao aceitar, você confirma a veracidade dos dados.</div>',
+                input: 'checkbox',
+                inputValue: 0,
+                inputPlaceholder: 'Li e concordo com os termos',
+                confirmButtonText: 'CONTINUAR'
+            });
+
+            if(!isConfirmed) return;
+
+            // Formulário
+            const { value: form } = await Swal.fire({
+                title: 'Cadastro Motorista',
+                html: `
+                    <input id="cadNome" class="swal2-input" placeholder="Nome Completo">
+                    <input id="cadCarro" class="swal2-input" placeholder="Carro (Modelo e Cor)">
+                    <input id="cadPlaca" class="swal2-input" placeholder="Placa" style="text-transform:uppercase">
+                    <input id="cadZap" class="swal2-input" type="tel" placeholder="WhatsApp">
+                    <input id="cadEmail" class="swal2-input" type="email" placeholder="E-mail (Recuperação)">
+                `,
+                confirmButtonText: 'GERAR SENHA',
                 preConfirm: () => {
-                    if(!document.getElementById('checkTermos').checked) return Swal.showValidationMessage('Você precisa concordar com os termos.');
+                    return {
+                        uid: auth.currentUser.uid,
+                        pin: Math.floor(1000 + Math.random() * 9000), // Gera PIN aqui
+                        nome: document.getElementById('cadNome').value,
+                        carro: document.getElementById('cadCarro').value,
+                        placa: document.getElementById('cadPlaca').value.toUpperCase(),
+                        zap: document.getElementById('cadZap').value.replace(/\D/g, ''),
+                        email: document.getElementById('cadEmail').value
+                    }
                 }
             });
 
-            if(accept) {
-                // Formulário Motorista
-                const { value: form } = await Swal.fire({
-                    title: 'Cadastro Profissional',
-                    html: `
-                        <input id="mNome" class="swal2-input" placeholder="Nome Completo">
-                        <input id="mCarro" class="swal2-input" placeholder="Modelo do Carro (ex: Gol Branco)">
-                        <input id="mPlaca" class="swal2-input" placeholder="Placa (ABC-1234)" style="text-transform:uppercase" maxlength="8">
-                        <input id="mZap" class="swal2-input" type="tel" placeholder="WhatsApp (com DDD)">
-                    `,
-                    confirmButtonText: 'CONFIRMAR', confirmButtonColor: '#00c853',
-                    preConfirm: () => {
-                        const nome = document.getElementById('mNome').value;
-                        const carro = document.getElementById('mCarro').value;
-                        const placa = document.getElementById('mPlaca').value.toUpperCase();
-                        const zap = document.getElementById('mZap').value.replace(/\D/g,'');
+            if(form) {
+                if(!form.nome || !form.placa || !form.email) return Swal.fire('Erro', 'Preencha tudo!', 'error');
 
-                        if(!nome || !carro || placa.length < 7 || zap.length < 10) return Swal.showValidationMessage('Preencha tudo corretamente!');
-                        return { uid: auth.currentUser.uid, nome, carro, placa, zap, status: 'livre', type: 'driver' };
-                    }
+                // Salva
+                localStorage.setItem('rd_driver_v6', JSON.stringify(form));
+                db.ref('drivers/' + form.uid).set(form);
+
+                await Swal.fire({
+                    title: 'Cadastro Realizado!',
+                    html: `Sua SENHA PIN é: <b style="font-size:3rem; color:#ffcc00">${form.pin}</b><br>Guarde-a bem!`,
+                    icon: 'success'
                 });
 
-                if(form) {
-                    localStorage.setItem('rd_driver_v5', JSON.stringify(form));
-                    db.ref('drivers/'+form.uid).set(form);
-                    Swal.fire('Bem-vindo!', 'Cadastro realizado com sucesso.', 'success').then(() => iniciarApp('driver', form));
-                }
+                entrarApp('driver', form);
+            }
+        }
+
+        async function recuperarSenha(dados) {
+            const { value: form } = await Swal.fire({
+                title: 'Recuperar Senha',
+                html: `<input id="recEmail" class="swal2-input" placeholder="Confirme seu E-mail"><input id="recZap" class="swal2-input" placeholder="Confirme seu WhatsApp">`,
+                confirmButtonText: 'VERIFICAR'
+            });
+
+            if(form) { // O sweetalert retorna objeto no preconfirm ou value direto
+                 const email = document.getElementById('recEmail').value;
+                 const zap = document.getElementById('recZap').value.replace(/\D/g,'');
+
+                 if(email === dados.email && zap === dados.zap) {
+                     Swal.fire('Sua Senha', `Seu PIN é: <b>${dados.pin}</b>`, 'info');
+                 } else {
+                     Swal.fire('Dados não conferem', 'Tente novamente.', 'error');
+                 }
+            }
+        }
+
+        // --- LÓGICA DO PASSAGEIRO ---
+        function acaoPassageiro() {
+            const salvo = localStorage.getItem('rd_pass_v6');
+            if(salvo) {
+                entrarApp('passenger', JSON.parse(salvo));
+            } else {
+                cadastrarPassageiro();
             }
         }
 
         async function cadastrarPassageiro() {
-            const { value: accept } = await Swal.fire({
-                title: 'Termos de Uso', html: TERMOS_LEGAIS, confirmButtonText: 'ENVIAR', confirmButtonColor: '#222',
-                preConfirm: () => { if(!document.getElementById('checkTermos').checked) return Swal.showValidationMessage('Aceite os termos.'); }
+            // Termos
+            const { isConfirmed } = await Swal.fire({
+                title: 'Termos de Uso',
+                html: '<div style="font-size:0.8rem;">O usuário é responsável pelo uso do app. Aceite para continuar.</div>',
+                input: 'checkbox',
+                inputPlaceholder: 'Concordo',
+                confirmButtonText: 'ACEITAR'
             });
 
-            if(accept) {
-                const { value: nome } = await Swal.fire({
-                    title: 'Identificação', input: 'text', inputPlaceholder: 'Seu Nome', confirmButtonText: 'ENTRAR', confirmButtonColor: '#007aff'
-                });
-                if(nome) {
-                    const form = { uid: auth.currentUser.uid, nome, type: 'passenger' };
-                    localStorage.setItem('rd_pass_v5', JSON.stringify(form));
-                    iniciarApp('passenger', form);
-                }
+            if(!isConfirmed) return;
+
+            const { value: nome } = await Swal.fire({
+                title: 'Seu Nome', input: 'text', confirmButtonText: 'ENTRAR'
+            });
+
+            if(nome) {
+                const form = { uid: auth.currentUser.uid, nome: nome };
+                localStorage.setItem('rd_pass_v6', JSON.stringify(form));
+                entrarApp('passenger', form);
             }
         }
 
-        // --- 6. SISTEMA PRINCIPAL ---
-        function iniciarApp(type, data) {
+        // --- SISTEMA COMUM ---
+        function entrarApp(type, data) {
             userType = type;
             currentUser = data;
+            
             document.getElementById('splash').style.display = 'none';
             document.getElementById('app-ui').style.display = 'flex';
             
             if(type === 'driver') document.getElementById('driverDock').style.display = 'block';
-            
+
             initMap();
         }
 
@@ -257,202 +286,98 @@
             escutarOnline();
         }
 
-        // --- 7. LÓGICA DO MOTORISTA (ONLINE/STATUS) ---
         function toggleOnline() {
             const btn = document.getElementById('btnOnline');
             const txt = document.getElementById('txtStatus');
-
+            
             if(!isOnline) {
-                if(!navigator.geolocation) return Swal.fire('Erro', 'Ative o GPS!', 'error');
-                
+                if(!navigator.geolocation) return Swal.fire('Erro', 'Ligue o GPS', 'warning');
                 isOnline = true;
-                btn.className = 'btn-action s-online';
+                btn.className = 'btn-status s-on';
                 btn.innerText = 'VOCÊ ESTÁ VISÍVEL';
-                txt.innerText = 'LIVRE';
-                txt.style.color = 'var(--green)';
+                txt.innerText = 'Status: LIVRE (Aguardando corrida)';
                 
-                // Salva no banco e atualiza posição
-                db.ref('online/'+currentUser.uid).set({...currentUser, status: 'livre'});
-                db.ref('online/'+currentUser.uid).onDisconnect().remove(); // Remove se cair a net
-
                 watchId = navigator.geolocation.watchPosition(pos => {
-                    const lat = pos.coords.latitude; const lng = pos.coords.longitude;
-                    db.ref('online/'+currentUser.uid).update({ lat, lng });
-                }, null, { enableHighAccuracy: true });
-
+                    db.ref('online/'+currentUser.uid).set({
+                        ...currentUser, status: 'livre', lat: pos.coords.latitude, lng: pos.coords.longitude
+                    });
+                }, null, {enableHighAccuracy:true});
             } else {
-                goOffline();
+                isOnline = false;
+                btn.className = 'btn-status s-off';
+                btn.innerText = 'FICAR ONLINE';
+                txt.innerText = 'Status: OFFLINE';
+                if(watchId) navigator.geolocation.clearWatch(watchId);
+                db.ref('online/'+currentUser.uid).remove();
             }
         }
 
-        function goOffline() {
-            isOnline = false;
-            const btn = document.getElementById('btnOnline');
-            const txt = document.getElementById('txtStatus');
-            
-            btn.className = 'btn-action s-offline';
-            btn.innerText = 'FICAR ONLINE';
-            txt.innerText = 'OFFLINE';
-            txt.style.color = '#777';
-            
-            if(watchId) navigator.geolocation.clearWatch(watchId);
-            db.ref('online/'+currentUser.uid).remove();
-        }
-
-        function liberarCarro() {
-            if(!isOnline) return;
-            db.ref('online/'+currentUser.uid).update({ status: 'livre' });
-            document.getElementById('btnLiberar').style.display = 'none';
-            document.getElementById('txtStatus').innerText = 'LIVRE';
-            Swal.fire('Pronto', 'Você está livre para novas corridas.', 'success');
-        }
-
-        // --- 8. ESCUTA EM TEMPO REAL (CORAÇÃO DO APP) ---
         function escutarOnline() {
             db.ref('online').on('value', snap => {
                 const list = snap.val() || {};
-                
-                // Limpa quem saiu
                 for(let uid in markers) { if(!list[uid]) { map.removeLayer(markers[uid]); delete markers[uid]; } }
 
                 for(let uid in list) {
-                    if(uid === currentUser.uid) continue; // Não mostra a si mesmo
-
+                    if(uid === currentUser.uid) continue;
                     const d = list[uid];
-                    let cssClass = '';
-                    let labelText = 'LIVRE';
-
-                    // LÓGICA DE STATUS
-                    if(d.status === 'ocupado') { cssClass = 'status-occupied'; labelText = 'OCUPADO'; }
-                    if(d.status === 'alerta') { cssClass = 'status-alert'; labelText = 'ALERTA!'; tocarSirene(); }
-
-                    const html = `
-                        <div class="pin-wrap ${cssClass}">
-                            <div class="pin-label">${labelText}</div>
-                            <div class="pin-car"></div>
-                        </div>`;
                     
-                    const icon = L.divIcon({ className: 'custom-pin', html: html, iconSize: [60, 60], iconAnchor: [30, 30] });
+                    let css = ''; let lbl = 'LIVRE';
+                    if(d.status === 'ocupado') { css = 'status-ocupado'; lbl = 'OCUPADO'; }
+                    if(d.status === 'alerta') { css = 'status-alerta'; lbl = 'ALERTA'; }
 
-                    if(markers[uid]) {
-                        markers[uid].setLatLng([d.lat, d.lng]);
-                        markers[uid].setIcon(icon);
-                    } else {
+                    const html = `<div class="pin-wrap ${css}"><div class="pin-label">${lbl}</div><div class="pin-car"></div></div>`;
+                    const icon = L.divIcon({ className: 'custom', html: html, iconSize: [60,60] });
+
+                    if(markers[uid]) markers[uid].setLatLng([d.lat, d.lng]).setIcon(icon);
+                    else {
                         const m = L.marker([d.lat, d.lng], {icon}).addTo(map);
-                        m.on('click', () => interagirMotorista(d));
+                        m.on('click', () => {
+                            if(d.status === 'ocupado') return Swal.fire('Ocupado', 'Em corrida.', 'info');
+                            if(d.status === 'alerta') return Swal.fire('PERIGO', 'Veículo em alerta!', 'error');
+                            
+                            Swal.fire({
+                                title: d.nome,
+                                text: `${d.carro} - ${d.placa}`,
+                                confirmButtonText: 'CHAMAR NO ZAP',
+                                confirmButtonColor: '#00c853'
+                            }).then((r) => {
+                                if(r.isConfirmed) {
+                                    db.ref('online/'+d.uid).update({status: 'ocupado'});
+                                    window.open(`https://wa.me/55${d.zap}`, '_blank');
+                                }
+                            });
+                        });
                         markers[uid] = m;
                     }
                 }
             });
         }
 
-        // --- 9. INTERAÇÃO PASSAGEIRO -> MOTORISTA ---
-        function interagirMotorista(d) {
-            if(d.status === 'ocupado') return Swal.fire('Ocupado', 'Este motorista está em corrida.', 'info');
-            if(d.status === 'alerta') return Swal.fire('PERIGO', 'Este veículo sinalizou emergência!', 'warning');
-
-            Swal.fire({
-                title: d.nome,
-                html: `
-                    <div style="text-align:left; font-size:0.9rem;">
-                        🚘 <b>Carro:</b> ${d.carro}<br>
-                        🔡 <b>Placa:</b> ${d.placa}<br>
-                        ⭐ <b>Status:</b> ${d.status.toUpperCase()}
-                    </div>
-                `,
-                showCancelButton: true,
-                confirmButtonText: 'CHAMAR (WhatsApp)',
-                confirmButtonColor: '#25D366'
-            }).then((res) => {
-                if(res.isConfirmed) {
-                    // Passageiro chama -> Carro fica ocupado
-                    db.ref('online/'+d.uid).update({ status: 'ocupado' });
-                    window.open(`https://wa.me/55${d.zap}?text=Olá, sou ${currentUser.nome}, vi você no Rota Direta. Pode me buscar?`, '_blank');
-                }
-            });
+        function panico() {
+            if(confirm("ACIONAR BOTÃO DE PÂNICO?")) {
+                if(!isOnline && userType==='driver') toggleOnline();
+                db.ref('online/'+currentUser.uid).update({status: 'alerta'});
+                Swal.fire('ALERTA ENVIADO', 'Seu ícone está vermelho para todos.', 'warning');
+            }
         }
 
-        // --- 10. FUNCIONALIDADES EXTRAS ---
-        
-        // Pânico (Funciona pra todos)
-        function acionarPanico() {
-            Swal.fire({
-                title: 'ACIONAR ALERTA?',
-                text: "Isso deixará seu ícone VERMELHO para todos e tocará um alarme.",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                confirmButtonText: 'SIM, SOCORRO!'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    if(!isOnline && userType === 'driver') toggleOnline(); // Fica online forçado se for motorista
-                    
-                    // Se for passageiro, cria um marcador temporário de alerta
-                    if(userType === 'passenger') {
-                         navigator.geolocation.getCurrentPosition(pos => {
-                             db.ref('online/'+currentUser.uid).set({
-                                 uid: currentUser.uid, nome: currentUser.nome, lat: pos.coords.latitude, lng: pos.coords.longitude, status: 'alerta', carro: 'PASSAGEIRO', placa: 'SOS'
-                             });
-                         });
-                    } else {
-                        db.ref('online/'+currentUser.uid).update({ status: 'alerta' });
-                    }
-                    Swal.fire('ALERTA ENVIADO', '', 'success');
-                }
-            });
-        }
-
-        // Áudio (Bip)
-        function tocarSirene() {
-            const ctx = new (window.AudioContext || window.webkitAudioContext)();
-            const osc = ctx.createOscillator();
-            osc.type = 'sawtooth';
-            osc.frequency.setValueAtTime(800, ctx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(100, ctx.currentTime + 0.5);
-            osc.connect(ctx.destination);
-            osc.start();
-            osc.stop(ctx.currentTime + 0.5);
-        }
-
-        // Localização
         function meuLocal() {
-            navigator.geolocation.getCurrentPosition(pos => {
-                map.setView([pos.coords.latitude, pos.coords.longitude], 16);
-                // Bolinha azul
-                L.circleMarker([pos.coords.latitude, pos.coords.longitude], {radius: 8, color: 'white', fillColor: '#007aff', fillOpacity: 1}).addTo(map);
+            navigator.geolocation.getCurrentPosition(p => {
+                map.setView([p.coords.latitude, p.coords.longitude], 16);
+                L.circleMarker([p.coords.latitude, p.coords.longitude], {radius:8}).addTo(map);
             });
         }
 
-        // Compartilhar
-        function compartilharApp() {
-            if (navigator.share) {
-                navigator.share({
-                    title: 'Rota Direta',
-                    text: 'Baixe o melhor app de mobilidade!',
-                    url: window.location.href
-                });
-            } else {
-                Swal.fire('Link copiado!', window.location.href, 'success');
-            }
+        function compartilhar() {
+            const url = window.location.href;
+            if(navigator.share) navigator.share({title:'Rota Direta', url: url});
+            else Swal.fire('Link', url, 'info');
         }
 
-        // Timer de Inatividade (10 min)
-        function resetTimer() {
-            clearTimeout(inactivityTimer);
-            inactivityTimer = setTimeout(() => {
-                if(isOnline) {
-                    goOffline();
-                    Swal.fire('Sessão Expirada', 'Você ficou 10min inativo e foi desconectado.', 'warning');
-                }
-            }, 10 * 60 * 1000); // 10 minutos
-        }
-        
-        function resetarApp() {
-            if(confirm('Isso apagará seu cadastro. Continuar?')) {
-                localStorage.clear();
-                location.reload();
-            }
-        }
+        // Timer de Segurança (10 min inativo cai)
+        let timer;
+        document.onclick = () => { clearTimeout(timer); timer = setTimeout(() => { if(isOnline) toggleOnline(); }, 600000); };
+
     </script>
 </body>
 </html>

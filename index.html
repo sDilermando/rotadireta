@@ -16,21 +16,21 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
     <style>
-        /* --- DESIGN CLEAN --- */
+        /* DESIGN VISUAL */
         :root { --bg:#f8f9fa; --surface:#fff; --dark:#1a1a1a; --gold:#FFC107; --green:#2ecc71; --blue:#3498db; }
         * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
         
         body { margin: 0; padding: 0; width: 100%; height: 100vh; background: var(--bg); font-family: 'Montserrat', sans-serif; overflow: hidden; display: flex; flex-direction: column; }
 
-        /* LOADING */
+        /* TELA DE CARREGAMENTO */
         #loading {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: var(--surface); z-index: 10000;
             display: flex; justify-content: center; align-items: center;
-            font-size: 1.5rem; color: var(--gold);
+            font-size: 1.2rem; color: #888; flex-direction: column; gap: 15px;
         }
 
-        /* TELA SPLASH */
+        /* TELA INICIAL (SPLASH) */
         #splash {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: var(--surface); z-index: 5000; display: none;
@@ -49,12 +49,11 @@
         .b-driver { background: var(--dark); color: white; }
         .b-pass { background: white; color: var(--dark); border: 2px solid var(--dark); }
 
-        /* APP INTERFACE */
+        /* INTERFACE DO APP */
         #app-ui { display: none; flex: 1; position: relative; }
-        
         #map { width: 100%; height: 100%; z-index: 1; }
 
-        /* BARRA TOPO */
+        /* ELEMENTOS FLUTUANTES */
         .top-bar {
             position: absolute; top: 40px; left: 20px; right: 20px;
             background: rgba(255,255,255,0.95); backdrop-filter: blur(8px);
@@ -64,13 +63,9 @@
         }
         .user-id { font-size: 0.75rem; font-weight: 600; color: #555; }
 
-        /* AVISO PASSAGEIRO */
-        .hint-box {
-            position: absolute; top: 100px; width: 100%; text-align: center; z-index: 999; pointer-events: none;
-        }
+        .hint-box { position: absolute; top: 100px; width: 100%; text-align: center; z-index: 999; pointer-events: none; }
         .hint-tag { background: var(--gold); color: black; padding: 8px 16px; border-radius: 20px; font-size: 0.75rem; font-weight: 800; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
 
-        /* PAINEL MOTORISTA */
         .driver-dock {
             position: absolute; bottom: 30px; left: 20px; right: 20px;
             background: var(--surface); padding: 20px; border-radius: 20px;
@@ -86,7 +81,7 @@
         .s-on { background: var(--green); color: white; animation: glow 2s infinite; }
         @keyframes glow { 0% { box-shadow: 0 0 0 0 rgba(46,204,113,0.7); } 70% { box-shadow: 0 0 0 15px rgba(46,204,113,0); } 100% { box-shadow: 0 0 0 0 rgba(46,204,113,0); } }
 
-        /* DETALHES CARRO */
+        /* DETALHES DO MOTORISTA */
         .car-sheet {
             position: absolute; bottom: 0; left: 0; width: 100%;
             background: var(--surface); border-radius: 25px 25px 0 0;
@@ -94,12 +89,10 @@
             transform: translateY(110%); transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
         }
         .car-sheet.open { transform: translateY(0); }
-        
         .cs-head { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
         .cs-avatar { width: 50px; height: 50px; background: #eee; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: #aaa; }
         .cs-info h3 { margin: 0; font-size: 1.1rem; color: var(--dark); }
         .cs-info p { margin: 2px 0 0; font-size: 0.8rem; color: #888; }
-        
         .cs-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 20px; }
         .cs-tag { background: #f8f9fa; border: 1px solid #eee; padding: 10px; border-radius: 10px; text-align: center; font-size: 0.8rem; font-weight: 700; color: #555; }
         
@@ -110,7 +103,7 @@
             text-decoration: none; box-shadow: 0 5px 15px rgba(37,211,102,0.3);
         }
 
-        /* MARCADOR */
+        /* MARCADOR NO MAPA */
         .pin-box { position: relative; width: 50px; height: 50px; }
         .pin-label {
             position: absolute; top: -18px; left: 50%; transform: translateX(-50%);
@@ -118,7 +111,7 @@
             padding: 3px 8px; border-radius: 6px; white-space: nowrap; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
         .pin-img {
-            width: 40px; height: 40px; background-image: url('https://cdn-icons-png.flaticon.com/512/3202/3202926.png'); /* Carrinho preto */
+            width: 40px; height: 40px; background-image: url('https://cdn-icons-png.flaticon.com/512/3202/3202926.png');
             background-size: cover; display: block; margin: 0 auto; filter: drop-shadow(0 4px 3px rgba(0,0,0,0.3));
         }
 
@@ -126,7 +119,10 @@
 </head>
 <body>
 
-    <div id="loading"><i class="fas fa-spinner fa-spin"></i></div>
+    <div id="loading">
+        <i class="fas fa-circle-notch fa-spin fa-2x"></i>
+        <span>Conectando ao sistema...</span>
+    </div>
 
     <div id="splash">
         <div class="logo">ROTA <span>DIRETA</span></div>
@@ -181,58 +177,55 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
         // -----------------------------------------------------------
-        // 1. SUAS CHAVES DO FIREBASE (ROTA DIRETA)
+        // CONFIGURAÇÃO CORRETA COM O SEU BANCO DE DADOS
         // -----------------------------------------------------------
         const firebaseConfig = {
             apiKey: "AIzaSyBxbRiYNuGde5nwJIaoeRItWdZGR221cpY",
             authDomain: "rota-direta.firebaseapp.com",
             projectId: "rota-direta",
-            // Adicionei esta linha manualmente baseada no seu ProjectID:
-            databaseURL: "https://rota-direta-default-rtdb.firebaseio.com",
             storageBucket: "rota-direta.firebasestorage.app",
             messagingSenderId: "468273971962",
-            appId: "1:468273971962:web:f536de2e2aa74f84dfff43"
+            appId: "1:468273971962:web:f536de2e2aa74f84dfff43",
+            databaseURL: "https://rota-direta-default-rtdb.firebaseio.com/" // <--- O LINK QUE FALTAVA!
         };
-        // -----------------------------------------------------------
 
         // INICIALIZAÇÃO
-        try { firebase.initializeApp(firebaseConfig); } catch(e){ console.log('Firebase já rodando'); }
+        try { 
+            firebase.initializeApp(firebaseConfig); 
+        } catch(e) { console.log('Firebase já rodando'); }
+        
         const db = firebase.database();
         const auth = firebase.auth();
 
         // VARIÁVEIS GLOBAIS
         let map;
-        let currentUser = null; // Dados do usuario atual
-        let userType = null; // 'driver' ou 'passenger'
+        let currentUser = null; 
+        let userType = null;
         let isOnline = false;
         let watchId = null;
-        let markers = {}; // Lista de marcadores no mapa
+        let markers = {}; 
 
         window.onload = () => {
-            // Autenticação Anônima (Necessária para as regras de segurança)
-            auth.signInAnonymously().then(userCred => {
+            // LOGIN AUTOMÁTICO
+            auth.signInAnonymously().then(() => {
                 document.getElementById('loading').style.display = 'none';
                 verificarCache();
             }).catch(e => {
-                console.error(e);
-                alert("Erro ao conectar no servidor. Verifique a internet ou as Regras do Firebase.");
+                alert("Erro de conexão (Auth): " + e.message);
+                document.getElementById('loading').innerHTML = "<span>Erro de Conexão. Recarregue.</span>";
             });
         };
 
         function verificarCache() {
-            // Verifica se o usuário já tem cadastro no celular
-            const drv = localStorage.getItem('rd_driver_v4');
-            const pas = localStorage.getItem('rd_pass_v4');
+            const drv = localStorage.getItem('rd_driver_final');
+            const pas = localStorage.getItem('rd_pass_final');
 
             if (drv) {
-                // Motorista voltando
                 const data = JSON.parse(drv);
                 pedirSenhaMotorista(data);
             } else if (pas) {
-                // Passageiro voltando
                 iniciarApp('passenger', JSON.parse(pas));
             } else {
-                // Novo usuário
                 document.getElementById('splash').style.display = 'flex';
             }
         }
@@ -249,17 +242,15 @@
                     <input id="mZap" class="swal2-input" type="tel" placeholder="WhatsApp (DDD+Num)">
                     <input id="mApps" class="swal2-input" placeholder="Apps (Uber/99)">
                 `,
-                confirmButtonText: 'CRIAR CONTA',
-                confirmButtonColor: '#222',
-                focusConfirm: false,
+                confirmButtonText: 'CRIAR CONTA', confirmButtonColor: '#222',
                 preConfirm: () => {
                     const nome = document.getElementById('mNome').value;
                     const zap = document.getElementById('mZap').value;
                     if(!nome || !zap) return Swal.showValidationMessage('Preencha os dados!');
                     
                     return {
-                        uid: auth.currentUser.uid, // ID de segurança do Firebase
-                        pin: Math.floor(1000 + Math.random() * 9000), // Senha de 4 dígitos
+                        uid: auth.currentUser.uid,
+                        pin: Math.floor(1000 + Math.random() * 9000),
                         nome, carro: document.getElementById('mCarro').value,
                         cor: document.getElementById('mCor').value,
                         placa: document.getElementById('mPlaca').value.toUpperCase(),
@@ -272,14 +263,12 @@
             if(form) {
                 await Swal.fire({
                     title: 'Cadastro Pronto!',
-                    html: `Sua Senha PIN é: <b style="font-size:2.5rem; color:#FFC107">${form.pin}</b><br>Use-a para entrar na próxima vez.`,
+                    html: `Sua Senha PIN é: <b style="font-size:2.5rem; color:#FFC107">${form.pin}</b><br>Use-a para entrar depois.`,
                     icon: 'success', confirmButtonColor: '#222'
                 });
                 
-                // Salva no Banco e no Celular
                 db.ref('drivers_data/' + form.uid).set(form);
-                localStorage.setItem('rd_driver_v4', JSON.stringify(form));
-                
+                localStorage.setItem('rd_driver_final', JSON.stringify(form));
                 iniciarApp('driver', form);
             }
         }
@@ -295,11 +284,13 @@
             });
 
             if (pin == data.pin) {
-                // Atualiza o ID atual para o da sessão atual (caso mude)
                 data.uid = auth.currentUser.uid; 
                 iniciarApp('driver', data);
             } else {
-                Swal.fire('Senha Errada', 'Tente novamente', 'error').then(() => location.reload());
+                Swal.fire('Senha Errada', 'Tente novamente', 'error').then(() => {
+                    localStorage.removeItem('rd_driver_final'); // Limpa cache se errar pra não travar
+                    location.reload();
+                });
             }
         }
 
@@ -318,20 +309,19 @@
             });
 
             if(form) {
-                localStorage.setItem('rd_pass_v4', JSON.stringify(form));
+                localStorage.setItem('rd_pass_final', JSON.stringify(form));
                 db.ref('passengers/' + form.uid).set(form);
                 iniciarApp('passenger', form);
             }
         }
 
-        // --- SISTEMA PRINCIPAL ---
+        // --- SISTEMA ---
         function iniciarApp(type, data) {
             userType = type;
             currentUser = data;
             
             document.getElementById('splash').style.display = 'none';
             document.getElementById('app-ui').style.display = 'flex';
-            
             document.getElementById('txtUser').innerText = type === 'driver' ? `Mot: ${data.nome}` : `Pass: ${data.nome}`;
 
             if(type === 'driver') document.getElementById('driverDock').style.display = 'block';
@@ -341,24 +331,23 @@
         }
 
         function carregarMapa() {
-            // Mapa Limpo (Positron)
-            map = L.map('map', { zoomControl: false }).setView([-23.55, -46.63], 13);
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { attribution: 'CARTO' }).addTo(map);
+            if(!map) {
+                map = L.map('map', { zoomControl: false }).setView([-23.55, -46.63], 13);
+                L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { attribution: 'CARTO' }).addTo(map);
+            }
 
             if(navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(pos => {
                     map.setView([pos.coords.latitude, pos.coords.longitude], 15);
-                    // Bolinha azul (Eu)
                     L.circleMarker([pos.coords.latitude, pos.coords.longitude], {
                         radius: 8, fillColor: '#3498db', color: '#fff', weight: 2, fillOpacity: 1
                     }).addTo(map);
-                });
+                }, () => Swal.fire('Atenção', 'Ligue o GPS do celular!', 'warning'));
             }
             
             escutarOnline();
         }
 
-        // --- SISTEMA ONLINE (MOTORISTA) ---
         function toggleOnline() {
             const btn = document.getElementById('btnOnline');
             
@@ -370,7 +359,6 @@
                 btn.innerHTML = '<i class="fas fa-broadcast-tower"></i> VOCÊ ESTÁ VISÍVEL';
                 
                 watchId = navigator.geolocation.watchPosition(pos => {
-                    // Manda pro Firebase
                     const dadosMapa = {
                         ...currentUser,
                         lat: pos.coords.latitude,
@@ -389,37 +377,26 @@
             }
         }
 
-        // --- ESCUTAR CARROS (PASSAGEIRO E MOTORISTA) ---
         function escutarOnline() {
             db.ref('online_drivers').on('value', snap => {
                 const list = snap.val() || {};
                 
-                // Remove quem saiu
                 for(let uid in markers) {
                     if(!list[uid]) { map.removeLayer(markers[uid]); delete markers[uid]; }
                 }
 
-                // Adiciona quem entrou/moveu
                 for(let uid in list) {
-                    if(userType === 'driver' && uid == currentUser.uid) continue; // Não me mostra se sou motorista
+                    if(userType === 'driver' && uid == currentUser.uid) continue;
 
                     const d = list[uid];
-                    
-                    // Ícone Carrinho com Label "LIVRE"
-                    const html = `
-                        <div class="pin-box">
-                            <div class="pin-label">LIVRE</div>
-                            <div class="pin-img"></div>
-                        </div>`;
+                    const html = `<div class="pin-box"><div class="pin-label">LIVRE</div><div class="pin-img"></div></div>`;
                     const icon = L.divIcon({ className: 'custom-icon', html: html, iconSize: [50, 50], iconAnchor: [25, 25] });
 
                     if(markers[uid]) {
                         markers[uid].setLatLng([d.lat, d.lng]);
                     } else {
                         const m = L.marker([d.lat, d.lng], {icon: icon}).addTo(map);
-                        m.on('click', () => {
-                            if(userType === 'passenger') abrirDetalhes(d);
-                        });
+                        m.on('click', () => { if(userType === 'passenger') abrirDetalhes(d); });
                         markers[uid] = m;
                     }
                 }
@@ -432,17 +409,13 @@
             document.getElementById('dCar').innerText = d.carro;
             document.getElementById('dColor').innerText = d.cor;
             document.getElementById('dPlate').innerText = d.placa;
-            
-            const msg = `Olá ${d.nome}, vi seu carro disponível no Rota Direta. Podemos negociar uma corrida?`;
+            const msg = `Olá ${d.nome}, vi seu carro disponível no App.`;
             document.getElementById('btnZap').href = `https://wa.me/55${d.zap}?text=${encodeURIComponent(msg)}`;
-            
             document.getElementById('carSheet').classList.add('open');
         }
 
-        function fecharSheet() {
-            document.getElementById('carSheet').classList.remove('open');
-        }
-
+        function fecharSheet() { document.getElementById('carSheet').classList.remove('open'); }
+        
         function resetar() {
             if(confirm("Isso apagará seus dados deste aparelho. Continuar?")) {
                 localStorage.clear();
@@ -450,9 +423,8 @@
             }
         }
 
-        // Se motorista fechar a aba, fica offline
         window.onbeforeunload = () => {
-            if(isOnline) db.ref('online_drivers/' + currentUser.uid).remove();
+            if(isOnline && userType === 'driver') db.ref('online_drivers/' + currentUser.uid).remove();
         };
 
     </script>

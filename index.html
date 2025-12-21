@@ -2,15 +2,13 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="theme-color" content="#ffffff">
-    <title>Rota Direta Final</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Rota Direta Nativo</title>
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -20,65 +18,52 @@
         * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
         body { margin: 0; padding: 0; width: 100%; height: 100vh; background: var(--bg); font-family: 'Montserrat', sans-serif; overflow: hidden; display: flex; flex-direction: column; }
 
-        /* LOADING */
-        #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--surface); z-index: 10000; display: flex; justify-content: center; align-items: center; font-size: 1.2rem; color: #888; flex-direction: column; gap: 15px; }
-
-        /* SPLASH */
+        #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--surface); z-index: 10000; display: flex; justify-content: center; align-items: center; font-size: 1.5rem; color: #888; }
+        
         #splash { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--surface); z-index: 5000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 30px; }
         .logo { font-size: 2.2rem; font-weight: 900; color: var(--dark); margin-bottom: 40px; }
         .logo span { color: var(--gold); }
-        .btn-big { width: 100%; max-width: 320px; padding: 18px; margin-bottom: 15px; border: none; border-radius: 12px; font-size: 1rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        
+        .btn-big { width: 100%; max-width: 300px; padding: 20px; margin-bottom: 15px; border: none; border-radius: 10px; font-size: 1.1rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         .b-driver { background: var(--dark); color: white; }
         .b-pass { background: white; color: var(--dark); border: 2px solid var(--dark); }
-        .version-tag { margin-top: 30px; color: green; font-size: 0.8rem; font-weight: bold; }
 
-        /* APP */
         #app-ui { display: none; flex: 1; position: relative; }
         #map { width: 100%; height: 100%; z-index: 1; }
-        .top-bar { position: absolute; top: 40px; left: 20px; right: 20px; background: rgba(255,255,255,0.95); backdrop-filter: blur(8px); padding: 12px 20px; border-radius: 50px; z-index: 1000; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
-        .driver-dock { position: absolute; bottom: 30px; left: 20px; right: 20px; background: var(--surface); padding: 20px; border-radius: 20px; z-index: 1000; box-shadow: 0 10px 40px rgba(0,0,0,0.2); text-align: center; display: none; }
-        .btn-status { width: 100%; padding: 16px; border: none; border-radius: 12px; font-weight: 800; font-size: 1rem; text-transform: uppercase; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 10px; }
-        .s-off { background: #eee; color: #777; }
-        .s-on { background: var(--green); color: white; animation: glow 2s infinite; }
-        @keyframes glow { 0% { box-shadow: 0 0 0 0 rgba(46,204,113,0.7); } 70% { box-shadow: 0 0 0 15px rgba(46,204,113,0); } 100% { box-shadow: 0 0 0 0 rgba(46,204,113,0); } }
         
-        .car-sheet { position: absolute; bottom: 0; left: 0; width: 100%; background: var(--surface); border-radius: 25px 25px 0 0; padding: 30px; z-index: 2000; box-shadow: 0 -5px 40px rgba(0,0,0,0.2); transform: translateY(110%); transition: transform 0.3s; }
-        .car-sheet.open { transform: translateY(0); }
-        .btn-zap { width: 100%; padding: 16px; background: #25D366; color: white; border: none; border-radius: 14px; font-weight: 800; font-size: 1rem; display: flex; justify-content: center; align-items: center; gap: 10px; text-decoration: none; margin-top: 20px; }
+        .driver-dock { position: absolute; bottom: 30px; left: 20px; right: 20px; background: white; padding: 15px; border-radius: 15px; z-index: 1000; text-align: center; display: none; box-shadow: 0 5px 20px rgba(0,0,0,0.2); }
+        .btn-status { width: 100%; padding: 15px; border: none; border-radius: 10px; font-weight: bold; font-size: 1rem; text-transform: uppercase; }
+        .s-off { background: #eee; color: #555; }
+        .s-on { background: var(--green); color: white; }
+
+        .top-bar { position: absolute; top: 40px; left: 20px; right: 20px; background: rgba(255,255,255,0.9); padding: 10px 20px; border-radius: 30px; z-index: 1000; display: flex; justify-content: space-between; align-items: center; font-weight: bold; }
         
+        /* PIN */
         .pin-box { position: relative; width: 50px; height: 50px; }
-        .pin-label { position: absolute; top: -18px; left: 50%; transform: translateX(-50%); background: var(--green); color: white; font-size: 0.6rem; font-weight: 800; padding: 3px 8px; border-radius: 6px; white-space: nowrap; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
-        .pin-img { width: 40px; height: 40px; background-image: url('https://cdn-icons-png.flaticon.com/512/3202/3202926.png'); background-size: cover; display: block; margin: 0 auto; filter: drop-shadow(0 4px 3px rgba(0,0,0,0.3)); }
+        .pin-label { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); background: var(--green); color: white; font-size: 0.7rem; font-weight: bold; padding: 2px 6px; border-radius: 4px; white-space: nowrap; }
+        .pin-img { width: 40px; height: 40px; background-image: url('https://cdn-icons-png.flaticon.com/512/3202/3202926.png'); background-size: cover; margin: 0 auto; }
     </style>
 </head>
 <body>
 
-    <div id="loading"><i class="fas fa-circle-notch fa-spin fa-2x"></i><span>Conectando...</span></div>
+    <div id="loading">Conectando...</div>
 
     <div id="splash">
         <div class="logo">ROTA <span>DIRETA</span></div>
-        <button class="btn-big b-driver" onclick="fluxoMotorista()"><i class="fas fa-car"></i> SOU MOTORISTA</button>
-        <button class="btn-big b-pass" onclick="fluxoPassageiro()"><i class="fas fa-user"></i> SOU PASSAGEIRO</button>
-        <div class="version-tag">Versão 3.5 (Conectada)</div>
-        <div onclick="resetar()" style="margin-top:10px; font-size:0.7rem; color:#aaa; text-decoration:underline; cursor:pointer;">Resetar Dados</div>
+        <button class="btn-big b-driver" onclick="fluxoMotorista()">SOU MOTORISTA</button>
+        <button class="btn-big b-pass" onclick="fluxoPassageiro()">SOU PASSAGEIRO</button>
+        <div style="margin-top:20px; color:green; font-weight:bold;">Versão 4.0 (Nativo)</div>
+        <button onclick="localStorage.clear(); location.reload()" style="margin-top:10px; background:none; border:none; text-decoration:underline;">Resetar</button>
     </div>
 
     <div id="app-ui">
         <div class="top-bar">
-            <div style="font-weight:900;">ROTA<span style="color:var(--gold)">DIRETA</span></div>
-            <div class="user-id" id="txtUser">...</div>
+            <span>ROTA DIRETA</span>
+            <span id="txtUser" style="font-size:0.8rem; color:#555;">...</span>
         </div>
         <div id="map"></div>
         <div class="driver-dock" id="driverDock">
-            <button id="btnOnline" class="btn-status s-off" onclick="toggleOnline()">
-                <i class="fas fa-power-off"></i> <span>FICAR ONLINE</span>
-            </button>
-        </div>
-        <div class="car-sheet" id="carSheet">
-            <div style="text-align:right;"><span onclick="fecharSheet()" style="font-size:1.5rem; color:#aaa; cursor:pointer;">&times;</span></div>
-            <h3 id="dName" style="margin:0 0 5px 0;">Motorista</h3>
-            <p id="dCar" style="color:#666; margin:0;">Carro</p>
-            <a href="#" id="btnZap" class="btn-zap" target="_blank"><i class="fab fa-whatsapp"></i> CHAMAR</a>
+            <button id="btnOnline" class="btn-status s-off" onclick="toggleOnline()">FICAR ONLINE</button>
         </div>
     </div>
 
@@ -101,77 +86,72 @@
         let map, currentUser, userType, isOnline = false, watchId, markers = {};
 
         window.onload = () => {
-            // Se o Auth não carregar, avisa
-            if(!auth) return alert("Erro crítico: Firebase não carregou.");
-
             auth.signInAnonymously().then(() => {
                 document.getElementById('loading').style.display = 'none';
                 verificarCache();
             }).catch(e => {
-                alert("Erro de conexão: " + e.message);
-                document.getElementById('loading').innerHTML = "ERRO: " + e.message;
+                alert("Erro Auth: " + e.message);
+                document.getElementById('loading').innerText = "ERRO CONEXÃO";
             });
         };
 
         function verificarCache() {
-            const drv = localStorage.getItem('rd_driver_v35');
-            const pas = localStorage.getItem('rd_pass_v35');
+            const drv = localStorage.getItem('rd_driver_nativo');
+            const pas = localStorage.getItem('rd_pass_nativo');
             if (drv) pedirSenhaMotorista(JSON.parse(drv));
             else if (pas) iniciarApp('passenger', JSON.parse(pas));
         }
 
-        async function fluxoMotorista() {
-            try {
-                const { value: form } = await Swal.fire({
-                    title: 'Cadastro Motorista',
-                    html: `<input id="mNome" class="swal2-input" placeholder="Nome"><input id="mCarro" class="swal2-input" placeholder="Carro"><input id="mZap" class="swal2-input" type="tel" placeholder="WhatsApp">`,
-                    confirmButtonText: 'CRIAR', confirmButtonColor: '#222',
-                    preConfirm: () => {
-                        const nome = document.getElementById('mNome').value;
-                        const zap = document.getElementById('mZap').value;
-                        if(!nome || !zap) return Swal.showValidationMessage('Preencha nome e zap');
-                        return { uid: auth.currentUser.uid, pin: Math.floor(1000+Math.random()*9000), nome, carro: document.getElementById('mCarro').value, zap: zap.replace(/\D/g, '') };
-                    }
-                });
+        function fluxoMotorista() {
+            // USANDO JANELAS PADRÃO DO CELULAR
+            const nome = prompt("Digite seu Nome Completo:");
+            if(!nome) return;
+            
+            const carro = prompt("Qual seu Carro (Modelo/Cor)?");
+            if(!carro) return;
 
-                if(form) {
-                    await Swal.fire('Sucesso', `Sua senha: ${form.pin}`, 'success');
-                    db.ref('drivers/'+form.uid).set(form);
-                    localStorage.setItem('rd_driver_v35', JSON.stringify(form));
-                    iniciarApp('driver', form);
-                }
-            } catch(e) {
-                // Fallback se o SweetAlert falhar
-                const nome = prompt("Nome:");
-                if(nome) {
-                    const form = { uid: auth.currentUser.uid, pin: 1234, nome: nome, zap: '00', carro: 'Carro' };
-                    localStorage.setItem('rd_driver_v35', JSON.stringify(form));
-                    iniciarApp('driver', form);
-                }
+            const zap = prompt("Seu WhatsApp (apenas números):");
+            if(!zap) return;
+
+            const form = {
+                uid: auth.currentUser.uid,
+                pin: Math.floor(1000 + Math.random() * 9000),
+                nome: nome,
+                carro: carro,
+                zap: zap.replace(/\D/g, '')
+            };
+
+            alert("CADASTRO FEITO!\n\nSua Senha é: " + form.pin + "\n\nGuarde ela!");
+            
+            db.ref('drivers/' + form.uid).set(form);
+            localStorage.setItem('rd_driver_nativo', JSON.stringify(form));
+            iniciarApp('driver', form);
+        }
+
+        function pedirSenhaMotorista(data) {
+            const pin = prompt("Olá " + data.nome + "! Digite sua senha PIN:");
+            if (pin == data.pin) {
+                data.uid = auth.currentUser.uid;
+                iniciarApp('driver', data);
+            } else {
+                alert("Senha errada!");
+                localStorage.clear();
+                location.reload();
             }
         }
 
-        async function pedirSenhaMotorista(data) {
-            const { value: pin } = await Swal.fire({
-                title: `Olá ${data.nome}`, text: 'Senha PIN', input: 'text', inputAttributes: {inputmode:'numeric'}, confirmButtonText: 'ENTRAR', confirmButtonColor: '#222'
-            });
-            if (pin == data.pin) { data.uid = auth.currentUser.uid; iniciarApp('driver', data); }
-            else { localStorage.removeItem('rd_driver_v35'); location.reload(); }
-        }
-
-        async function fluxoPassageiro() {
-            const { value: form } = await Swal.fire({
-                title: 'Passageiro', html: `<input id="pNome" class="swal2-input" placeholder="Nome">`, confirmButtonText: 'ENTRAR', confirmButtonColor: '#222',
-                preConfirm: () => { return { uid: auth.currentUser.uid, nome: document.getElementById('pNome').value }; }
-            });
-            if(form) {
-                localStorage.setItem('rd_pass_v35', JSON.stringify(form));
-                iniciarApp('passenger', form);
-            }
+        function fluxoPassageiro() {
+            const nome = prompt("Digite seu Nome:");
+            if(!nome) return;
+            
+            const form = { uid: auth.currentUser.uid, nome: nome };
+            localStorage.setItem('rd_pass_nativo', JSON.stringify(form));
+            iniciarApp('passenger', form);
         }
 
         function iniciarApp(type, data) {
-            userType = type; currentUser = data;
+            userType = type;
+            currentUser = data;
             document.getElementById('splash').style.display = 'none';
             document.getElementById('app-ui').style.display = 'flex';
             document.getElementById('txtUser').innerText = data.nome;
@@ -193,19 +173,21 @@
         function toggleOnline() {
             const btn = document.getElementById('btnOnline');
             if(!isOnline) {
-                if(!navigator.geolocation) return Swal.fire('Erro', 'Ligue o GPS', 'warning');
+                if(!navigator.geolocation) return alert("Ative o GPS!");
+                
                 isOnline = true;
                 btn.className = 'btn-status s-on';
-                btn.innerHTML = 'VOCÊ ESTÁ VISÍVEL';
+                btn.innerText = 'VOCÊ ESTÁ ONLINE';
+                
                 watchId = navigator.geolocation.watchPosition(pos => {
-                    db.ref('online/'+currentUser.uid).set({ ...currentUser, lat: pos.coords.latitude, lng: pos.coords.longitude });
+                    db.ref('online/' + currentUser.uid).set({ ...currentUser, lat: pos.coords.latitude, lng: pos.coords.longitude });
                 }, null, { enableHighAccuracy: true });
             } else {
                 isOnline = false;
                 btn.className = 'btn-status s-off';
-                btn.innerHTML = 'FICAR ONLINE';
+                btn.innerText = 'FICAR ONLINE';
                 if(watchId) navigator.geolocation.clearWatch(watchId);
-                db.ref('online/'+currentUser.uid).remove();
+                db.ref('online/' + currentUser.uid).remove();
             }
         }
 
@@ -213,27 +195,25 @@
             db.ref('online').on('value', snap => {
                 const list = snap.val() || {};
                 for(let uid in markers) { if(!list[uid]) { map.removeLayer(markers[uid]); delete markers[uid]; } }
+                
                 for(let uid in list) {
                     if(userType === 'driver' && uid == currentUser.uid) continue;
                     const d = list[uid];
                     const icon = L.divIcon({ className: 'custom', html: `<div class="pin-box"><div class="pin-label">LIVRE</div><div class="pin-img"></div></div>`, iconSize: [50, 50] });
+                    
                     if(markers[uid]) markers[uid].setLatLng([d.lat, d.lng]);
                     else {
                         const m = L.marker([d.lat, d.lng], {icon}).addTo(map);
                         m.on('click', () => {
-                            document.getElementById('dName').innerText = d.nome;
-                            document.getElementById('dCar').innerText = d.carro;
-                            document.getElementById('btnZap').href = `https://wa.me/55${d.zap}`;
-                            document.getElementById('carSheet').classList.add('open');
+                            if(confirm("Motorista: " + d.nome + "\nCarro: " + d.carro + "\n\nChamar no WhatsApp?")) {
+                                window.open(`https://wa.me/55${d.zap}`, '_blank');
+                            }
                         });
                         markers[uid] = m;
                     }
                 }
             });
         }
-        function fecharSheet() { document.getElementById('carSheet').classList.remove('open'); }
-        function resetar() { localStorage.clear(); location.reload(); }
-        window.onbeforeunload = () => { if(isOnline) db.ref('online/'+currentUser.uid).remove(); };
     </script>
 </body>
 </html>

@@ -2,183 +2,49 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="theme-color" content="#ffffff">
-    <title>Rota Direta</title>
-
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rota Direta - Teste Azul</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
-        /* DESIGN VISUAL */
-        :root { --bg:#f8f9fa; --surface:#fff; --dark:#1a1a1a; --gold:#FFC107; --green:#2ecc71; --blue:#3498db; }
-        * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
-        
-        body { margin: 0; padding: 0; width: 100%; height: 100vh; background: var(--bg); font-family: 'Montserrat', sans-serif; overflow: hidden; display: flex; flex-direction: column; }
-
-        /* TELA DE CARREGAMENTO */
-        #loading {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--surface); z-index: 10000;
-            display: flex; justify-content: center; align-items: center;
-            font-size: 1.2rem; color: #888; flex-direction: column; gap: 15px;
-        }
-
-        /* TELA INICIAL (SPLASH) */
-        #splash {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--surface); z-index: 5000; display: none;
-            flex-direction: column; align-items: center; justify-content: center; padding: 30px;
-        }
-        .logo { font-size: 2.2rem; font-weight: 900; color: var(--dark); margin-bottom: 40px; letter-spacing: -1px; }
-        .logo span { color: var(--gold); }
-        
-        .btn-big {
-            width: 100%; max-width: 320px; padding: 18px; margin-bottom: 15px;
-            border: none; border-radius: 12px; font-size: 1rem; font-weight: 700; cursor: pointer;
-            display: flex; align-items: center; justify-content: center; gap: 10px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1); transition: 0.2s;
-        }
-        .btn-big:active { transform: scale(0.98); }
-        .b-driver { background: var(--dark); color: white; }
-        .b-pass { background: white; color: var(--dark); border: 2px solid var(--dark); }
-
-        /* INTERFACE DO APP */
-        #app-ui { display: none; flex: 1; position: relative; }
-        #map { width: 100%; height: 100%; z-index: 1; }
-
-        /* ELEMENTOS FLUTUANTES */
-        .top-bar {
-            position: absolute; top: 40px; left: 20px; right: 20px;
-            background: rgba(255,255,255,0.95); backdrop-filter: blur(8px);
-            padding: 12px 20px; border-radius: 50px; z-index: 1000;
-            display: flex; justify-content: space-between; align-items: center;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-        }
-        .user-id { font-size: 0.75rem; font-weight: 600; color: #555; }
-
-        .hint-box { position: absolute; top: 100px; width: 100%; text-align: center; z-index: 999; pointer-events: none; }
-        .hint-tag { background: var(--gold); color: black; padding: 8px 16px; border-radius: 20px; font-size: 0.75rem; font-weight: 800; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
-
-        .driver-dock {
-            position: absolute; bottom: 30px; left: 20px; right: 20px;
-            background: var(--surface); padding: 20px; border-radius: 20px;
-            z-index: 1000; box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-            text-align: center; display: none;
-        }
-        .btn-status {
-            width: 100%; padding: 16px; border: none; border-radius: 12px;
-            font-weight: 800; font-size: 1rem; text-transform: uppercase; cursor: pointer;
-            display: flex; justify-content: center; align-items: center; gap: 10px;
-        }
-        .s-off { background: #eee; color: #777; }
-        .s-on { background: var(--green); color: white; animation: glow 2s infinite; }
-        @keyframes glow { 0% { box-shadow: 0 0 0 0 rgba(46,204,113,0.7); } 70% { box-shadow: 0 0 0 15px rgba(46,204,113,0); } 100% { box-shadow: 0 0 0 0 rgba(46,204,113,0); } }
-
-        /* DETALHES DO MOTORISTA */
-        .car-sheet {
-            position: absolute; bottom: 0; left: 0; width: 100%;
-            background: var(--surface); border-radius: 25px 25px 0 0;
-            padding: 30px; z-index: 2000; box-shadow: 0 -5px 40px rgba(0,0,0,0.2);
-            transform: translateY(110%); transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
-        }
-        .car-sheet.open { transform: translateY(0); }
-        .cs-head { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
-        .cs-avatar { width: 50px; height: 50px; background: #eee; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: #aaa; }
-        .cs-info h3 { margin: 0; font-size: 1.1rem; color: var(--dark); }
-        .cs-info p { margin: 2px 0 0; font-size: 0.8rem; color: #888; }
-        .cs-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 20px; }
-        .cs-tag { background: #f8f9fa; border: 1px solid #eee; padding: 10px; border-radius: 10px; text-align: center; font-size: 0.8rem; font-weight: 700; color: #555; }
-        
-        .btn-zap {
-            width: 100%; padding: 16px; background: #25D366; color: white;
-            border: none; border-radius: 14px; font-weight: 800; font-size: 1rem;
-            display: flex; justify-content: center; align-items: center; gap: 10px;
-            text-decoration: none; box-shadow: 0 5px 15px rgba(37,211,102,0.3);
-        }
-
-        /* MARCADOR NO MAPA */
-        .pin-box { position: relative; width: 50px; height: 50px; }
-        .pin-label {
-            position: absolute; top: -18px; left: 50%; transform: translateX(-50%);
-            background: var(--green); color: white; font-size: 0.6rem; font-weight: 800;
-            padding: 3px 8px; border-radius: 6px; white-space: nowrap; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
-        .pin-img {
-            width: 40px; height: 40px; background-image: url('https://cdn-icons-png.flaticon.com/512/3202/3202926.png');
-            background-size: cover; display: block; margin: 0 auto; filter: drop-shadow(0 4px 3px rgba(0,0,0,0.3));
-        }
-
+        /* FUNDO AZUL PARA CONFIRMAR ATUALIZAÇÃO */
+        body { background-color: #e0f7fa; font-family: sans-serif; padding: 20px; text-align: center; }
+        .box { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        button { padding: 15px 30px; font-size: 1.2rem; background: #000; color: #fff; border: none; border-radius: 8px; cursor: pointer; margin: 10px; }
+        #log { text-align: left; background: #333; color: #0f0; padding: 10px; font-family: monospace; height: 200px; overflow-y: scroll; border-radius: 5px; font-size: 0.8rem; }
     </style>
 </head>
 <body>
 
-    <div id="loading">
-        <i class="fas fa-circle-notch fa-spin fa-2x"></i>
-        <span>Conectando ao sistema...</span>
+    <h1>ROTA DIRETA <br><span style="color:blue">MODO TESTE</span></h1>
+    
+    <div class="box">
+        <p>Se esta tela está azul, o código atualizou!</p>
+        <button onclick="tentarMotorista()">SOU MOTORISTA</button>
+        <button onclick="tentarPassageiro()">SOU PASSAGEIRO</button>
     </div>
 
-    <div id="splash">
-        <div class="logo">ROTA <span>DIRETA</span></div>
-        <button class="btn-big b-driver" onclick="fluxoMotorista()">
-            <i class="fas fa-car"></i> SOU MOTORISTA
-        </button>
-        <button class="btn-big b-pass" onclick="fluxoPassageiro()">
-            <i class="fas fa-user"></i> SOU PASSAGEIRO
-        </button>
-        <div onclick="resetar()" style="margin-top:20px; font-size:0.7rem; color:#aaa; text-decoration:underline; cursor:pointer;">Sair / Resetar</div>
-    </div>
+    <h3>Relatório do Sistema:</h3>
+    <div id="log">Iniciando diagnóstico...<br></div>
 
-    <div id="app-ui">
-        <div class="top-bar">
-            <div style="font-weight:900;">ROTA<span style="color:var(--gold)">DIRETA</span></div>
-            <div class="user-id" id="txtUser">...</div>
-        </div>
-
-        <div class="pass-hint" id="passHint" style="display:none;">
-            <div class="hint-box"><div class="hint-tag">Toque no carrinho para chamar!</div></div>
-        </div>
-
-        <div id="map"></div>
-
-        <div class="driver-dock" id="driverDock">
-            <p style="font-size:0.75rem; color:#888; margin-bottom:15px;">Fique online para aparecer no mapa.</p>
-            <button id="btnOnline" class="btn-status s-off" onclick="toggleOnline()">
-                <i class="fas fa-power-off"></i> <span>FICAR ONLINE</span>
-            </button>
-        </div>
-
-        <div class="car-sheet" id="carSheet">
-            <div style="text-align:right; margin-bottom:5px;"><span onclick="fecharSheet()" style="font-size:1.5rem; color:#aaa; cursor:pointer;">&times;</span></div>
-            <div class="cs-head">
-                <div class="cs-avatar"><i class="fas fa-user"></i></div>
-                <div class="cs-info">
-                    <h3 id="dName">Motorista</h3>
-                    <p id="dApps">Apps: --</p>
-                </div>
-            </div>
-            <div class="cs-grid">
-                <div class="cs-tag" id="dCar">Carro</div>
-                <div class="cs-tag" id="dColor">Cor</div>
-                <div class="cs-tag" id="dPlate" style="text-transform:uppercase; border-color:var(--gold);">PLACA</div>
-            </div>
-            <a href="#" id="btnZap" class="btn-zap" target="_blank">
-                <i class="fab fa-whatsapp"></i> CHAMAR AGORA
-            </a>
-        </div>
-    </div>
-
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        // -----------------------------------------------------------
-        // CONFIGURAÇÃO CORRETA COM O SEU BANCO DE DADOS
-        // -----------------------------------------------------------
+        // FUNÇÃO PARA ESCREVER NA TELA PRETA
+        function log(texto) {
+            const caixa = document.getElementById('log');
+            caixa.innerHTML += "> " + texto + "<br>";
+            console.log(texto);
+        }
+
+        // CAPTURA ERROS DE SINTAXE
+        window.onerror = function(msg, url, line) {
+            log("ERRO CRÍTICO: " + msg + " (Linha " + line + ")");
+            alert("ERRO NO CÓDIGO: " + msg);
+        };
+
+        // 1. CONFIGURAÇÃO (SEM A BARRA NO FINAL DA URL)
         const firebaseConfig = {
             apiKey: "AIzaSyBxbRiYNuGde5nwJIaoeRItWdZGR221cpY",
             authDomain: "rota-direta.firebaseapp.com",
@@ -186,247 +52,64 @@
             storageBucket: "rota-direta.firebasestorage.app",
             messagingSenderId: "468273971962",
             appId: "1:468273971962:web:f536de2e2aa74f84dfff43",
-            databaseURL: "https://rota-direta-default-rtdb.firebaseio.com/" // <--- O LINK QUE FALTAVA!
+            databaseURL: "https://rota-direta-default-rtdb.firebaseio.com"
         };
 
-        // INICIALIZAÇÃO
-        try { 
-            firebase.initializeApp(firebaseConfig); 
-        } catch(e) { console.log('Firebase já rodando'); }
-        
-        const db = firebase.database();
-        const auth = firebase.auth();
+        let db, auth;
 
-        // VARIÁVEIS GLOBAIS
-        let map;
-        let currentUser = null; 
-        let userType = null;
-        let isOnline = false;
-        let watchId = null;
-        let markers = {}; 
+        try {
+            log("Iniciando Firebase...");
+            firebase.initializeApp(firebaseConfig);
+            db = firebase.database();
+            auth = firebase.auth();
+            log("Firebase carregado.");
+        } catch (e) {
+            log("FALHA AO INICIAR FIREBASE: " + e.message);
+        }
 
-        window.onload = () => {
-            // LOGIN AUTOMÁTICO
-            auth.signInAnonymously().then(() => {
-                document.getElementById('loading').style.display = 'none';
-                verificarCache();
+        // TENTA CONECTAR ASSIM QUE ABRE
+        window.onload = function() {
+            log("Tentando Login Anônimo...");
+            if(!auth) return log("Auth não existe. Erro grave.");
+
+            auth.signInAnonymously()
+                .then((user) => {
+                    log("LOGIN SUCESSO! ID: " + user.user.uid.slice(0,5));
+                    log("Conexão pronta. Pode clicar nos botões.");
+                    Swal.fire('Conectado!', 'O sistema está online.', 'success');
+                })
+                .catch((error) => {
+                    log("ERRO DE LOGIN: " + error.message);
+                    log("Verifique se ativou 'Anônimo' no Console.");
+                    alert("Erro de Login: " + error.message);
+                });
+        };
+
+        function tentarMotorista() {
+            log("Botão Motorista Clicado.");
+            if(!auth.currentUser) return alert("Aguarde o Login Automático...");
+
+            const nome = prompt("Digite seu nome:");
+            if(!nome) return;
+
+            log("Salvando no Banco de Dados...");
+            // TESTE REAL DE GRAVAÇÃO
+            db.ref('drivers_data/TESTE_' + Date.now()).set({
+                nome: nome,
+                teste: 'ok'
+            }).then(() => {
+                log("GRAVAÇÃO NO BANCO DEU CERTO!");
+                alert("SUCESSO! O Banco de Dados está funcionando.");
             }).catch(e => {
-                alert("Erro de conexão (Auth): " + e.message);
-                document.getElementById('loading').innerHTML = "<span>Erro de Conexão. Recarregue.</span>";
-            });
-        };
-
-        function verificarCache() {
-            const drv = localStorage.getItem('rd_driver_final');
-            const pas = localStorage.getItem('rd_pass_final');
-
-            if (drv) {
-                const data = JSON.parse(drv);
-                pedirSenhaMotorista(data);
-            } else if (pas) {
-                iniciarApp('passenger', JSON.parse(pas));
-            } else {
-                document.getElementById('splash').style.display = 'flex';
-            }
-        }
-
-        // --- FLUXO MOTORISTA ---
-        async function fluxoMotorista() {
-            const { value: form } = await Swal.fire({
-                title: 'Cadastro Motorista',
-                html: `
-                    <input id="mNome" class="swal2-input" placeholder="Nome Completo">
-                    <input id="mCarro" class="swal2-input" placeholder="Carro (ex: Onix)">
-                    <input id="mCor" class="swal2-input" placeholder="Cor">
-                    <input id="mPlaca" class="swal2-input" placeholder="Placa">
-                    <input id="mZap" class="swal2-input" type="tel" placeholder="WhatsApp (DDD+Num)">
-                    <input id="mApps" class="swal2-input" placeholder="Apps (Uber/99)">
-                `,
-                confirmButtonText: 'CRIAR CONTA', confirmButtonColor: '#222',
-                preConfirm: () => {
-                    const nome = document.getElementById('mNome').value;
-                    const zap = document.getElementById('mZap').value;
-                    if(!nome || !zap) return Swal.showValidationMessage('Preencha os dados!');
-                    
-                    return {
-                        uid: auth.currentUser.uid,
-                        pin: Math.floor(1000 + Math.random() * 9000),
-                        nome, carro: document.getElementById('mCarro').value,
-                        cor: document.getElementById('mCor').value,
-                        placa: document.getElementById('mPlaca').value.toUpperCase(),
-                        zap: zap.replace(/\D/g, ''),
-                        apps: document.getElementById('mApps').value
-                    };
-                }
-            });
-
-            if(form) {
-                await Swal.fire({
-                    title: 'Cadastro Pronto!',
-                    html: `Sua Senha PIN é: <b style="font-size:2.5rem; color:#FFC107">${form.pin}</b><br>Use-a para entrar depois.`,
-                    icon: 'success', confirmButtonColor: '#222'
-                });
-                
-                db.ref('drivers_data/' + form.uid).set(form);
-                localStorage.setItem('rd_driver_final', JSON.stringify(form));
-                iniciarApp('driver', form);
-            }
-        }
-
-        async function pedirSenhaMotorista(data) {
-            const { value: pin } = await Swal.fire({
-                title: `Bem-vindo, ${data.nome.split(' ')[0]}!`,
-                text: 'Digite sua senha PIN:',
-                input: 'text',
-                inputAttributes: { maxlength: 4, inputmode: 'numeric', style: 'text-align:center; font-size:1.5rem; letter-spacing:5px;' },
-                confirmButtonText: 'ENTRAR', confirmButtonColor: '#222',
-                allowOutsideClick: false
-            });
-
-            if (pin == data.pin) {
-                data.uid = auth.currentUser.uid; 
-                iniciarApp('driver', data);
-            } else {
-                Swal.fire('Senha Errada', 'Tente novamente', 'error').then(() => {
-                    localStorage.removeItem('rd_driver_final'); // Limpa cache se errar pra não travar
-                    location.reload();
-                });
-            }
-        }
-
-        // --- FLUXO PASSAGEIRO ---
-        async function fluxoPassageiro() {
-            const { value: form } = await Swal.fire({
-                title: 'Passageiro',
-                html: `<input id="pNome" class="swal2-input" placeholder="Seu Nome"><input id="pZap" class="swal2-input" type="tel" placeholder="Seu WhatsApp">`,
-                confirmButtonText: 'ACESSAR MAPA', confirmButtonColor: '#222',
-                preConfirm: () => {
-                    const nome = document.getElementById('pNome').value;
-                    const zap = document.getElementById('pZap').value;
-                    if(!nome) return Swal.showValidationMessage('Nome obrigatório');
-                    return { uid: auth.currentUser.uid, nome, zap };
-                }
-            });
-
-            if(form) {
-                localStorage.setItem('rd_pass_final', JSON.stringify(form));
-                db.ref('passengers/' + form.uid).set(form);
-                iniciarApp('passenger', form);
-            }
-        }
-
-        // --- SISTEMA ---
-        function iniciarApp(type, data) {
-            userType = type;
-            currentUser = data;
-            
-            document.getElementById('splash').style.display = 'none';
-            document.getElementById('app-ui').style.display = 'flex';
-            document.getElementById('txtUser').innerText = type === 'driver' ? `Mot: ${data.nome}` : `Pass: ${data.nome}`;
-
-            if(type === 'driver') document.getElementById('driverDock').style.display = 'block';
-            else document.getElementById('passHint').style.display = 'block';
-
-            carregarMapa();
-        }
-
-        function carregarMapa() {
-            if(!map) {
-                map = L.map('map', { zoomControl: false }).setView([-23.55, -46.63], 13);
-                L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { attribution: 'CARTO' }).addTo(map);
-            }
-
-            if(navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(pos => {
-                    map.setView([pos.coords.latitude, pos.coords.longitude], 15);
-                    L.circleMarker([pos.coords.latitude, pos.coords.longitude], {
-                        radius: 8, fillColor: '#3498db', color: '#fff', weight: 2, fillOpacity: 1
-                    }).addTo(map);
-                }, () => Swal.fire('Atenção', 'Ligue o GPS do celular!', 'warning'));
-            }
-            
-            escutarOnline();
-        }
-
-        function toggleOnline() {
-            const btn = document.getElementById('btnOnline');
-            
-            if(!isOnline) {
-                if(!navigator.geolocation) return Swal.fire('Erro', 'Preciso do GPS ligado!', 'warning');
-                
-                isOnline = true;
-                btn.className = 'btn-status s-on';
-                btn.innerHTML = '<i class="fas fa-broadcast-tower"></i> VOCÊ ESTÁ VISÍVEL';
-                
-                watchId = navigator.geolocation.watchPosition(pos => {
-                    const dadosMapa = {
-                        ...currentUser,
-                        lat: pos.coords.latitude,
-                        lng: pos.coords.longitude
-                    };
-                    db.ref('online_drivers/' + currentUser.uid).set(dadosMapa);
-                }, null, { enableHighAccuracy: true });
-
-            } else {
-                isOnline = false;
-                btn.className = 'btn-status s-off';
-                btn.innerHTML = '<i class="fas fa-power-off"></i> FICAR ONLINE';
-                
-                if(watchId) navigator.geolocation.clearWatch(watchId);
-                db.ref('online_drivers/' + currentUser.uid).remove();
-            }
-        }
-
-        function escutarOnline() {
-            db.ref('online_drivers').on('value', snap => {
-                const list = snap.val() || {};
-                
-                for(let uid in markers) {
-                    if(!list[uid]) { map.removeLayer(markers[uid]); delete markers[uid]; }
-                }
-
-                for(let uid in list) {
-                    if(userType === 'driver' && uid == currentUser.uid) continue;
-
-                    const d = list[uid];
-                    const html = `<div class="pin-box"><div class="pin-label">LIVRE</div><div class="pin-img"></div></div>`;
-                    const icon = L.divIcon({ className: 'custom-icon', html: html, iconSize: [50, 50], iconAnchor: [25, 25] });
-
-                    if(markers[uid]) {
-                        markers[uid].setLatLng([d.lat, d.lng]);
-                    } else {
-                        const m = L.marker([d.lat, d.lng], {icon: icon}).addTo(map);
-                        m.on('click', () => { if(userType === 'passenger') abrirDetalhes(d); });
-                        markers[uid] = m;
-                    }
-                }
+                log("ERRO AO GRAVAR: " + e.message);
+                alert("FALHA NO BANCO: " + e.message);
             });
         }
 
-        function abrirDetalhes(d) {
-            document.getElementById('dName').innerText = d.nome;
-            document.getElementById('dApps').innerText = d.apps || 'Particular';
-            document.getElementById('dCar').innerText = d.carro;
-            document.getElementById('dColor').innerText = d.cor;
-            document.getElementById('dPlate').innerText = d.placa;
-            const msg = `Olá ${d.nome}, vi seu carro disponível no App.`;
-            document.getElementById('btnZap').href = `https://wa.me/55${d.zap}?text=${encodeURIComponent(msg)}`;
-            document.getElementById('carSheet').classList.add('open');
+        function tentarPassageiro() {
+            log("Botão Passageiro Clicado.");
+            alert("Botão respondendo ok.");
         }
-
-        function fecharSheet() { document.getElementById('carSheet').classList.remove('open'); }
-        
-        function resetar() {
-            if(confirm("Isso apagará seus dados deste aparelho. Continuar?")) {
-                localStorage.clear();
-                location.reload();
-            }
-        }
-
-        window.onbeforeunload = () => {
-            if(isOnline && userType === 'driver') db.ref('online_drivers/' + currentUser.uid).remove();
-        };
-
     </script>
 </body>
 </html>

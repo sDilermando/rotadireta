@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Rota Direta Nativo</title>
+    <title>Rota Direta Teste</title>
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
@@ -36,9 +36,23 @@
         .s-off { background: #eee; color: #555; }
         .s-on { background: var(--green); color: white; }
 
-        .top-bar { position: absolute; top: 40px; left: 20px; right: 20px; background: rgba(255,255,255,0.9); padding: 10px 20px; border-radius: 30px; z-index: 1000; display: flex; justify-content: space-between; align-items: center; font-weight: bold; }
+        .top-bar { position: absolute; top: 40px; left: 20px; right: 20px; background: rgba(255,255,255,0.9); padding: 10px 20px; border-radius: 30px; z-index: 1000; display: flex; justify-content: space-between; align-items: center; font-weight: bold; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
         
-        /* PIN */
+        /* BOTÃO DE LOCALIZAÇÃO */
+        .btn-locate {
+            position: absolute; bottom: 180px; right: 20px; width: 50px; height: 50px;
+            background: white; border-radius: 50%; z-index: 1000; border: none;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2); font-size: 1.2rem; color: #333;
+            display: flex; align-items: center; justify-content: center; cursor: pointer;
+        }
+        .btn-locate:active { transform: scale(0.9); }
+
+        /* BOTÃO DE TESTE (BOTS) */
+        .btn-test {
+            background: #ffcccc; color: red; font-size: 0.7rem; padding: 5px 10px; border-radius: 5px; border: 1px solid red; cursor: pointer;
+        }
+
+        /* PIN MARKER */
         .pin-box { position: relative; width: 50px; height: 50px; }
         .pin-label { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); background: var(--green); color: white; font-size: 0.7rem; font-weight: bold; padding: 2px 6px; border-radius: 4px; white-space: nowrap; }
         .pin-img { width: 40px; height: 40px; background-image: url('https://cdn-icons-png.flaticon.com/512/3202/3202926.png'); background-size: cover; margin: 0 auto; }
@@ -50,18 +64,22 @@
 
     <div id="splash">
         <div class="logo">ROTA <span>DIRETA</span></div>
+        <p style="color:#777; font-size:0.8rem;">Modo de Testes (Sem Senha)</p>
         <button class="btn-big b-driver" onclick="fluxoMotorista()">SOU MOTORISTA</button>
         <button class="btn-big b-pass" onclick="fluxoPassageiro()">SOU PASSAGEIRO</button>
-        <div style="margin-top:20px; color:green; font-weight:bold;">Versão 4.0 (Nativo)</div>
-        <button onclick="localStorage.clear(); location.reload()" style="margin-top:10px; background:none; border:none; text-decoration:underline;">Resetar</button>
+        <button onclick="location.reload()" style="margin-top:20px; background:none; border:none; text-decoration:underline;">Atualizar App</button>
     </div>
 
     <div id="app-ui">
         <div class="top-bar">
             <span>ROTA DIRETA</span>
-            <span id="txtUser" style="font-size:0.8rem; color:#555;">...</span>
+            <button class="btn-test" onclick="criarBots()">+ Criar Bots</button>
         </div>
+
         <div id="map"></div>
+        
+        <button class="btn-locate" onclick="centralizarUser()"><i class="fas fa-crosshairs"></i></button>
+
         <div class="driver-dock" id="driverDock">
             <button id="btnOnline" class="btn-status s-off" onclick="toggleOnline()">FICAR ONLINE</button>
         </div>
@@ -84,68 +102,44 @@
         const auth = firebase.auth();
         
         let map, currentUser, userType, isOnline = false, watchId, markers = {};
+        let myLat = -23.55, myLng = -46.63; // Posição inicial padrão
 
         window.onload = () => {
             auth.signInAnonymously().then(() => {
                 document.getElementById('loading').style.display = 'none';
-                verificarCache();
+                // Removi a verificação de cache para forçar a escolha de perfil
+                document.getElementById('splash').style.display = 'flex';
             }).catch(e => {
                 alert("Erro Auth: " + e.message);
                 document.getElementById('loading').innerText = "ERRO CONEXÃO";
             });
         };
 
-        function verificarCache() {
-            const drv = localStorage.getItem('rd_driver_nativo');
-            const pas = localStorage.getItem('rd_pass_nativo');
-            if (drv) pedirSenhaMotorista(JSON.parse(drv));
-            else if (pas) iniciarApp('passenger', JSON.parse(pas));
-        }
-
         function fluxoMotorista() {
-            // USANDO JANELAS PADRÃO DO CELULAR
-            const nome = prompt("Digite seu Nome Completo:");
+            // CADASTRO SIMPLIFICADO DE TESTE
+            const nome = prompt("Seu Nome:");
             if(!nome) return;
-            
-            const carro = prompt("Qual seu Carro (Modelo/Cor)?");
-            if(!carro) return;
-
-            const zap = prompt("Seu WhatsApp (apenas números):");
-            if(!zap) return;
+            const carro = prompt("Modelo do Carro:");
+            const placa = prompt("Placa do Carro:"); // ADICIONADO
+            const zap = prompt("WhatsApp:");
 
             const form = {
                 uid: auth.currentUser.uid,
-                pin: Math.floor(1000 + Math.random() * 9000),
                 nome: nome,
-                carro: carro,
-                zap: zap.replace(/\D/g, '')
+                carro: carro || "Carro Teste",
+                placa: placa || "ABC-0000",
+                zap: zap ? zap.replace(/\D/g, '') : "00"
             };
-
-            alert("CADASTRO FEITO!\n\nSua Senha é: " + form.pin + "\n\nGuarde ela!");
             
+            // Entra direto sem pedir senha
             db.ref('drivers/' + form.uid).set(form);
-            localStorage.setItem('rd_driver_nativo', JSON.stringify(form));
             iniciarApp('driver', form);
         }
 
-        function pedirSenhaMotorista(data) {
-            const pin = prompt("Olá " + data.nome + "! Digite sua senha PIN:");
-            if (pin == data.pin) {
-                data.uid = auth.currentUser.uid;
-                iniciarApp('driver', data);
-            } else {
-                alert("Senha errada!");
-                localStorage.clear();
-                location.reload();
-            }
-        }
-
         function fluxoPassageiro() {
-            const nome = prompt("Digite seu Nome:");
+            const nome = prompt("Seu Nome:");
             if(!nome) return;
-            
             const form = { uid: auth.currentUser.uid, nome: nome };
-            localStorage.setItem('rd_pass_nativo', JSON.stringify(form));
             iniciarApp('passenger', form);
         }
 
@@ -154,20 +148,34 @@
             currentUser = data;
             document.getElementById('splash').style.display = 'none';
             document.getElementById('app-ui').style.display = 'flex';
-            document.getElementById('txtUser').innerText = data.nome;
             if(type === 'driver') document.getElementById('driverDock').style.display = 'block';
             carregarMapa();
         }
 
         function carregarMapa() {
             if(!map) {
-                map = L.map('map', { zoomControl: false }).setView([-23.55, -46.63], 13);
+                map = L.map('map', { zoomControl: false }).setView([myLat, myLng], 13);
                 L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(map);
             }
-            if(navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(pos => map.setView([pos.coords.latitude, pos.coords.longitude], 15));
-            }
+            // Pega localização inicial
+            centralizarUser();
             escutarOnline();
+        }
+
+        function centralizarUser() {
+            if(navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(pos => {
+                    myLat = pos.coords.latitude;
+                    myLng = pos.coords.longitude;
+                    map.setView([myLat, myLng], 16);
+                    
+                    // Mostra bolinha azul (eu)
+                    // Remove bolinha anterior se existir
+                    map.eachLayer((layer) => { if(layer.options.color === '#2196F3') map.removeLayer(layer); });
+                    L.circleMarker([myLat, myLng], { radius: 8, fillColor: '#2196F3', color: '#fff', weight: 2, fillOpacity: 1 }).addTo(map);
+
+                }, () => alert("Ative o GPS!"), { enableHighAccuracy: true });
+            }
         }
 
         function toggleOnline() {
@@ -177,10 +185,12 @@
                 
                 isOnline = true;
                 btn.className = 'btn-status s-on';
-                btn.innerText = 'VOCÊ ESTÁ ONLINE';
+                btn.innerText = 'VOCÊ ESTÁ VISÍVEL';
                 
                 watchId = navigator.geolocation.watchPosition(pos => {
-                    db.ref('online/' + currentUser.uid).set({ ...currentUser, lat: pos.coords.latitude, lng: pos.coords.longitude });
+                    myLat = pos.coords.latitude;
+                    myLng = pos.coords.longitude;
+                    db.ref('online/' + currentUser.uid).set({ ...currentUser, lat: myLat, lng: myLng });
                 }, null, { enableHighAccuracy: true });
             } else {
                 isOnline = false;
@@ -197,7 +207,9 @@
                 for(let uid in markers) { if(!list[uid]) { map.removeLayer(markers[uid]); delete markers[uid]; } }
                 
                 for(let uid in list) {
+                    // Não mostra o próprio motorista
                     if(userType === 'driver' && uid == currentUser.uid) continue;
+                    
                     const d = list[uid];
                     const icon = L.divIcon({ className: 'custom', html: `<div class="pin-box"><div class="pin-label">LIVRE</div><div class="pin-img"></div></div>`, iconSize: [50, 50] });
                     
@@ -205,7 +217,8 @@
                     else {
                         const m = L.marker([d.lat, d.lng], {icon}).addTo(map);
                         m.on('click', () => {
-                            if(confirm("Motorista: " + d.nome + "\nCarro: " + d.carro + "\n\nChamar no WhatsApp?")) {
+                            const info = `🚗 MOTORISTA: ${d.nome}\n🚘 CARRO: ${d.carro}\n🔡 PLACA: ${d.placa || '---'}\n\nChamar no WhatsApp?`;
+                            if(confirm(info)) {
                                 window.open(`https://wa.me/55${d.zap}`, '_blank');
                             }
                         });
@@ -213,6 +226,23 @@
                     }
                 }
             });
+        }
+
+        // --- FUNÇÃO PARA CRIAR BOTS DE TESTE ---
+        function criarBots() {
+            if(!confirm("Gerar 3 carros fictícios perto de você para teste?")) return;
+            
+            const bots = [
+                { uid: 'bot1', nome: 'Teste João', carro: 'Gol Branco', placa: 'ABC-1234', zap: '00', lat: myLat + 0.002, lng: myLng + 0.002 },
+                { uid: 'bot2', nome: 'Teste Maria', carro: 'Onix Prata', placa: 'XYZ-9876', zap: '00', lat: myLat - 0.002, lng: myLng - 0.002 },
+                { uid: 'bot3', nome: 'Teste Pedro', carro: 'Fiat Uno', placa: 'TEST-000', zap: '00', lat: myLat + 0.001, lng: myLng - 0.003 }
+            ];
+
+            bots.forEach(bot => {
+                db.ref('online/' + bot.uid).set(bot);
+            });
+            
+            alert("Carrinhos criados! Olhe no mapa.");
         }
     </script>
 </body>

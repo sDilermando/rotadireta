@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Rota Direta 10.0</title>
+    <title>Rota Direta 11.0</title>
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
@@ -15,80 +15,56 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
-        /* --- ESTILO GERAL --- */
+        /* --- ESTILO --- */
         :root { --bg:#f4f4f9; --dark:#1a1a2e; --gold:#ffcc00; --green:#00c853; --red:#ff3b30; --blue:#2979ff; }
         * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
         body { margin: 0; padding: 0; width: 100%; height: 100vh; background: var(--bg); font-family: 'Montserrat', sans-serif; overflow: hidden; display: flex; flex-direction: column; }
 
-        /* LOADING */
         #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 20000; display: flex; justify-content: center; align-items: center; color: #888; font-weight: bold; flex-direction: column; }
 
-        /* TELAS */
         .screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; transition: 0.3s; }
         .hidden { display: none !important; }
 
         .logo { font-size: 2.5rem; font-weight: 900; color: var(--dark); margin-bottom: 30px; }
         .logo span { color: var(--gold); }
 
-        /* BOTÕES INICIAIS */
         .btn-big { width: 100%; max-width: 300px; padding: 18px; margin-bottom: 15px; border: none; border-radius: 12px; font-size: 1rem; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         .b-drv { background: var(--dark); color: white; }
         .b-pas { background: white; color: var(--dark); border: 2px solid var(--dark); }
 
-        /* FORMULÁRIOS */
         .modal-form { background: white; padding: 25px; border-radius: 20px; width: 100%; max-width: 340px; box-shadow: 0 15px 50px rgba(0,0,0,0.3); text-align: center; }
         .inp { width: 100%; padding: 14px; margin-bottom: 12px; border: 1px solid #ddd; border-radius: 10px; font-size: 1rem; background: #f9f9f9; }
         .btn-confirm { width: 100%; padding: 14px; background: var(--green); color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px; font-size: 1rem; }
         .btn-cancel { background: none; border: none; text-decoration: underline; color: #888; margin-top: 15px; cursor: pointer; }
 
-        /* APP UI */
         #app-ui { display: none; flex: 1; position: relative; z-index: 1; }
         #map { width: 100%; height: 100%; }
 
-        /* BARRA LATERAL (MENOR E MAIS BAIXA) */
-        .side-bar { 
-            position: absolute; 
-            bottom: 110px; /* Mais baixo */
-            right: 15px; 
-            z-index: 2000; 
-            display: flex; 
-            flex-direction: column; 
-            gap: 10px; 
-        }
-        .btn-icon { 
-            width: 38px; /* Menor */
-            height: 38px; 
-            border-radius: 50%; 
-            border: none; 
-            background: white; 
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2); /* Sombra mais leve */
-            font-size: 1rem; 
-            cursor: pointer; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            color: var(--dark); 
-        }
+        /* BOTÕES LATERAIS (PEQUENOS E BAIXOS) */
+        .side-bar { position: absolute; bottom: 100px; right: 10px; z-index: 2000; display: flex; flex-direction: column; gap: 8px; }
+        .btn-icon { width: 35px; height: 35px; border-radius: 50%; border: none; background: white; box-shadow: 0 2px 5px rgba(0,0,0,0.2); font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--dark); }
         .btn-panic { background: var(--red); color: white; animation: pulse 1s infinite; }
 
-        /* PAINEL MOTORISTA */
         .driver-dock { position: absolute; bottom: 20px; left: 20px; right: 20px; background: white; padding: 15px; border-radius: 15px; z-index: 2000; text-align: center; display: none; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
         .btn-status { width: 100%; padding: 12px; border: none; border-radius: 10px; font-weight: 800; font-size: 0.9rem; text-transform: uppercase; cursor: pointer; transition: 0.3s; }
         .s-off { background: #eee; color: #777; }
         .s-on { background: var(--green); color: white; }
 
-        /* PIN DO CARRO (MENOR - 40px) */
-        .pin-wrap { position: relative; width: 40px; height: 40px; }
-        .pin-label { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: var(--green); color: white; font-size: 0.5rem; font-weight: 900; padding: 2px 4px; border-radius: 4px; white-space: nowrap; box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
-        .pin-car { width: 35px; height: 35px; background-image: url('https://cdn-icons-png.flaticon.com/512/3202/3202926.png'); background-size: contain; background-repeat: no-repeat; margin: 0 auto; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.3)); }
+        /* --- NOVOS TAMANHOS DE ÍCONES --- */
         
-        /* PIN DO PASSAGEIRO ("EU") */
-        .me-wrap { position: relative; width: 30px; height: 30px; display:flex; justify-content:center; }
-        .me-label { position: absolute; top: -15px; background: var(--blue); color: white; font-size: 0.6rem; font-weight: bold; padding: 1px 4px; border-radius: 4px; }
-        .me-icon { font-size: 1.5rem; color: var(--blue); text-shadow: 0 2px 5px rgba(0,0,0,0.3); }
+        /* CARRO: 30px */
+        .pin-wrap { position: relative; width: 30px; height: 30px; }
+        .pin-label { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: var(--green); color: white; font-size: 0.4rem; font-weight: 900; padding: 1px 3px; border-radius: 3px; white-space: nowrap; }
+        .pin-car { width: 100%; height: 100%; background-image: url('https://cdn-icons-png.flaticon.com/512/3202/3202926.png'); background-size: contain; background-repeat: no-repeat; margin: 0 auto; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.3)); }
+        
+        /* PASSAGEIRO: 20px */
+        .me-wrap { position: relative; width: 20px; height: 20px; display:flex; justify-content:center; }
+        .me-label { position: absolute; top: -12px; background: var(--blue); color: white; font-size: 0.5rem; font-weight: bold; padding: 1px 3px; border-radius: 3px; white-space: nowrap; }
+        .me-icon { font-size: 1.2rem; color: var(--blue); text-shadow: 0 2px 5px rgba(0,0,0,0.3); }
 
+        /* STATUS */
         .status-ocupado .pin-label { background: var(--gold); color: black; }
-        .status-ocupado .pin-car { filter: grayscale(1) opacity(0.6); }
+        .status-ocupado .pin-car { filter: grayscale(1) opacity(0.5); }
         .status-alerta .pin-label { background: var(--red); }
         
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
@@ -102,7 +78,8 @@
         <div class="logo">ROTA <span>DIRETA</span></div>
         <button class="btn-big b-drv" onclick="irParaLoginMotorista()"><i class="fas fa-car"></i> SOU MOTORISTA</button>
         <button class="btn-big b-pas" onclick="irParaLoginPassageiro()"><i class="fas fa-user"></i> SOU PASSAGEIRO</button>
-        <div style="margin-top:20px; font-size:0.7rem; color:#aaa;">Versão 10.0 (Simulação)</div>
+        <div style="margin-top:20px; font-size:0.7rem; color:#aaa;">Versão 11.0</div>
+        <button onclick="resetarTudo()" style="margin-top:20px; border:1px solid red; color:red; background:white; padding:5px 10px; border-radius:5px; font-size:0.7rem; cursor:pointer;">ESQUECI O PIN / RESETAR</button>
     </div>
 
     <div id="screen-login-mot" class="screen hidden" style="background:rgba(0,0,0,0.8);">
@@ -141,7 +118,7 @@
     <div id="app-ui">
         <div class="side-bar">
             <button class="btn-icon" onclick="compartilhar()"><i class="fas fa-share-alt"></i></button>
-            <button class="btn-icon" onclick="meuLocal()"><i class="fas fa-crosshairs"></i></button>
+            <button class="btn-icon" onclick="meuLocal(true)"><i class="fas fa-crosshairs"></i></button>
             <button class="btn-icon btn-panic" onclick="panico()"><i class="fas fa-exclamation-triangle"></i></button>
             <button class="btn-icon" onclick="location.reload()" style="color:var(--red)"><i class="fas fa-power-off"></i></button>
         </div>
@@ -169,7 +146,7 @@
 
         let db, auth, map, currentUser, userType, isOnline = false, watchId, markers = {};
         let myLat = -23.55, myLng = -46.63;
-        let simInterval; // Intervalo da simulação
+        let simInterval;
 
         window.onload = function() {
             try {
@@ -192,7 +169,7 @@
 
         // --- CADASTROS ---
         function irParaLoginMotorista() {
-            const salvo = localStorage.getItem('rd_drv_v10');
+            const salvo = localStorage.getItem('rd_drv_v11');
             if(salvo) {
                 const dados = JSON.parse(salvo);
                 document.getElementById('nome-motorista-volta').innerText = dados.nome;
@@ -212,20 +189,20 @@
                 type: 'driver'
             };
             if(!form.nome || !form.placa) return alert("Preencha tudo!");
-            localStorage.setItem('rd_drv_v10', JSON.stringify(form));
+            localStorage.setItem('rd_drv_v11', JSON.stringify(form));
             db.ref('drivers/' + form.uid).set(form);
             alert("SUCESSO! SENHA: " + form.pin);
             entrarApp('driver', form);
         }
 
         function validarSenha() {
-            const salvo = JSON.parse(localStorage.getItem('rd_drv_v10'));
+            const salvo = JSON.parse(localStorage.getItem('rd_drv_v11'));
             if(document.getElementById('login-pin').value == salvo.pin) entrarApp('driver', salvo);
             else alert("Senha errada");
         }
 
         function irParaLoginPassageiro() {
-            const salvo = localStorage.getItem('rd_pas_v10');
+            const salvo = localStorage.getItem('rd_pas_v11');
             if(salvo) entrarApp('passenger', JSON.parse(salvo));
             else showScreen('screen-cad-pas');
         }
@@ -238,8 +215,15 @@
                 type: 'passenger' 
             };
             if(!form.nome) return alert("Preencha o nome");
-            localStorage.setItem('rd_pas_v10', JSON.stringify(form));
+            localStorage.setItem('rd_pas_v11', JSON.stringify(form));
             entrarApp('passenger', form);
+        }
+
+        function resetarTudo() {
+            if(confirm("Deseja apagar sua conta deste celular e criar uma nova?")) {
+                localStorage.clear();
+                location.reload();
+            }
         }
 
         // --- APP ---
@@ -251,7 +235,7 @@
             
             setTimeout(() => {
                 initMap();
-                iniciarSimulacao(); // LIGA OS BOTS PARA TESTE
+                iniciarSimulacao();
             }, 500);
         }
 
@@ -260,7 +244,7 @@
                 map = L.map('map', { zoomControl: false }).setView([myLat, myLng], 15);
                 L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(map);
             }
-            meuLocal(true); // True = força zoom
+            meuLocal(true);
             escutarOnline();
         }
 
@@ -275,11 +259,15 @@
                 watchId = navigator.geolocation.watchPosition(pos => {
                     myLat = pos.coords.latitude;
                     myLng = pos.coords.longitude;
+                    
+                    // AGORA SEU CARRO TAMBÉM É ENVIADO PARA O MAPA LOCAL
                     db.ref('online/'+currentUser.uid).set({
                         ...currentUser, lat: myLat, lng: myLng, status: 'livre', last: Date.now()
                     });
-                    // Se for a primeira vez, centraliza
+                    
+                    // Garante que o mapa centralize na primeira vez
                     if(!markers[currentUser.uid]) map.setView([myLat, myLng], 17);
+
                 }, null, {enableHighAccuracy: true});
             } else {
                 isOnline = false;
@@ -294,40 +282,38 @@
             db.ref('online').on('value', snap => {
                 const list = snap.val() || {};
                 
-                // Remove antigos
                 for(let uid in markers) { if(!list[uid]) { map.removeLayer(markers[uid]); delete markers[uid]; } }
 
                 for(let uid in list) {
-                    if(uid === currentUser.uid) continue; // Não mostra eu mesmo como carro
+                    // SE SOU MOTORISTA, QUERO VER MEU CARRO TAMBÉM (REMOVIDO FILTRO)
                     const d = list[uid];
                     
                     let css = ''; let lbl = 'LIVRE';
                     if(d.status === 'ocupado') { css = 'status-ocupado'; lbl = 'OCUPADO'; }
                     if(d.status === 'alerta') { css = 'status-alerta'; lbl = 'ALERTA'; }
 
+                    // Carro Pequeno (30px)
                     const html = `<div class="pin-wrap ${css}"><div class="pin-label">${lbl}</div><div class="pin-car"></div></div>`;
-                    const icon = L.divIcon({ className: 'custom', html: html, iconSize: [40,40], iconAnchor:[20,20] });
+                    const icon = L.divIcon({ className: 'custom', html: html, iconSize: [30,30], iconAnchor:[15,15] });
 
                     if(markers[uid]) markers[uid].setLatLng([d.lat, d.lng]).setIcon(icon);
                     else {
                         const m = L.marker([d.lat, d.lng], {icon}).addTo(map);
                         m.on('click', () => {
-                            // SÓ ABRE SE FOR PASSAGEIRO E LIVRE
                             if(userType === 'passenger') {
                                 if(d.status === 'ocupado') return Swal.fire('Ocupado', 'Veículo em corrida.', 'info');
                                 
                                 Swal.fire({
                                     title: d.nome,
-                                    text: `${d.carro} • ${d.placa || ''}`,
+                                    text: `${d.carro}`,
                                     showCancelButton: true,
-                                    confirmButtonText: 'CHAMAR NO WHATSAPP',
+                                    confirmButtonText: 'CHAMAR WHATSAPP',
                                     confirmButtonColor: '#25D366',
                                     cancelButtonText: 'Voltar'
                                 }).then((result) => {
                                     if(result.isConfirmed) {
-                                        // AGORA SIM OCUPA
                                         db.ref('online/'+d.uid).update({status: 'ocupado'});
-                                        const msg = `Olá, sou ${currentUser.nome}. Quero uma corrida com seu carro (${d.carro}).`;
+                                        const msg = `Olá, sou ${currentUser.nome}. Chamei seu carro (${d.carro}).`;
                                         window.open(`https://wa.me/55${d.zap}?text=${encodeURIComponent(msg)}`, '_blank');
                                     }
                                 });
@@ -345,47 +331,45 @@
                 myLng = p.coords.longitude;
                 if(forceZoom) map.setView([myLat, myLng], 17);
                 
-                // Desenha "EU" (Bonequinho)
-                // Remove anterior
+                // DESENHA O BONEQUINHO PEQUENO (20px)
                 map.eachLayer(l => { if(l.options.icon && l.options.icon.options.className === 'me-icon-class') map.removeLayer(l); });
 
                 const html = `<div class="me-wrap"><div class="me-label">Eu</div><i class="fas fa-user me-icon"></i></div>`;
-                const icon = L.divIcon({ className: 'me-icon-class', html: html, iconSize: [30,30], iconAnchor:[15,30] });
+                const icon = L.divIcon({ className: 'me-icon-class', html: html, iconSize: [20,20], iconAnchor:[10,20] });
                 L.marker([myLat, myLng], {icon}).addTo(map);
             });
         }
 
-        // --- SIMULAÇÃO (BOTS ANDANDO) ---
+        // --- SIMULAÇÃO INTELIGENTE ---
         function iniciarSimulacao() {
-            // Cria 3 bots perto de onde o mapa iniciou
+            // Cria 3 bots
             const bots = [
-                { id: 'bot_1', nome: 'Teste João', carro: 'Gol Branco', lat: myLat+0.002, lng: myLng+0.002, dir: 1 },
-                { id: 'bot_2', nome: 'Teste Ana', carro: 'Fiat Uno', lat: myLat-0.002, lng: myLng-0.002, dir: -1 },
-                { id: 'bot_3', nome: 'Teste Pedro', carro: 'Onix Prata', lat: myLat+0.001, lng: myLng-0.003, dir: 1 }
+                { id: 'bot_1', nome: 'Teste João', carro: 'Gol Branco', lat: myLat+0.001, lng: myLng+0.001, dir: 1, timer: 0 },
+                { id: 'bot_2', nome: 'Teste Ana', carro: 'Fiat Uno', lat: myLat-0.001, lng: myLng-0.001, dir: -1, timer: 5 },
+                { id: 'bot_3', nome: 'Teste Pedro', carro: 'Onix Prata', lat: myLat+0.001, lng: myLng-0.002, dir: 1, timer: 10 }
             ];
 
-            // Atualiza a cada 3 segundos
             if(simInterval) clearInterval(simInterval);
             simInterval = setInterval(() => {
                 bots.forEach(b => {
-                    // Move um pouquinho
-                    b.lat += (0.0001 * b.dir) + (Math.random() * 0.0001);
-                    b.lng += (0.0001 * b.dir);
-                    
-                    // Muda direção se for longe
-                    if(Math.random() > 0.9) b.dir *= -1;
+                    // Movimento mais fluido
+                    b.lat += (0.0001 * b.dir);
+                    if(Math.random() > 0.95) b.dir *= -1; // Vira as vezes
 
-                    // Muda status aleatoriamente pra testar visual
+                    // Lógica de Ocupado/Livre Automático
+                    b.timer++;
                     let st = 'livre';
-                    if(Math.random() > 0.8) st = 'ocupado';
+                    
+                    // Fica livre por 15 ticks, ocupado por 5 ticks
+                    if(b.timer > 15) st = 'ocupado';
+                    if(b.timer > 20) b.timer = 0; // Reseta ciclo
 
-                    // Salva no banco (para todos verem)
                     db.ref('online/'+b.id).set({
                         uid: b.id, nome: b.nome, carro: b.carro, placa: 'TEST-000', zap: '00',
                         lat: b.lat, lng: b.lng, status: st
                     });
                 });
-            }, 3000);
+            }, 1000); // Atualiza todo segundo (mais rápido)
         }
 
         function compartilhar() {

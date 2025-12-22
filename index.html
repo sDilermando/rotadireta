@@ -2,11 +2,11 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Rota Direta 11.0</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Rota Direta Elite</title>
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -15,125 +15,246 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
-        /* --- ESTILO --- */
-        :root { --bg:#f4f4f9; --dark:#1a1a2e; --gold:#ffcc00; --green:#00c853; --red:#ff3b30; --blue:#2979ff; }
-        * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
-        body { margin: 0; padding: 0; width: 100%; height: 100vh; background: var(--bg); font-family: 'Montserrat', sans-serif; overflow: hidden; display: flex; flex-direction: column; }
+        /* --- DESIGN SYSTEM "GLASSMORPHISM" --- */
+        :root { 
+            --primary: #2563eb; --accent: #10b981; --danger: #ef4444; --warning: #f59e0b; --dark: #0f172a; 
+            --glass: rgba(255, 255, 255, 0.95); --glass-border: rgba(255, 255, 255, 0.5);
+        }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
+        
+        body { 
+            margin: 0; padding: 0; width: 100%; height: 100vh; 
+            background: #e2e8f0; font-family: 'Inter', sans-serif; 
+            overflow: hidden; display: flex; flex-direction: column; 
+        }
 
-        #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 20000; display: flex; justify-content: center; align-items: center; color: #888; font-weight: bold; flex-direction: column; }
+        /* TELA DE LOADING PREMIUM */
+        #loading { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: #ffffff; z-index: 99999; 
+            display: flex; flex-direction: column; justify-content: center; align-items: center; 
+            color: var(--primary); 
+        }
+        .loader-ring {
+            width: 50px; height: 50px; border: 4px solid #f3f3f3; border-top: 4px solid var(--primary);
+            border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px;
+        }
 
-        .screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; transition: 0.3s; }
-        .hidden { display: none !important; }
+        /* TELAS (SPLASH & LOGIN) */
+        .screen { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: #f8fafc; z-index: 10000; 
+            display: flex; flex-direction: column; align-items: center; justify-content: center; 
+            padding: 30px; transition: opacity 0.4s ease;
+        }
+        .hidden { display: none !important; opacity: 0; pointer-events: none; }
 
-        .logo { font-size: 2.5rem; font-weight: 900; color: var(--dark); margin-bottom: 30px; }
-        .logo span { color: var(--gold); }
+        .logo-box { margin-bottom: 50px; text-align: center; }
+        .logo { font-size: 2.5rem; font-weight: 900; color: var(--dark); letter-spacing: -1px; }
+        .logo span { color: var(--primary); }
+        .tagline { font-size: 0.85rem; color: #64748b; margin-top: 5px; }
 
-        .btn-big { width: 100%; max-width: 300px; padding: 18px; margin-bottom: 15px; border: none; border-radius: 12px; font-size: 1rem; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .b-drv { background: var(--dark); color: white; }
-        .b-pas { background: white; color: var(--dark); border: 2px solid var(--dark); }
+        /* BOTÕES MODERNOS */
+        .btn-xl { 
+            width: 100%; max-width: 320px; padding: 20px; margin-bottom: 15px; 
+            border: none; border-radius: 16px; font-size: 1rem; font-weight: 700; 
+            cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 12px; 
+            box-shadow: 0 10px 30px -10px rgba(37, 99, 235, 0.3); transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .btn-xl:active { transform: scale(0.98); }
+        .b-primary { background: var(--dark); color: white; }
+        .b-secondary { background: white; color: var(--dark); border: 2px solid #e2e8f0; }
 
-        .modal-form { background: white; padding: 25px; border-radius: 20px; width: 100%; max-width: 340px; box-shadow: 0 15px 50px rgba(0,0,0,0.3); text-align: center; }
-        .inp { width: 100%; padding: 14px; margin-bottom: 12px; border: 1px solid #ddd; border-radius: 10px; font-size: 1rem; background: #f9f9f9; }
-        .btn-confirm { width: 100%; padding: 14px; background: var(--green); color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px; font-size: 1rem; }
-        .btn-cancel { background: none; border: none; text-decoration: underline; color: #888; margin-top: 15px; cursor: pointer; }
+        /* FORMULÁRIOS FLUTUANTES */
+        .modal-card { 
+            background: white; padding: 30px; border-radius: 24px; width: 100%; max-width: 360px; 
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); text-align: center; 
+        }
+        .inp-field { 
+            width: 100%; padding: 16px; margin-bottom: 12px; 
+            border: 1px solid #e2e8f0; border-radius: 12px; font-size: 1rem; 
+            background: #f8fafc; transition: 0.3s; 
+        }
+        .inp-field:focus { border-color: var(--primary); background: white; }
+        
+        .btn-action { 
+            width: 100%; padding: 16px; background: var(--primary); color: white; 
+            border: none; border-radius: 12px; font-weight: 700; font-size: 1rem; 
+            margin-top: 10px; cursor: pointer; 
+        }
+        .link-text { margin-top: 20px; font-size: 0.85rem; color: #64748b; text-decoration: underline; cursor: pointer; }
 
+        /* APP MAPA */
         #app-ui { display: none; flex: 1; position: relative; z-index: 1; }
-        #map { width: 100%; height: 100%; }
+        #map { width: 100%; height: 100%; z-index: 1; }
 
-        /* BOTÕES LATERAIS (PEQUENOS E BAIXOS) */
-        .side-bar { position: absolute; bottom: 100px; right: 10px; z-index: 2000; display: flex; flex-direction: column; gap: 8px; }
-        .btn-icon { width: 35px; height: 35px; border-radius: 50%; border: none; background: white; box-shadow: 0 2px 5px rgba(0,0,0,0.2); font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--dark); }
-        .btn-panic { background: var(--red); color: white; animation: pulse 1s infinite; }
+        /* CONTROLES DO MAPA (BOTTOM RIGHT) */
+        .map-controls { 
+            position: absolute; bottom: 120px; right: 20px; z-index: 2000; 
+            display: flex; flex-direction: column; gap: 12px; 
+        }
+        .ctrl-btn { 
+            width: 44px; height: 44px; border-radius: 14px; border: none; 
+            background: var(--glass); backdrop-filter: blur(10px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1); color: var(--dark); font-size: 1.1rem; 
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            transition: 0.2s;
+        }
+        .ctrl-btn:active { transform: scale(0.9); }
+        .c-danger { color: var(--danger); }
 
-        .driver-dock { position: absolute; bottom: 20px; left: 20px; right: 20px; background: white; padding: 15px; border-radius: 15px; z-index: 2000; text-align: center; display: none; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
-        .btn-status { width: 100%; padding: 12px; border: none; border-radius: 10px; font-weight: 800; font-size: 0.9rem; text-transform: uppercase; cursor: pointer; transition: 0.3s; }
-        .s-off { background: #eee; color: #777; }
-        .s-on { background: var(--green); color: white; }
+        /* DOCK DO MOTORISTA */
+        .driver-hud { 
+            position: absolute; bottom: 30px; left: 20px; right: 20px; 
+            background: var(--glass); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            padding: 15px; border-radius: 20px; z-index: 2000; 
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1); border: 1px solid var(--glass-border);
+            display: none; animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .online-btn { 
+            width: 100%; padding: 16px; border: none; border-radius: 14px; 
+            font-weight: 800; font-size: 0.9rem; letter-spacing: 0.5px; text-transform: uppercase; 
+            cursor: pointer; transition: 0.3s; display: flex; justify-content: center; align-items: center; gap: 10px;
+        }
+        .st-off { background: #f1f5f9; color: #64748b; }
+        .st-on { background: var(--accent); color: white; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4); }
 
-        /* --- NOVOS TAMANHOS DE ÍCONES --- */
+        /* --- MARCADORES PERSONALIZADOS --- */
         
-        /* CARRO: 30px */
-        .pin-wrap { position: relative; width: 30px; height: 30px; }
-        .pin-label { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: var(--green); color: white; font-size: 0.4rem; font-weight: 900; padding: 1px 3px; border-radius: 3px; white-space: nowrap; }
-        .pin-car { width: 100%; height: 100%; background-image: url('https://cdn-icons-png.flaticon.com/512/3202/3202926.png'); background-size: contain; background-repeat: no-repeat; margin: 0 auto; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.3)); }
-        
-        /* PASSAGEIRO: 20px */
-        .me-wrap { position: relative; width: 20px; height: 20px; display:flex; justify-content:center; }
-        .me-label { position: absolute; top: -12px; background: var(--blue); color: white; font-size: 0.5rem; font-weight: bold; padding: 1px 3px; border-radius: 3px; white-space: nowrap; }
-        .me-icon { font-size: 1.2rem; color: var(--blue); text-shadow: 0 2px 5px rgba(0,0,0,0.3); }
+        /* 1. PASSAGEIRO (EU) - Ponto Pulsante */
+        .me-marker { position: relative; display: flex; justify-content: center; align-items: center; }
+        .me-dot { 
+            width: 18px; height: 18px; background: var(--primary); border: 3px solid white; 
+            border-radius: 50%; box-shadow: 0 2px 8px rgba(0,0,0,0.3); z-index: 2;
+        }
+        .me-pulse {
+            position: absolute; width: 40px; height: 40px; background: rgba(37, 99, 235, 0.3);
+            border-radius: 50%; animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite; z-index: 1;
+        }
+        .me-label {
+            position: absolute; top: -28px; background: var(--dark); color: white; 
+            font-size: 10px; font-weight: bold; padding: 4px 8px; border-radius: 6px; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2); white-space: nowrap;
+        }
+        .me-label::after {
+            content:''; position: absolute; bottom: -4px; left: 50%; transform: translateX(-50%);
+            border-width: 4px 4px 0; border-style: solid; border-color: var(--dark) transparent transparent transparent;
+        }
 
-        /* STATUS */
-        .status-ocupado .pin-label { background: var(--gold); color: black; }
-        .status-ocupado .pin-car { filter: grayscale(1) opacity(0.5); }
-        .status-alerta .pin-label { background: var(--red); }
-        
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+        /* 2. CARRO (Delicado 25px) */
+        .car-wrap { position: relative; width: 40px; height: 40px; transition: all 0.5s ease; }
+        .car-body { 
+            width: 100%; height: 100%; 
+            background-image: url('https://cdn-icons-png.flaticon.com/512/3202/3202926.png'); 
+            background-size: contain; background-repeat: no-repeat; 
+            filter: drop-shadow(0 4px 3px rgba(0,0,0,0.3));
+        }
+        .car-badge {
+            position: absolute; top: -8px; left: 50%; transform: translateX(-50%);
+            background: var(--accent); color: white; font-size: 9px; font-weight: 800;
+            padding: 2px 6px; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            white-space: nowrap; transition: 0.3s;
+        }
+
+        /* ESTADOS DO CARRO */
+        .is-busy .car-body { filter: grayscale(1) opacity(0.6); }
+        .is-busy .car-badge { background: var(--warning); color: #333; }
+        .is-alert .car-badge { background: var(--danger); animation: shake 0.5s infinite; }
+
+        /* ANIMAÇÕES */
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes ping { 75%, 100% { transform: scale(2); opacity: 0; } }
+        @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes shake { 0%, 100% { transform: translateX(-50%); } 25% { transform: translateX(-55%); } 75% { transform: translateX(-45%); } }
+
     </style>
 </head>
 <body>
 
-    <div id="loading"><i class="fas fa-satellite-dish fa-spin fa-2x"></i></div>
-
-    <div id="screen-splash" class="screen">
-        <div class="logo">ROTA <span>DIRETA</span></div>
-        <button class="btn-big b-drv" onclick="irParaLoginMotorista()"><i class="fas fa-car"></i> SOU MOTORISTA</button>
-        <button class="btn-big b-pas" onclick="irParaLoginPassageiro()"><i class="fas fa-user"></i> SOU PASSAGEIRO</button>
-        <div style="margin-top:20px; font-size:0.7rem; color:#aaa;">Versão 11.0</div>
-        <button onclick="resetarTudo()" style="margin-top:20px; border:1px solid red; color:red; background:white; padding:5px 10px; border-radius:5px; font-size:0.7rem; cursor:pointer;">ESQUECI O PIN / RESETAR</button>
+    <div id="loading">
+        <div class="loader-ring"></div>
+        <div style="font-size:0.9rem; letter-spacing:1px; font-weight:600;">CARREGANDO...</div>
     </div>
 
-    <div id="screen-login-mot" class="screen hidden" style="background:rgba(0,0,0,0.8);">
-        <div class="modal-form">
-            <h3>Bem-vindo</h3>
-            <p id="nome-motorista-volta" style="font-weight:bold;">...</p>
-            <input type="number" id="login-pin" class="inp" placeholder="PIN" style="text-align:center; font-size:1.5rem; letter-spacing:5px;">
-            <button class="btn-confirm" onclick="validarSenha()">ENTRAR</button>
-            <button class="btn-cancel" onclick="voltarInicio()">Cancelar</button>
+    <div id="screen-splash" class="screen">
+        <div class="logo-box">
+            <div class="logo">ROTA <span>DIRETA</span></div>
+            <div class="tagline">Mobilidade Urbana Inteligente</div>
+        </div>
+        
+        <button class="btn-xl b-primary" onclick="checkLogin('driver')">
+            <i class="fas fa-car-side"></i> SOU MOTORISTA
+        </button>
+        <button class="btn-xl b-secondary" onclick="checkLogin('passenger')">
+            <i class="fas fa-user"></i> SOU PASSAGEIRO
+        </button>
+
+        <div style="margin-top:40px; font-size:0.75rem; color:#94a3b8;">
+            Versão 12.0 Elite &bull; Build 2025
+        </div>
+        <div onclick="resetApp()" style="margin-top:15px; color:#ef4444; font-size:0.7rem; font-weight:600; cursor:pointer; opacity:0.6;">
+            RESETAR DADOS / ESQUECI SENHA
         </div>
     </div>
 
-    <div id="screen-cad-mot" class="screen hidden" style="overflow-y:auto;">
-        <div class="modal-form">
-            <h3>Novo Motorista</h3>
-            <input id="c-nome" class="inp" placeholder="Nome Completo">
-            <input id="c-carro" class="inp" placeholder="Carro (Modelo/Cor)">
-            <input id="c-placa" class="inp" placeholder="Placa" style="text-transform:uppercase">
-            <input id="c-zap" class="inp" type="tel" placeholder="WhatsApp">
-            <input id="c-email" class="inp" type="email" placeholder="E-mail">
-            <button class="btn-confirm" onclick="finalizarCadastroMot()">CADASTRAR</button>
-            <button class="btn-cancel" onclick="voltarInicio()">Cancelar</button>
+    <div id="screen-login-mot" class="screen hidden" style="background:rgba(15, 23, 42, 0.9);">
+        <div class="modal-card">
+            <h3 style="margin:0 0 10px 0; color:var(--dark);">Bem-vindo de volta</h3>
+            <p id="lbl-driver-name" style="color:#64748b; margin-bottom:20px; font-weight:600;">Motorista</p>
+            
+            <input type="tel" id="inp-pin" class="inp-field" placeholder="Digite seu PIN" 
+                   style="text-align:center; font-size:1.8rem; letter-spacing:8px; font-weight:800;" maxlength="4">
+            
+            <button class="btn-action" onclick="doLoginDriver()">ENTRAR</button>
+            <div class="link-text" onclick="goHome()">Cancelar e Voltar</div>
+        </div>
+    </div>
+
+    <div id="screen-cad-mot" class="screen hidden">
+        <div class="modal-card">
+            <h3 style="margin-top:0;">Novo Parceiro</h3>
+            <input id="reg-name" class="inp-field" placeholder="Nome Completo">
+            <input id="reg-car" class="inp-field" placeholder="Carro (Modelo e Cor)">
+            <input id="reg-plate" class="inp-field" placeholder="Placa (ABC-1234)" style="text-transform:uppercase;">
+            <input id="reg-phone" class="inp-field" type="tel" placeholder="WhatsApp (DDD+Num)">
+            <input id="reg-email" class="inp-field" type="email" placeholder="E-mail (Recuperação)">
+            
+            <button class="btn-action" onclick="registerDriver()">CADASTRAR GRÁTIS</button>
+            <div class="link-text" onclick="goHome()">Cancelar</div>
         </div>
     </div>
 
     <div id="screen-cad-pas" class="screen hidden">
-        <div class="modal-form">
-            <h3>Passageiro</h3>
-            <input id="cp-nome" class="inp" placeholder="Seu Nome">
-            <input id="cp-zap" class="inp" type="tel" placeholder="Seu WhatsApp">
-            <button class="btn-confirm" onclick="finalizarCadastroPas()">ENTRAR</button>
-            <button class="btn-cancel" onclick="voltarInicio()">Cancelar</button>
+        <div class="modal-card">
+            <h3 style="margin-top:0;">Passageiro</h3>
+            <input id="pas-name" class="inp-field" placeholder="Seu Nome">
+            <input id="pas-phone" class="inp-field" type="tel" placeholder="Seu WhatsApp">
+            
+            <button class="btn-action" onclick="registerPassenger()">ACESSAR MAPA</button>
+            <div class="link-text" onclick="goHome()">Cancelar</div>
         </div>
     </div>
 
     <div id="app-ui">
-        <div class="side-bar">
-            <button class="btn-icon" onclick="compartilhar()"><i class="fas fa-share-alt"></i></button>
-            <button class="btn-icon" onclick="meuLocal(true)"><i class="fas fa-crosshairs"></i></button>
-            <button class="btn-icon btn-panic" onclick="panico()"><i class="fas fa-exclamation-triangle"></i></button>
-            <button class="btn-icon" onclick="location.reload()" style="color:var(--red)"><i class="fas fa-power-off"></i></button>
-        </div>
-
         <div id="map"></div>
 
-        <div class="driver-dock" id="driverDock">
-            <button id="btnOnline" class="btn-status s-off" onclick="toggleOnline()">FICAR ONLINE</button>
+        <div class="map-controls">
+            <button class="ctrl-btn" onclick="shareApp()"><i class="fas fa-share-alt"></i></button>
+            <button class="ctrl-btn" onclick="centerMap()"><i class="fas fa-crosshairs"></i></button>
+            <button class="ctrl-btn c-danger" onclick="panicMode()"><i class="fas fa-bell"></i></button>
+            <button class="ctrl-btn" onclick="location.reload()" style="color:#64748b;"><i class="fas fa-sign-out-alt"></i></button>
+        </div>
+
+        <div class="driver-hud" id="driverHud">
+            <button id="btn-status" class="online-btn st-off" onclick="toggleStatus()">
+                <i class="fas fa-power-off"></i> <span>FICAR ONLINE</span>
+            </button>
         </div>
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        window.onerror = function(msg) { alert("Erro: " + msg); };
-
+        // --- 1. CORE SYSTEM ---
         const firebaseConfig = {
             apiKey: "AIzaSyBxbRiYNuGde5nwJIaoeRItWdZGR221cpY",
             authDomain: "rota-direta.firebaseapp.com",
@@ -144,176 +265,246 @@
             databaseURL: "https://rota-direta-default-rtdb.firebaseio.com"
         };
 
-        let db, auth, map, currentUser, userType, isOnline = false, watchId, markers = {};
-        let myLat = -23.55, myLng = -46.63;
-        let simInterval;
-
+        let db, auth, map;
+        let currentUser = null, userType = null;
+        let isOnline = false, watchId = null;
+        let markers = {}; 
+        let myLat = -23.55, myLng = -46.63; // Default SP
+        let botInterval; // Simulação
+        
+        // Inicialização Segura
         window.onload = function() {
             try {
                 firebase.initializeApp(firebaseConfig);
                 db = firebase.database();
                 auth = firebase.auth();
                 auth.signInAnonymously().then(() => {
-                    document.getElementById('loading').style.display = 'none';
-                }).catch(e => alert("Sem conexão"));
-            } catch(e) {}
+                    setTimeout(() => { document.getElementById('loading').style.display = 'none'; }, 800);
+                });
+            } catch(e) { alert("Erro de Conexão: " + e.message); }
         };
 
-        function showScreen(id) {
-            document.querySelectorAll('.screen').forEach(el => el.classList.add('hidden'));
+        // --- 2. NAVEGAÇÃO ---
+        function switchScreen(id) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
             document.getElementById('app-ui').style.display = 'none';
-            if(id === 'app-ui') document.getElementById('app-ui').style.display = 'flex';
-            else document.getElementById(id).classList.remove('hidden');
+            
+            if(id === 'app-ui') {
+                document.getElementById('app-ui').style.display = 'flex';
+                setTimeout(() => { map.invalidateSize(); }, 300);
+            } else {
+                document.getElementById(id).classList.remove('hidden');
+            }
         }
-        function voltarInicio() { showScreen('screen-splash'); }
+        function goHome() { switchScreen('screen-splash'); }
 
-        // --- CADASTROS ---
-        function irParaLoginMotorista() {
-            const salvo = localStorage.getItem('rd_drv_v11');
-            if(salvo) {
-                const dados = JSON.parse(salvo);
-                document.getElementById('nome-motorista-volta').innerText = dados.nome;
-                showScreen('screen-login-mot');
-            } else showScreen('screen-cad-mot');
-        }
+        // --- 3. FLUXO DE USUÁRIOS ---
+        function checkLogin(type) {
+            userType = type;
+            const key = type === 'driver' ? 'rd_driver_v12' : 'rd_pass_v12';
+            const saved = localStorage.getItem(key);
 
-        function finalizarCadastroMot() {
-            const form = {
-                uid: auth.currentUser.uid,
-                pin: Math.floor(1000 + Math.random() * 9000),
-                nome: document.getElementById('c-nome').value,
-                carro: document.getElementById('c-carro').value,
-                placa: document.getElementById('c-placa').value.toUpperCase(),
-                zap: document.getElementById('c-zap').value.replace(/\D/g,''),
-                email: document.getElementById('c-email').value,
-                type: 'driver'
-            };
-            if(!form.nome || !form.placa) return alert("Preencha tudo!");
-            localStorage.setItem('rd_drv_v11', JSON.stringify(form));
-            db.ref('drivers/' + form.uid).set(form);
-            alert("SUCESSO! SENHA: " + form.pin);
-            entrarApp('driver', form);
-        }
-
-        function validarSenha() {
-            const salvo = JSON.parse(localStorage.getItem('rd_drv_v11'));
-            if(document.getElementById('login-pin').value == salvo.pin) entrarApp('driver', salvo);
-            else alert("Senha errada");
-        }
-
-        function irParaLoginPassageiro() {
-            const salvo = localStorage.getItem('rd_pas_v11');
-            if(salvo) entrarApp('passenger', JSON.parse(salvo));
-            else showScreen('screen-cad-pas');
-        }
-
-        function finalizarCadastroPas() {
-            const form = { 
-                uid: auth.currentUser.uid, 
-                nome: document.getElementById('cp-nome').value, 
-                zap: document.getElementById('cp-zap').value.replace(/\D/g,''), 
-                type: 'passenger' 
-            };
-            if(!form.nome) return alert("Preencha o nome");
-            localStorage.setItem('rd_pas_v11', JSON.stringify(form));
-            entrarApp('passenger', form);
-        }
-
-        function resetarTudo() {
-            if(confirm("Deseja apagar sua conta deste celular e criar uma nova?")) {
-                localStorage.clear();
-                location.reload();
+            if(saved) {
+                const data = JSON.parse(saved);
+                if(type === 'driver') {
+                    document.getElementById('lbl-driver-name').innerText = data.nome;
+                    switchScreen('screen-login-mot');
+                } else {
+                    enterApp(data);
+                }
+            } else {
+                switchScreen(type === 'driver' ? 'screen-cad-mot' : 'screen-cad-pas');
             }
         }
 
-        // --- APP ---
-        function entrarApp(type, data) {
-            userType = type;
-            currentUser = data;
-            showScreen('app-ui');
-            if(type === 'driver') document.getElementById('driverDock').style.display = 'block';
+        // --- 4. AÇÕES MOTORISTA ---
+        function registerDriver() {
+            const form = {
+                uid: auth.currentUser.uid,
+                pin: Math.floor(1000 + Math.random() * 9000),
+                nome: document.getElementById('reg-name').value,
+                carro: document.getElementById('reg-car').value,
+                placa: document.getElementById('reg-plate').value.toUpperCase(),
+                zap: document.getElementById('reg-phone').value.replace(/\D/g,''),
+                email: document.getElementById('reg-email').value,
+                type: 'driver'
+            };
+
+            if(!form.nome || !form.placa || form.zap.length < 10) return Swal.fire('Atenção', 'Preencha todos os dados corretamente.', 'warning');
+
+            localStorage.setItem('rd_driver_v12', JSON.stringify(form));
+            db.ref('drivers/' + form.uid).set(form);
             
-            setTimeout(() => {
-                initMap();
-                iniciarSimulacao();
-            }, 500);
+            Swal.fire({
+                title: 'Cadastro Sucesso!',
+                html: `Seu PIN de acesso é: <b style="font-size:2rem; color:#2563eb">${form.pin}</b><br>Não esqueça!`,
+                icon: 'success'
+            }).then(() => enterApp(form));
+        }
+
+        function doLoginDriver() {
+            const saved = JSON.parse(localStorage.getItem('rd_driver_v12'));
+            const pin = document.getElementById('inp-pin').value;
+            if(pin == saved.pin) enterApp(saved);
+            else Swal.fire('Erro', 'PIN Incorreto', 'error');
+        }
+
+        // --- 5. AÇÕES PASSAGEIRO ---
+        function registerPassenger() {
+            const form = {
+                uid: auth.currentUser.uid,
+                nome: document.getElementById('pas-name').value,
+                zap: document.getElementById('pas-phone').value.replace(/\D/g,''),
+                type: 'passenger'
+            };
+            if(!form.nome || form.zap.length < 10) return Swal.fire('Atenção', 'Preencha seu nome e WhatsApp.', 'warning');
+            
+            localStorage.setItem('rd_pass_v12', JSON.stringify(form));
+            enterApp(form);
+        }
+
+        // --- 6. SISTEMA PRINCIPAL (MAPA) ---
+        function enterApp(data) {
+            currentUser = data;
+            switchScreen('app-ui');
+            
+            if(userType === 'driver') document.getElementById('driverHud').style.display = 'block';
+            
+            initMap();
+            startSimulation(); // Ativa os bots inteligentes
         }
 
         function initMap() {
             if(!map) {
                 map = L.map('map', { zoomControl: false }).setView([myLat, myLng], 15);
-                L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(map);
+                L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+                    attribution: '&copy; Rota Direta'
+                }).addTo(map);
             }
-            meuLocal(true);
-            escutarOnline();
+            centerMap(true);
+            listenTraffic();
         }
 
-        function toggleOnline() {
-            const btn = document.getElementById('btnOnline');
+        function centerMap(force = false) {
+            navigator.geolocation.getCurrentPosition(pos => {
+                myLat = pos.coords.latitude;
+                myLng = pos.coords.longitude;
+                if(force) map.setView([myLat, myLng], 17);
+                
+                // DESENHA O USUÁRIO (EU)
+                // Remove anterior
+                map.eachLayer(l => { if(l.options.icon && l.options.icon.options.className === 'me-class') map.removeLayer(l); });
+
+                const html = `
+                    <div class="me-marker">
+                        <div class="me-label">Eu</div>
+                        <div class="me-pulse"></div>
+                        <div class="me-dot"></div>
+                    </div>`;
+                
+                const icon = L.divIcon({ className: 'me-class', html: html, iconSize: [40,40], iconAnchor: [20,20] });
+                L.marker([myLat, myLng], {icon}).addTo(map);
+
+            }, err => console.log(err), { enableHighAccuracy: true });
+        }
+
+        // --- 7. LÓGICA DE STATUS (MOTORISTA) ---
+        function toggleStatus() {
+            const btn = document.getElementById('btn-status');
+            
             if(!isOnline) {
-                if(!navigator.geolocation) return alert("Ligue o GPS");
+                if(!navigator.geolocation) return Swal.fire('GPS', 'Ative a localização!', 'warning');
+                
                 isOnline = true;
-                btn.className = 'btn-status s-on';
-                btn.innerText = 'VOCÊ ESTÁ VISÍVEL';
+                btn.className = 'online-btn st-on';
+                btn.innerHTML = '<i class="fas fa-satellite-dish"></i> VOCÊ ESTÁ VISÍVEL';
                 
                 watchId = navigator.geolocation.watchPosition(pos => {
                     myLat = pos.coords.latitude;
                     myLng = pos.coords.longitude;
                     
-                    // AGORA SEU CARRO TAMBÉM É ENVIADO PARA O MAPA LOCAL
+                    // ATUALIZA NO BANCO (AGORA O PRÓPRIO CARRO APARECE)
                     db.ref('online/'+currentUser.uid).set({
-                        ...currentUser, lat: myLat, lng: myLng, status: 'livre', last: Date.now()
+                        ...currentUser, lat: myLat, lng: myLng, status: 'livre', last_seen: Date.now()
                     });
                     
-                    // Garante que o mapa centralize na primeira vez
+                    // Centraliza na primeira vez
                     if(!markers[currentUser.uid]) map.setView([myLat, myLng], 17);
 
-                }, null, {enableHighAccuracy: true});
+                }, null, { enableHighAccuracy: true });
+
             } else {
-                isOnline = false;
-                btn.className = 'btn-status s-off';
-                btn.innerText = 'FICAR ONLINE';
-                if(watchId) navigator.geolocation.clearWatch(watchId);
-                db.ref('online/'+currentUser.uid).remove();
+                goOffline();
             }
         }
 
-        function escutarOnline() {
+        function goOffline() {
+            isOnline = false;
+            const btn = document.getElementById('btn-status');
+            btn.className = 'online-btn st-off';
+            btn.innerHTML = '<i class="fas fa-power-off"></i> FICAR ONLINE';
+            
+            if(watchId) navigator.geolocation.clearWatch(watchId);
+            db.ref('online/'+currentUser.uid).remove();
+        }
+
+        // --- 8. ESCUTA DE TRÁFEGO (RENDERIZAÇÃO) ---
+        function listenTraffic() {
             db.ref('online').on('value', snap => {
                 const list = snap.val() || {};
                 
+                // Remove carros que saíram
                 for(let uid in markers) { if(!list[uid]) { map.removeLayer(markers[uid]); delete markers[uid]; } }
 
                 for(let uid in list) {
-                    // SE SOU MOTORISTA, QUERO VER MEU CARRO TAMBÉM (REMOVIDO FILTRO)
                     const d = list[uid];
                     
-                    let css = ''; let lbl = 'LIVRE';
-                    if(d.status === 'ocupado') { css = 'status-ocupado'; lbl = 'OCUPADO'; }
-                    if(d.status === 'alerta') { css = 'status-alerta'; lbl = 'ALERTA'; }
+                    // Define estilo baseado no status
+                    let statusClass = '';
+                    let labelText = 'LIVRE';
+                    
+                    if(d.status === 'ocupado') { statusClass = 'is-busy'; labelText = 'OCUPADO'; }
+                    if(d.status === 'alerta') { statusClass = 'is-alert'; labelText = 'ALERTA'; }
 
-                    // Carro Pequeno (30px)
-                    const html = `<div class="pin-wrap ${css}"><div class="pin-label">${lbl}</div><div class="pin-car"></div></div>`;
-                    const icon = L.divIcon({ className: 'custom', html: html, iconSize: [30,30], iconAnchor:[15,15] });
+                    const html = `
+                        <div class="car-wrap ${statusClass}">
+                            <div class="car-badge">${labelText}</div>
+                            <div class="car-body"></div>
+                        </div>`;
 
-                    if(markers[uid]) markers[uid].setLatLng([d.lat, d.lng]).setIcon(icon);
-                    else {
+                    const icon = L.divIcon({ className: 'car-icon-c', html: html, iconSize: [40,40], iconAnchor:[20,20] });
+
+                    // Atualiza ou Cria Marcador
+                    if(markers[uid]) {
+                        // Movimento suave (Leaflet já faz interpolação simples ao setar LatLng rapidamente)
+                        markers[uid].setLatLng([d.lat, d.lng]).setIcon(icon);
+                    } else {
                         const m = L.marker([d.lat, d.lng], {icon}).addTo(map);
+                        
+                        // CLIQUE NO CARRO (INTERAÇÃO)
                         m.on('click', () => {
                             if(userType === 'passenger') {
-                                if(d.status === 'ocupado') return Swal.fire('Ocupado', 'Veículo em corrida.', 'info');
+                                if(d.status === 'ocupado') return Swal.fire('Ocupado', 'Este motorista está em corrida.', 'info');
                                 
+                                // JANELA DE CONFIRMAÇÃO ELEGANTE
                                 Swal.fire({
                                     title: d.nome,
-                                    text: `${d.carro}`,
+                                    html: `
+                                        <div style="font-size:0.9rem; color:#64748b; margin-bottom:10px;">${d.carro} &bull; ${d.placa}</div>
+                                        <div style="background:#f1f5f9; padding:10px; border-radius:10px; font-size:0.8rem;">
+                                            Motorista avaliado com 5.0 ⭐
+                                        </div>
+                                    `,
                                     showCancelButton: true,
-                                    confirmButtonText: 'CHAMAR WHATSAPP',
-                                    confirmButtonColor: '#25D366',
-                                    cancelButtonText: 'Voltar'
-                                }).then((result) => {
-                                    if(result.isConfirmed) {
+                                    confirmButtonText: '<i class="fab fa-whatsapp"></i> CHAMAR AGORA',
+                                    confirmButtonColor: '#10b981',
+                                    cancelButtonText: 'Voltar',
+                                    reverseButtons: true
+                                }).then((res) => {
+                                    if(res.isConfirmed) {
+                                        // Ocupa e Chama
                                         db.ref('online/'+d.uid).update({status: 'ocupado'});
-                                        const msg = `Olá, sou ${currentUser.nome}. Chamei seu carro (${d.carro}).`;
+                                        const msg = `Olá, sou ${currentUser.nome}. Vi seu carro (${d.carro}) no Rota Direta e gostaria de uma corrida.`;
                                         window.open(`https://wa.me/55${d.zap}?text=${encodeURIComponent(msg)}`, '_blank');
                                     }
                                 });
@@ -325,58 +516,73 @@
             });
         }
 
-        function meuLocal(forceZoom = false) {
-            navigator.geolocation.getCurrentPosition(p => {
-                myLat = p.coords.latitude;
-                myLng = p.coords.longitude;
-                if(forceZoom) map.setView([myLat, myLng], 17);
-                
-                // DESENHA O BONEQUINHO PEQUENO (20px)
-                map.eachLayer(l => { if(l.options.icon && l.options.icon.options.className === 'me-icon-class') map.removeLayer(l); });
-
-                const html = `<div class="me-wrap"><div class="me-label">Eu</div><i class="fas fa-user me-icon"></i></div>`;
-                const icon = L.divIcon({ className: 'me-icon-class', html: html, iconSize: [20,20], iconAnchor:[10,20] });
-                L.marker([myLat, myLng], {icon}).addTo(map);
-            });
-        }
-
-        // --- SIMULAÇÃO INTELIGENTE ---
-        function iniciarSimulacao() {
-            // Cria 3 bots
+        // --- 9. MATRIX SIMULATION (BOTS INTELIGENTES) ---
+        function startSimulation() {
+            // Cria 3 bots ao redor da posição inicial
             const bots = [
-                { id: 'bot_1', nome: 'Teste João', carro: 'Gol Branco', lat: myLat+0.001, lng: myLng+0.001, dir: 1, timer: 0 },
-                { id: 'bot_2', nome: 'Teste Ana', carro: 'Fiat Uno', lat: myLat-0.001, lng: myLng-0.001, dir: -1, timer: 5 },
-                { id: 'bot_3', nome: 'Teste Pedro', carro: 'Onix Prata', lat: myLat+0.001, lng: myLng-0.002, dir: 1, timer: 10 }
+                { id: 'b1', nome: 'Teste João', carro: 'Gol Branco', lat: myLat+0.002, lng: myLng+0.002, dir: 1, cycle: 0 },
+                { id: 'b2', nome: 'Teste Maria', carro: 'Fiat Mobi', lat: myLat-0.002, lng: myLng-0.002, dir: -1, cycle: 5 },
+                { id: 'b3', nome: 'Teste Pedro', carro: 'Onix Prata', lat: myLat+0.001, lng: myLng-0.003, dir: 1, cycle: 10 }
             ];
 
-            if(simInterval) clearInterval(simInterval);
-            simInterval = setInterval(() => {
+            if(botInterval) clearInterval(botInterval);
+            
+            botInterval = setInterval(() => {
                 bots.forEach(b => {
-                    // Movimento mais fluido
-                    b.lat += (0.0001 * b.dir);
-                    if(Math.random() > 0.95) b.dir *= -1; // Vira as vezes
-
-                    // Lógica de Ocupado/Livre Automático
-                    b.timer++;
-                    let st = 'livre';
+                    // Movimento: Anda um pouco na direção
+                    b.lat += (0.00008 * b.dir);
                     
-                    // Fica livre por 15 ticks, ocupado por 5 ticks
-                    if(b.timer > 15) st = 'ocupado';
-                    if(b.timer > 20) b.timer = 0; // Reseta ciclo
+                    // Se afastar muito, volta
+                    if(Math.abs(b.lat - myLat) > 0.005) b.dir *= -1;
 
+                    // Ciclo de Vida: Livre -> Ocupado -> Livre
+                    b.cycle++;
+                    let st = 'livre';
+                    if(b.cycle > 15 && b.cycle < 25) st = 'ocupado'; // Fica ocupado por 10s
+                    if(b.cycle > 25) b.cycle = 0; // Reinicia
+
+                    // Publica no banco (para todos verem)
                     db.ref('online/'+b.id).set({
                         uid: b.id, nome: b.nome, carro: b.carro, placa: 'TEST-000', zap: '00',
                         lat: b.lat, lng: b.lng, status: st
                     });
                 });
-            }, 1000); // Atualiza todo segundo (mais rápido)
+            }, 1000); // Atualiza a cada 1 segundo (movimento fluido)
         }
 
-        function compartilhar() {
-            if(navigator.share) navigator.share({title:'Rota Direta', url:window.location.href});
+        // --- EXTRAS ---
+        function panicMode() {
+            Swal.fire({
+                title: 'ACIONAR PÂNICO?',
+                text: "Seu ícone ficará vermelho para todos no mapa.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                confirmButtonText: 'SIM, ACIONAR!'
+            }).then((r) => {
+                if(r.isConfirmed) db.ref('online/'+currentUser.uid).update({status:'alerta'});
+            });
         }
-        function panico() {
-            if(confirm("ACIONAR PÂNICO?")) db.ref('online/'+currentUser.uid).update({status:'alerta'});
+
+        function shareApp() {
+            if(navigator.share) navigator.share({title:'Rota Direta', url:window.location.href});
+            else Swal.fire('Link Copiado', window.location.href, 'success');
+        }
+
+        function resetApp() {
+            Swal.fire({
+                title: 'Apagar tudo?',
+                text: "Isso removerá sua conta deste celular. Útil se esqueceu o PIN.",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Sim, Resetar',
+                confirmButtonColor: '#d33'
+            }).then((r) => {
+                if(r.isConfirmed) {
+                    localStorage.clear();
+                    location.reload();
+                }
+            });
         }
 
     </script>

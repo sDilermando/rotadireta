@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ADMIN Rota Direta</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        body { font-family: 'Inter', sans-serif; background: #1e293b; color: white; padding: 20px; }
+        .card { background: #334155; padding: 20px; border-radius: 10px; margin-bottom: 15px; border: 1px solid #475569; }
+        .btn { padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; color: white; font-weight: bold; margin-right: 10px; }
+        .ap { background: #10b981; }
+        .re { background: #ef4444; }
+        .dr { background: #3b82f6; text-decoration: none; display: inline-block; padding: 10px 20px; border-radius: 5px; color: white; }
+    </style>
+</head>
+<body>
+    <h1 style="text-align:center; color:#38bdf8;">Painel de Aprovação</h1>
+    <div style="text-align:center; margin-bottom:20px;">
+        <a href="https://drive.google.com/drive/u/0/my-drive" target="_blank" class="dr">📂 Abrir Google Drive (Ver Fotos)</a>
+    </div>
+    
+    <div id="lista">Carregando...</div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBxbRiYNuGde5nwJIaoeRItWdZGR221cpY",
+            authDomain: "rota-direta.firebaseapp.com",
+            projectId: "rota-direta",
+            databaseURL: "https://rota-direta-default-rtdb.firebaseio.com"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        db.ref('drivers').orderByChild('status').equalTo('pendente').on('value', snap => {
+            const div = document.getElementById('lista');
+            div.innerHTML = '';
+            if(!snap.exists()) { div.innerHTML = '<p style="text-align:center">Nenhum pendente.</p>'; return; }
+
+            snap.forEach(i => {
+                const u = i.val();
+                div.innerHTML += `
+                    <div class="card">
+                        <h3>${u.nome}</h3>
+                        <p>Placa: <b>${u.placa}</b> | Email: ${u.email}</p>
+                        <p>PIN: ${u.pin} | WhatsApp: ${u.zap}</p>
+                        <br>
+                        <button class="btn ap" onclick="atu('${i.key}','aprovado')">APROVAR</button>
+                        <button class="btn re" onclick="atu('${i.key}','rejeitado')">REJEITAR</button>
+                    </div>
+                `;
+            });
+        });
+
+        function atu(uid, st) {
+            if(confirm('Confirmar ação?')) {
+                if(st === 'rejeitado') db.ref('drivers/'+uid).remove();
+                else db.ref('drivers/'+uid).update({status: 'aprovado'});
+            }
+        }
+    </script>
+</body>
+</html>

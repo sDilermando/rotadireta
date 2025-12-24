@@ -3,8 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Rota Direta - App</title>
     
+    <title>Rota Direta</title>
+    
+    <link rel="manifest" href='data:application/manifest+json,{"name":"Rota Direta","short_name":"RotaDireta","start_url":".","display":"standalone","background_color":"#ffffff","theme_color":"#0f172a","icons":[{"src":"https://cdn-icons-png.flaticon.com/512/3202/3202926.png","sizes":"192x192","type":"image/png"}]}' />
+    <meta name="theme-color" content="#0f172a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
@@ -18,83 +23,152 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/imask/6.4.3/imask.min.js"></script>
 
     <style>
-        :root { --primary: #0f172a; --accent: #2563eb; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; --bg: #f8fafc; }
-        body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); overflow: hidden; height: 100vh; width: 100vw; }
+        /* RESET TOTAL E TRAVA DE TELA */
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        :root { --primary: #0f172a; --accent: #2563eb; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; --bg: #f1f5f9; }
         
-        .screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 3000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; transition: 0.3s; }
+        body { 
+            margin: 0; padding: 0; 
+            font-family: 'Inter', sans-serif; 
+            background: var(--bg); 
+            overflow: hidden; /* Proíbe rolagem da página inteira */
+            height: 100vh; width: 100vw;
+            position: fixed; /* Trava elástica no iOS */
+        }
+        
+        /* TELAS DE LOGIN/CADASTRO */
+        .screen { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: white; z-index: 3000; 
+            display: flex; flex-direction: column; align-items: center; justify-content: center; 
+            padding: 20px; transition: 0.3s;
+            overflow-y: auto; /* Permite rolar só se o conteúdo for gigante */
+        }
         .hidden { display: none !important; }
         
-        .card { background: white; padding: 30px; border-radius: 24px; width: 100%; max-width: 360px; box-shadow: 0 20px 60px -10px rgba(0,0,0,0.15); }
-        .inp { width: 100%; padding: 14px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 1rem; margin-bottom: 10px; background: #f8fafc; box-sizing:border-box; outline:none; }
-        .btn { width: 100%; padding: 16px; border: none; border-radius: 14px; font-weight: 700; cursor: pointer; margin-top: 10px; color: white; display:flex; justify-content:center; align-items:center; gap:10px; text-decoration: none; font-size: 0.9rem; }
+        .card { 
+            background: white; padding: 25px; border-radius: 20px; 
+            width: 100%; max-width: 340px; 
+            box-shadow: 0 10px 40px -10px rgba(0,0,0,0.1); 
+        }
+        
+        .logo { font-size: 2rem; font-weight: 900; color: var(--primary); margin-bottom: 20px; text-align: center; }
+        .logo span { color: var(--accent); }
+        
+        .inp { 
+            width: 100%; padding: 14px; border: 2px solid #e2e8f0; border-radius: 12px; 
+            font-size: 1rem; margin-bottom: 10px; background: #f8fafc; outline: none; 
+        }
+        .inp:focus { border-color: var(--accent); background: white; }
+
+        .btn { 
+            width: 100%; padding: 15px; border: none; border-radius: 12px; 
+            font-weight: 700; cursor: pointer; margin-top: 10px; color: white; 
+            display: flex; justify-content: center; align-items: center; gap: 8px; 
+            font-size: 0.95rem; transition: 0.2s; 
+        }
+        .btn:active { transform: scale(0.98); }
         .btn-primary { background: var(--primary); }
         .btn-success { background: var(--success); }
         .btn-google { background: white; color: #333; border: 2px solid #e2e8f0; }
-        
+
+        /* MAPA */
         #app-ui { display: none; width: 100%; height: 100%; position: relative; }
         #map { width: 100%; height: 100%; z-index: 1; }
 
-        .floating-btn { position: absolute; z-index: 9999; box-shadow: 0 4px 15px rgba(0,0,0,0.2); border: none; border-radius: 50%; cursor: pointer; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; background: white; color: #333; }
-        #btn-sair { top: 15px; right: 15px; color: #ef4444; }
-        #btn-sos { top: 15px; left: 15px; background: #ef4444; color: white; font-weight: bold; font-size: 0.7rem; animation: pulse 2s infinite; }
-        #btn-gps { bottom: 120px; right: 15px; color: #2563eb; }
+        /* BOTÕES FLUTUANTES */
+        .floating-btn { 
+            position: absolute; z-index: 2000; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
+            border: none; border-radius: 50%; cursor: pointer; 
+            width: 44px; height: 44px; 
+            display: flex; align-items: center; justify-content: center; 
+            background: white; color: #333; font-size: 1.1rem;
+        }
+        #btn-sair { top: 15px; right: 15px; color: var(--danger); }
+        #btn-sos { top: 15px; left: 15px; background: var(--danger); color: white; font-size: 0.7rem; font-weight: 900; animation: pulse 2s infinite; }
+        #btn-gps { bottom: 100px; right: 15px; color: var(--accent); }
         
-        #btn-ofertar { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); background: var(--primary); color: white; padding: 15px 30px; border-radius: 50px; font-weight: bold; box-shadow: 0 10px 20px rgba(0,0,0,0.3); z-index: 9999; cursor: pointer; display: none; align-items: center; gap: 10px; white-space: nowrap; }
+        #btn-ofertar { 
+            position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); 
+            background: var(--primary); color: white; 
+            padding: 14px 28px; border-radius: 50px; 
+            font-weight: bold; box-shadow: 0 10px 25px rgba(15, 23, 42, 0.4); 
+            z-index: 2000; cursor: pointer; 
+            display: none; align-items: center; gap: 10px; white-space: nowrap; 
+        }
 
-        #driver-dock { position: absolute; bottom: 0; left: 0; right: 0; background: white; padding: 20px; border-radius: 20px 20px 0 0; z-index: 5000; display: none; box-shadow: 0 -5px 20px rgba(0,0,0,0.1); max-height: 50vh; overflow-y: auto; }
-        
+        /* PAINEL MOTORISTA */
+        #driver-dock { 
+            position: absolute; bottom: 0; left: 0; right: 0; 
+            background: white; padding: 20px 20px 30px 20px; 
+            border-radius: 24px 24px 0 0; z-index: 2000; 
+            display: none; box-shadow: 0 -10px 30px rgba(0,0,0,0.1); 
+            max-height: 50vh; overflow-y: auto; 
+        }
+
+        /* ESTILOS ESPECÍFICOS */
         .offer-card { background: #fffbeb; border: 1px solid #fcd34d; padding: 15px; border-radius: 12px; margin-bottom: 10px; }
-        .pin-eu-dot { width: 18px; height: 18px; background: #2563eb; border: 3px solid white; border-radius: 50%; box-shadow: 0 0 0 4px rgba(37,99,235,0.3); animation: radar 2s infinite; }
         
-        @keyframes radar { 0% { box-shadow: 0 0 0 0 rgba(37,99,235,0.4); } 100% { box-shadow: 0 0 0 15px rgba(37,99,235,0); } }
+        /* PIN "EU" PERSONALIZADO */
+        .pin-label { background: var(--accent); color: white; font-size: 10px; font-weight: bold; padding: 2px 5px; border-radius: 4px; position: absolute; top: -20px; left: 50%; transform: translateX(-50%); white-space: nowrap; }
+        .pin-dot { width: 16px; height: 16px; background: var(--accent); border: 2px solid white; border-radius: 50%; box-shadow: 0 0 0 10px rgba(37,99,235,0.2); }
+        
+        /* AJUSTE PARA SWEETALERT NÃO ESTOURAR TELA */
+        div:where(.swal2-container) div:where(.swal2-popup) { width: 90% !important; max-width: 380px !important; padding: 1.5em !important; }
+
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
     </style>
 </head>
 <body>
 
-    <div id="screen-loading" class="screen"><h2 style="color:var(--primary)">ROTA DIRETA</h2><p style="color:#94a3b8;">Carregando sistema...</p></div>
+    <div id="screen-loading" class="screen">
+        <div class="logo">ROTA <span>DIRETA</span></div>
+        <p style="color:#94a3b8; font-size: 0.9rem;">Conectando...</p>
+    </div>
 
     <div id="screen-splash" class="screen hidden">
-        <h2 style="color:var(--primary); font-size:2rem; margin-bottom:20px;">ROTA <span>DIRETA</span></h2>
+        <div class="logo">ROTA <span>DIRETA</span></div>
         <div class="card">
             <button class="btn btn-google" onclick="loginGoogle()">
                 <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20"> Passageiro (Google)
             </button>
-            <div style="text-align:center; margin:20px 0; font-size:0.8rem; color:#ccc; font-weight:bold;">ÁREA DO PARCEIRO</div>
+            <div style="text-align:center; margin:20px 0; font-size:0.75rem; color:#cbd5e1; font-weight:bold; letter-spacing: 1px;">ÁREA DO PARCEIRO</div>
             <button class="btn btn-primary" onclick="showScreen('screen-login-mot')"><i class="fas fa-car"></i> Sou Motorista</button>
         </div>
-        <div style="margin-top:30px; color:#94a3b8; font-size:0.7rem;">Versão 23.0 (Inteligente)</div>
+        <div style="margin-top:30px; color:#94a3b8; font-size:0.7rem;">Versão 24.0 (Profissional)</div>
     </div>
 
     <div id="screen-login-mot" class="screen hidden">
         <div class="card">
-            <h3 style="text-align:center;">Motorista</h3>
-            <input id="login-email" class="inp" type="email" placeholder="Email">
-            <input id="login-pass" class="inp" type="password" placeholder="Senha">
-            <button class="btn btn-primary" onclick="fazerLoginMotorista()">ENTRAR</button>
-            <button class="btn btn-outline" onclick="showScreen('screen-register-mot')">CRIAR CONTA</button>
-            <div onclick="showScreen('screen-splash')" style="text-align:center; margin-top:15px; cursor:pointer; color:#64748b;">Voltar</div>
+            <h3 style="text-align:center; margin-top:0;">Login Parceiro</h3>
+            <input id="login-email" class="inp" type="email" placeholder="Seu E-mail">
+            <input id="login-pass" class="inp" type="password" placeholder="Sua Senha">
+            <button class="btn btn-primary" onclick="fazerLoginMotorista()">ACESSAR</button>
+            <button class="btn btn-google" onclick="showScreen('screen-register-mot')">CRIAR CONTA</button>
+            <div onclick="showScreen('screen-splash')" style="text-align:center; margin-top:15px; font-size:0.8rem; color:#64748b;">Voltar</div>
         </div>
     </div>
 
     <div id="screen-register-mot" class="screen hidden">
         <div class="card">
-            <h3 style="text-align:center;">Cadastro</h3>
-            <input id="m-nome" class="inp" placeholder="Nome">
-            <input id="m-email" class="inp" type="email" placeholder="Email">
+            <h3 style="text-align:center; margin-top:0;">Novo Parceiro</h3>
+            <input id="m-nome" class="inp" placeholder="Nome Completo">
+            <input id="m-email" class="inp" type="email" placeholder="E-mail">
             <input id="m-pass" class="inp" type="password" placeholder="Senha">
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
                 <input id="m-placa" class="inp" placeholder="PLACA">
                 <input id="m-zap" class="inp" type="tel" placeholder="WhatsApp">
             </div>
             <div style="margin-top:10px; font-size:0.8rem;"><input type="checkbox" id="m-terms"> Aceito os termos.</div>
-            <button class="btn btn-success" onclick="registrarMotorista()">CRIAR</button>
-            <div onclick="showScreen('screen-login-mot')" style="text-align:center; margin-top:10px; cursor:pointer; color:#64748b;">Cancelar</div>
+            <button class="btn btn-success" onclick="registrarMotorista()">REGISTRAR</button>
+            <div onclick="showScreen('screen-login-mot')" style="text-align:center; margin-top:10px; font-size:0.8rem; color:#64748b;">Cancelar</div>
         </div>
     </div>
 
     <div id="app-ui">
         <div id="map"></div>
+        
         <button id="btn-sair" class="floating-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i></button>
         <button id="btn-sos" class="floating-btn" onclick="chamarPolicia()">SOS</button>
         <button id="btn-gps" class="floating-btn" onclick="centralizarMapa()"><i class="fas fa-crosshairs"></i></button>
@@ -104,14 +178,14 @@
         <div id="driver-dock">
             <div id="dock-aprovado" class="hidden">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                    <h3 style="margin:0;">Radar</h3>
-                    <button id="btn-status" class="btn btn-success" style="padding:5px 15px; width:auto; margin:0;" onclick="toggleOnline()">FICAR ONLINE</button>
+                    <h3 style="margin:0; font-size:1.1rem;">Radar</h3>
+                    <button id="btn-status" class="btn btn-success" style="padding:6px 12px; width:auto; margin:0; font-size:0.8rem;" onclick="toggleOnline()">FICAR ONLINE</button>
                 </div>
                 <div id="lista-ofertas"></div>
             </div>
             <div id="dock-pendente" class="hidden">
-                <h3 style="color:var(--warning);">Em Análise</h3>
-                <p>Aguardando liberação.</p>
+                <h3 style="color:var(--warning); margin-top:0;">Em Análise</h3>
+                <p style="font-size:0.9rem; color:#64748b;">Seu cadastro está pendente. Envie a CNH.</p>
                 <button class="btn btn-warning" onclick="abrirZapAdmin()">FALAR COM SUPORTE</button>
             </div>
         </div>
@@ -126,15 +200,17 @@
         const provider = new firebase.auth.GoogleAuthProvider();
 
         let map, currentUser, isOnline=false, watchId, markers={}, myMarker;
-        let myLocation = { lat: 0, lng: 0, address: "Localizando..." }; // Armazena local
+        let myLocation = { lat: 0, lng: 0, address: "Localizando..." };
+        let currentOfferId = null; // Para o passageiro monitorar sua oferta
         const audioAlert = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
-        const carIcon = L.icon({ iconUrl: 'https://cdn-icons-png.flaticon.com/512/3202/3202926.png', iconSize: [36, 36], iconAnchor: [18, 18], popupAnchor: [0, -10] });
+        const carIcon = L.icon({ iconUrl: 'https://cdn-icons-png.flaticon.com/512/3202/3202926.png', iconSize: [32, 32], iconAnchor: [16, 16], popupAnchor: [0, -10] });
 
-        // --- AUTH ---
+        // --- AUTH & LOGIN AUTO ---
         auth.onAuthStateChanged(async (user) => {
             if (user) {
                 document.getElementById('screen-loading').classList.remove('hidden');
                 document.getElementById('screen-splash').classList.add('hidden');
+                
                 let snap = await db.ref('drivers/'+user.uid).get();
                 if(snap.exists()){ currentUser=snap.val(); currentUser.type='driver'; entrarApp(); }
                 else {
@@ -142,16 +218,18 @@
                     if(snap.exists()){ currentUser=snap.val(); currentUser.type='passenger'; entrarApp(); }
                     else { auth.signOut(); showScreen('screen-splash'); }
                 }
-            } else showScreen('screen-splash');
+            } else { showScreen('screen-splash'); }
         });
 
-        // --- MAPA & GEOCODING REVERSO (A MÁGICA) ---
+        // --- LÓGICA DO APP ---
         function entrarApp() {
             showScreen('app-ui');
             if(currentUser.type==='driver'){
                 document.getElementById('driver-dock').style.display='block';
-                if(currentUser.status==='aprovado'){ document.getElementById('dock-aprovado').classList.remove('hidden'); escutarOfertas(); }
-                else document.getElementById('dock-pendente').classList.remove('hidden');
+                if(currentUser.status==='aprovado'){ 
+                    document.getElementById('dock-aprovado').classList.remove('hidden'); 
+                    escutarOfertas(); 
+                } else document.getElementById('dock-pendente').classList.remove('hidden');
             } else {
                 document.getElementById('driver-dock').style.display='none';
                 document.getElementById('btn-ofertar').style.display='flex';
@@ -160,67 +238,103 @@
 
             if(!map) { map = L.map('map',{zoomControl:false}).setView([-21.135, -44.261], 15); L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(map); }
             
-            // Monitora Posição e Atualiza Endereço
             navigator.geolocation.watchPosition(async (p) => {
                 myLocation.lat = p.coords.latitude;
                 myLocation.lng = p.coords.longitude;
-                
-                // Atualiza visual
-                if(myMarker) map.removeLayer(myMarker);
-                const euIcon = L.divIcon({ className: 'custom-pin', html: `<div class="pin-eu-dot"></div>`, iconSize: [18, 18], iconAnchor: [9, 9] });
-                myMarker = L.marker([myLocation.lat, myLocation.lng], {icon: euIcon}).addTo(map);
+                atualizarMeuPino();
 
-                // Só busca endereço se for Passageiro (economiza dados)
-                if(currentUser.type === 'passenger') {
-                    // Truque para pegar endereço (Reverse Geocoding OpenStreet)
+                if(currentUser.type === 'passenger' && myLocation.address === "Localizando...") {
                     try {
                         const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${myLocation.lat}&lon=${myLocation.lng}`);
                         const data = await res.json();
-                        myLocation.address = `${data.address.road || 'Rua desconhecida'}, ${data.address.house_number || ''} - ${data.address.suburb || ''}`;
-                    } catch(e) { myLocation.address = "Localização Atual (GPS)"; }
+                        myLocation.address = `${data.address.road || 'Rua sem nome'}, ${data.address.house_number || ''} - ${data.address.suburb || ''}`;
+                    } catch(e) { myLocation.address = "Minha Localização"; }
                 }
-            });
+            }, null, {enableHighAccuracy: true});
         }
 
-        // --- NOVA OFERTA INTELIGENTE ---
+        function atualizarMeuPino() {
+            if(!map) return;
+            if(myMarker) map.removeLayer(myMarker);
+            // Cria o ícone com a etiqueta "EU"
+            const euIcon = L.divIcon({ 
+                className: 'custom-pin', 
+                html: `<div style="position:relative"><div class="pin-label">EU</div><div class="pin-dot"></div></div>`, 
+                iconSize: [20, 20], iconAnchor: [10, 10] 
+            });
+            myMarker = L.marker([myLocation.lat, myLocation.lng], {icon: euIcon}).addTo(map);
+        }
+
+        // --- PASSAGEIRO: OFERTA & ESCUTA RESPOSTA ---
         async function abrirOferta() {
-            // Mostra o endereço automático na tela
             const { value: f } = await Swal.fire({
-                title: 'Ofertar Corrida',
+                title: 'Pedir Corrida',
                 html: 
-                    `<p style="font-size:0.8rem; color:#64748b; margin-bottom:5px;">Você está em:</p>
-                     <div style="background:#f1f5f9; padding:10px; border-radius:8px; font-weight:bold; font-size:0.9rem; margin-bottom:15px;">📍 ${myLocation.address}</div>
-                     <input id="swal-dest" class="swal2-input" placeholder="Para onde você vai?">
-                     <input id="swal-val" class="swal2-input" type="number" placeholder="Valor que paga (R$)">
-                     <input id="swal-zap" class="swal2-input" type="tel" placeholder="Seu WhatsApp">`,
+                    `<div style="background:#f1f5f9; padding:10px; border-radius:8px; font-size:0.85rem; margin-bottom:15px; color:#334155;">📍 ${myLocation.address}</div>
+                     <input id="swal-dest" class="inp" placeholder="Para onde você vai?">
+                     <input id="swal-val" class="inp" type="number" placeholder="Valor (R$)">
+                     <input id="swal-zap" class="inp" type="tel" placeholder="Seu WhatsApp">`,
                 focusConfirm: false,
-                confirmButtonText: 'LANÇAR OFERTA 🚀',
+                confirmButtonText: 'CHAMAR MOTORISTA 🚗',
                 preConfirm: () => [document.getElementById('swal-dest').value, document.getElementById('swal-val').value, document.getElementById('swal-zap').value]
             });
 
             if(f && f[0] && f[1] && f[2]) {
-                const oid = Date.now();
-                db.ref('offers/'+oid).set({
+                const oid = currentUser.uid; // ID da oferta é o ID do usuário (uma por vez)
+                currentOfferId = oid;
+                
+                await db.ref('offers/'+oid).set({
                     id: oid,
                     passengerName: currentUser.nome,
-                    origem: myLocation.address, // Salva o nome da rua
-                    lat: myLocation.lat,        // Salva coordenada
-                    lng: myLocation.lng,        // Salva coordenada
+                    origem: myLocation.address,
+                    lat: myLocation.lat,
+                    lng: myLocation.lng,
                     destino: f[0],
                     valor: f[1],
                     passengerZap: f[2].replace(/\D/g,''),
                     status: 'open'
                 });
-                Swal.fire('Oferta no Radar!', 'Os motoristas já viram onde você está.', 'success');
+                
+                Swal.fire({
+                    title: 'Procurando...',
+                    text: 'Avisaremos quando um motorista aceitar!',
+                    icon: 'info',
+                    showConfirmButton: false,
+                    timer: 3000
+                });
+
+                // ATIVA O LISTENER (OUVIDO) PARA RESPOSTA
+                monitorarMinhaOferta(oid);
             }
         }
 
-        // --- MOTORISTA INTELIGENTE (COM WAZE) ---
+        function monitorarMinhaOferta(oid) {
+            db.ref('offers/'+oid).on('value', snap => {
+                const offer = snap.val();
+                if(offer && offer.status === 'accepted') {
+                    // MOTORISTA ACEITOU!
+                    audioAlert.play();
+                    navigator.vibrate([500, 200, 500]); // Vibra o celular
+                    
+                    Swal.fire({
+                        title: 'Motorista Aceitou! 🎉',
+                        text: `${offer.driverName} pegou a corrida. Abrindo WhatsApp...`,
+                        icon: 'success'
+                    }).then(() => {
+                        window.open(`https://wa.me/55${offer.driverZap}?text=Ol%C3%A1%20${offer.driverName},%20sou%20o%20passageiro!`, '_blank');
+                        // Limpa a oferta depois do contato
+                        db.ref('offers/'+oid).remove();
+                    });
+                }
+            });
+        }
+
+        // --- MOTORISTA ---
         function escutarOfertas() {
             db.ref('offers').orderByChild('status').equalTo('open').on('value', snap => {
                 const lista = document.getElementById('lista-ofertas');
                 lista.innerHTML = '';
-                if(!snap.exists()) { lista.innerHTML='<p style="text-align:center;color:#ccc;">Sem ofertas...</p>'; return; }
+                if(!snap.exists()) { lista.innerHTML='<p style="text-align:center;color:#ccc;font-size:0.9rem">Buscando passageiros...</p>'; return; }
                 audioAlert.play().catch(()=>{});
                 
                 snap.forEach(i => {
@@ -228,12 +342,12 @@
                     const div = document.createElement('div');
                     div.className = 'offer-card';
                     div.innerHTML = `
-                        <div style="display:flex;justify-content:space-between"><b>${o.passengerName}</b><span style="background:green;color:white;padding:2px 8px;border-radius:10px">R$ ${o.valor}</span></div>
-                        <p style="margin:5px 0; font-size:0.85rem; color:#64748b;">📍 Está em: <b>${o.origem}</b></p>
-                        <p style="margin:5px 0; font-size:0.85rem;">🏁 Vai para: <b>${o.destino}</b></p>
+                        <div style="display:flex;justify-content:space-between"><b>${o.passengerName}</b><span style="background:#16a34a;color:white;padding:2px 8px;border-radius:10px">R$ ${o.valor}</span></div>
+                        <p style="margin:5px 0; font-size:0.85rem; color:#64748b;">📍 ${o.origem}</p>
+                        <p style="margin:5px 0; font-size:0.85rem;">🏁 <b>${o.destino}</b></p>
                         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px; margin-top:10px;">
-                            <button class="btn btn-success" style="padding:10px; font-size:0.8rem;" onclick="aceitarZap('${o.id}','${o.passengerZap}')"><i class="fab fa-whatsapp"></i> ACEITAR</button>
-                            <button class="btn btn-primary" style="padding:10px; font-size:0.8rem;" onclick="abrirGPS(${o.lat}, ${o.lng})"><i class="fas fa-location-arrow"></i> IR (GPS)</button>
+                            <button class="btn btn-success" style="padding:10px; font-size:0.8rem; margin:0;" onclick="aceitarCorrida('${o.id}','${o.passengerZap}', ${o.lat}, ${o.lng})">ACEITAR</button>
+                            <button class="btn btn-primary" style="padding:10px; font-size:0.8rem; margin:0; background:white; color:var(--primary); border:1px solid #ccc" onclick="verGPS(${o.lat}, ${o.lng})">VER GPS</button>
                         </div>
                     `;
                     lista.appendChild(div);
@@ -241,22 +355,33 @@
             });
         }
 
-        function aceitarZap(id, zap) {
-            db.ref('offers/'+id).remove();
-            window.open(`https://wa.me/55${zap}?text=Aceitei%20sua%20oferta!%20Estou%20indo.`, '_blank');
+        async function aceitarCorrida(oid, zapPass, lat, lng) {
+            // 1. Atualiza status para 'accepted' para avisar passageiro
+            await db.ref('offers/'+oid).update({
+                status: 'accepted',
+                driverName: currentUser.nome,
+                driverZap: currentUser.zap
+            });
+
+            // 2. Abre Zap do Passageiro para o Motorista também
+            setTimeout(() => {
+                window.open(`https://wa.me/55${zapPass}?text=Ol%C3%A1,%20aceitei%20sua%20corrida!%20Estou%20a%20caminho.`, '_blank');
+            }, 1000);
         }
 
-        function abrirGPS(lat, lng) {
-            // Abre Waze ou Google Maps direto na coordenada do passageiro
-            window.open(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`, '_blank');
-        }
+        function verGPS(lat, lng) { window.open(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`, '_blank'); }
 
-        // --- FUNÇÕES GERAIS ---
-        function centralizarMapa() { 
-            if(!map) return;
-            navigator.geolocation.getCurrentPosition(p=>{ map.setView([p.coords.latitude, p.coords.longitude], 17); });
+        // --- UTILS ---
+        function centralizarMapa() { if(map) map.setView([myLocation.lat, myLocation.lng], 17); }
+        function toggleOnline() { 
+            if(!isOnline){
+                isOnline=true;document.getElementById('btn-status').innerText="VOCÊ ESTÁ VISÍVEL";document.getElementById('btn-status').classList.replace('btn-success','btn-danger');
+                watchId=navigator.geolocation.watchPosition(p=>{db.ref('online/'+currentUser.uid).set({...currentUser, lat:p.coords.latitude, lng:p.coords.longitude});});
+            }else{
+                isOnline=false;document.getElementById('btn-status').innerText="FICAR ONLINE";document.getElementById('btn-status').classList.replace('btn-danger','btn-success');
+                navigator.geolocation.clearWatch(watchId);db.ref('online/'+currentUser.uid).remove();
+            } 
         }
-        function toggleOnline() { if(!isOnline){isOnline=true;document.getElementById('btn-status').innerText="VOCÊ ESTÁ VISÍVEL";document.getElementById('btn-status').classList.replace('btn-success','btn-danger');watchId=navigator.geolocation.watchPosition(p=>{db.ref('online/'+currentUser.uid).set({...currentUser, lat:p.coords.latitude, lng:p.coords.longitude});});}else{isOnline=false;document.getElementById('btn-status').innerText="FICAR ONLINE";document.getElementById('btn-status').classList.replace('btn-danger','btn-success');navigator.geolocation.clearWatch(watchId);db.ref('online/'+currentUser.uid).remove();} }
         function abrirZapAdmin() { window.open(`https://wa.me/${ZAP_ADMIN}`, '_blank'); }
         function showScreen(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.add('hidden')); document.getElementById('app-ui').style.display='none'; if(id==='app-ui') document.getElementById('app-ui').style.display='block'; else document.getElementById(id).classList.remove('hidden'); }
         window.onload = () => { try{ IMask(document.getElementById('m-zap'),{mask:'(00) 00000-0000'}); }catch(e){} }
@@ -265,7 +390,7 @@
         async function fazerLoginMotorista(){ try{await auth.signInWithEmailAndPassword(document.getElementById('login-email').value,document.getElementById('login-pass').value);}catch(e){Swal.fire('Erro','Falha login','error');}}
         function logout(){Swal.fire({title:'Sair?',showCancelButton:true,confirmButtonText:'Sim'}).then(r=>{if(r.isConfirmed){if(isOnline)toggleOnline();auth.signOut();location.reload();}});}
         function chamarPolicia(){Swal.fire({title:'LIGAR 190?',icon:'warning',showCancelButton:true,confirmButtonColor:'#d33',confirmButtonText:'LIGAR'}).then(r=>{if(r.isConfirmed)window.open('tel:190');});}
-        function escutarCarros(){db.ref('online').on('value',s=>{const l=s.val()||{};for(let u in markers){if(!l[u]){map.removeLayer(markers[u]);delete markers[u];}}for(let u in l){const c=l[u];if(!markers[u]){const m=L.marker([c.lat,c.lng],{icon:carIcon}).addTo(map);m.bindPopup(`<b>${c.nome}</b><br>${c.placa}<br><a href="https://wa.me/55${c.zap}" class="btn btn-success" style="padding:5px;text-decoration:none;color:white">Zap</a>`);markers[u]=m;}else markers[u].setLatLng([c.lat,c.lng]);}});}
+        function escutarCarros(){db.ref('online').on('value',s=>{const l=s.val()||{};for(let u in markers){if(!l[u]){map.removeLayer(markers[u]);delete markers[u];}}for(let u in l){const c=l[u];if(!markers[u]){const m=L.marker([c.lat,c.lng],{icon:carIcon}).addTo(map);m.bindPopup(`<b>${c.nome}</b><br>${c.placa}`);markers[u]=m;}else markers[u].setLatLng([c.lat,c.lng]);}});}
     </script>
 </body>
 </html>

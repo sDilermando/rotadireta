@@ -21,45 +21,46 @@
         :root { --primary: #0f172a; --accent: #2563eb; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; --bg: #f8fafc; }
         body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); overflow: hidden; display: flex; flex-direction: column; height: 100vh; }
         
-        /* TELAS DE LOGIN/CADASTRO */
-        .screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; transition: 0.3s; overflow-y: auto; }
+        .screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; transition: 0.3s; overflow-y: auto; }
         .hidden { display: none !important; }
         
         .card { background: white; padding: 30px; border-radius: 24px; width: 100%; max-width: 360px; box-shadow: 0 20px 60px -10px rgba(0,0,0,0.15); }
         .logo { font-size: 2.2rem; font-weight: 900; color: var(--primary); margin-bottom: 20px; text-align: center; }
         .logo span { color: var(--accent); }
-        
         .inp { width: 100%; padding: 14px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 1rem; margin-bottom: 10px; background: #f8fafc; box-sizing:border-box; outline:none; }
-        .inp:focus { border-color: var(--accent); background: white; }
-
         .btn { width: 100%; padding: 16px; border: none; border-radius: 14px; font-weight: 700; cursor: pointer; margin-top: 10px; color: white; display:flex; justify-content:center; align-items:center; gap:10px; transition:0.2s; text-decoration: none; font-size: 0.9rem; }
         .btn:active { transform:scale(0.98); }
         .btn-primary { background: var(--primary); }
         .btn-google { background: white; color: #333; border: 2px solid #e2e8f0; }
         .btn-success { background: var(--success); }
         .btn-warning { background: var(--warning); color: #fff; }
-        .btn-outline { background: white; border: 2px solid #e2e8f0; color: var(--primary); }
-
-        /* MAPA E INTERFACE PRINCIPAL */
-        #app-ui { display: none; flex: 1; position: relative; }
-        #map { width: 100%; height: 100%; }
         
-        /* BOTÃO FLUTUANTE PASSAGEIRO */
+        /* MAPA FULLSCREEN */
+        #app-ui { display: none; flex: 1; position: relative; width: 100%; height: 100%; }
+        #map { width: 100%; height: 100%; z-index: 1; }
+
+        /* CONTROLES FLUTUANTES */
+        .floating-btn { position: absolute; z-index: 1000; box-shadow: 0 4px 15px rgba(0,0,0,0.2); border: none; border-radius: 50%; cursor: pointer; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; transition: 0.2s; }
+        .floating-btn:active { transform: scale(0.9); }
+
+        #btn-sair { top: 20px; right: 20px; background: white; color: #64748b; }
+        #btn-sos { top: 20px; left: 20px; background: var(--danger); color: white; animation: pulse 2s infinite; font-weight: bold; font-size: 0.8rem; }
+        #btn-gps { bottom: 100px; right: 20px; background: white; color: var(--accent); }
+        
         #btn-ofertar { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); background: var(--primary); color: white; padding: 15px 30px; border-radius: 50px; font-weight: bold; box-shadow: 0 10px 20px rgba(0,0,0,0.3); z-index: 1000; cursor: pointer; display: none; align-items: center; gap: 10px; white-space: nowrap; }
-        #btn-ofertar:active { transform: translateX(-50%) scale(0.95); }
 
-        /* DOCK MOTORISTA (Barra inferior) */
+        /* DOCK MOTORISTA */
         #driver-dock { position: absolute; bottom: 0; left: 0; right: 0; background: white; padding: 20px; border-radius: 24px 24px 0 0; z-index: 1000; display: none; box-shadow: 0 -10px 30px rgba(0,0,0,0.1); max-height: 50vh; overflow-y: auto; }
+
+        /* ESTILOS DO MAPA */
+        .pin-eu-wrapper { display: flex; flex-direction: column; align-items: center; }
+        .pin-eu-label { background: var(--accent); color: white; font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; font-weight: bold; margin-bottom: 2px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        .pin-eu-dot { width: 16px; height: 16px; background: var(--accent); border: 3px solid white; border-radius: 50%; box-shadow: 0 0 0 10px rgba(37, 99, 235, 0.2); animation: radar 2s infinite; }
         
-        /* CARD DE OFERTA (Estilo inDrive) */
-        .offer-card { background: #fffbeb; border: 2px solid #fcd34d; padding: 15px; border-radius: 12px; margin-bottom: 10px; animation: slideUp 0.3s ease; }
-        .offer-card h4 { margin: 0 0 5px 0; color: #b45309; }
-        .offer-card p { margin: 0 0 10px 0; font-size: 0.9rem; color: #78350f; }
-        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        
-        /* PINOS DO MAPA */
-        .pin-eu { width: 20px; height: 20px; background: var(--accent); border: 3px solid white; border-radius: 50%; box-shadow: 0 2px 5px rgba(0,0,0,0.3); }
-        .pin-car { width: 40px; height: 40px; background-image: url('https://cdn-icons-png.flaticon.com/512/3202/3202926.png'); background-size: contain; background-repeat: no-repeat; filter: drop-shadow(0 3px 2px rgba(0,0,0,0.3)); }
+        .offer-card { background: #fffbeb; border: 2px solid #fcd34d; padding: 15px; border-radius: 12px; margin-bottom: 10px; }
+
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
+        @keyframes radar { 0% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.4); } 100% { box-shadow: 0 0 0 15px rgba(37, 99, 235, 0); } }
     </style>
 </head>
 <body>
@@ -73,36 +74,32 @@
             <div style="text-align:center; margin:20px 0; font-size:0.8rem; color:#ccc; font-weight:bold;">ÁREA DO PARCEIRO</div>
             <button class="btn btn-primary" onclick="showScreen('screen-login-mot')"><i class="fas fa-car"></i> Sou Motorista</button>
         </div>
-        <div style="margin-top:30px; color:#94a3b8; font-size:0.7rem;">Versão 19.0 (inDrive Mode)</div>
+        <div style="margin-top:30px; color:#94a3b8; font-size:0.7rem;">Versão 21.0 (Visual Pro + SOS)</div>
     </div>
 
     <div id="screen-login-mot" class="screen hidden">
         <div class="card">
             <h3 style="text-align:center; margin-top:0;">Login Motorista</h3>
-            <input id="login-email" class="inp" type="email" placeholder="Seu E-mail">
-            <input id="login-pass" class="inp" type="password" placeholder="Sua Senha">
-            <button class="btn btn-primary" onclick="fazerLoginMotorista()">ACESSAR SISTEMA</button>
-            <button class="btn btn-outline" onclick="showScreen('screen-register-mot')">CRIAR NOVA CONTA</button>
-            <div onclick="recuperarSenha()" style="text-align:center; margin-top:15px; font-size:0.8rem; cursor:pointer; color:var(--accent);">Esqueci a Senha</div>
-            <div onclick="showScreen('screen-splash')" style="text-align:center; margin-top:10px; font-size:0.8rem; cursor:pointer; color:#64748b;">Voltar</div>
+            <input id="login-email" class="inp" type="email" placeholder="Email">
+            <input id="login-pass" class="inp" type="password" placeholder="Senha">
+            <button class="btn btn-primary" onclick="fazerLoginMotorista()">ACESSAR</button>
+            <button class="btn btn-outline" onclick="showScreen('screen-register-mot')">CRIAR CONTA</button>
+            <div onclick="showScreen('screen-splash')" style="text-align:center; margin-top:15px; cursor:pointer; color:#64748b;">Voltar</div>
         </div>
     </div>
 
     <div id="screen-register-mot" class="screen hidden">
         <div class="card">
             <h3 style="text-align:center; margin-top:0;">Novo Cadastro</h3>
-            <p style="font-size:0.8rem; color:#64748b; text-align:center; margin-bottom:15px;">Preencha seus dados. Validação via WhatsApp.</p>
             <input id="m-nome" class="inp" placeholder="Nome Completo">
-            <input id="m-email" class="inp" type="email" placeholder="E-mail Válido">
-            <input id="m-pass" class="inp" type="password" placeholder="Crie uma Senha">
+            <input id="m-email" class="inp" type="email" placeholder="Email">
+            <input id="m-pass" class="inp" type="password" placeholder="Senha">
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
                 <input id="m-placa" class="inp" placeholder="PLACA" style="text-transform:uppercase">
                 <input id="m-zap" class="inp" type="tel" placeholder="WhatsApp">
             </div>
-            <div style="margin-top:15px; font-size:0.8rem; display:flex; gap:5px;">
-                <input type="checkbox" id="m-terms"><span>Concordo com os termos.</span>
-            </div>
-            <button class="btn btn-success" onclick="registrarMotorista()">CRIAR CONTA</button>
+            <div style="margin-top:15px; font-size:0.8rem;"><input type="checkbox" id="m-terms"> Concordo com os termos.</div>
+            <button class="btn btn-success" onclick="registrarMotorista()">REGISTRAR</button>
             <div onclick="showScreen('screen-login-mot')" style="text-align:center; margin-top:10px; cursor:pointer; color:#64748b;">Cancelar</div>
         </div>
     </div>
@@ -110,9 +107,9 @@
     <div id="app-ui">
         <div id="map"></div>
         
-        <div style="position:absolute; top:20px; right:20px; z-index:1000;">
-            <button onclick="location.reload()" style="background:white; border:none; padding:10px; border-radius:50%; box-shadow:0 4px 10px rgba(0,0,0,0.2); color:red;"><i class="fas fa-power-off"></i></button>
-        </div>
+        <button id="btn-sair" class="floating-btn" onclick="location.reload()"><i class="fas fa-power-off"></i></button>
+        <button id="btn-sos" class="floating-btn" onclick="chamarPolicia()">SOS</button>
+        <button id="btn-gps" class="floating-btn" onclick="centralizarMapa()"><i class="fas fa-crosshairs"></i></button>
 
         <button id="btn-ofertar" onclick="abrirOferta()">
             <i class="fas fa-bullhorn"></i> OFERTAR CORRIDA
@@ -121,196 +118,159 @@
         <div id="driver-dock">
             <div id="dock-aprovado" class="hidden">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                    <h3 style="margin:0;">Radar de Corridas</h3>
+                    <h3 style="margin:0;">Radar</h3>
                     <button id="btn-status" class="btn btn-success" style="padding:8px 15px; width:auto; margin:0;" onclick="toggleOnline()">FICAR ONLINE</button>
                 </div>
                 <div id="lista-ofertas">
-                    <p style="text-align:center; color:#94a3b8; font-size:0.9rem; padding:20px;">Nenhuma oferta no momento...</p>
+                    <p style="text-align:center; color:#94a3b8; font-size:0.9rem; padding:20px;">Sem ofertas...</p>
                 </div>
             </div>
-
             <div id="dock-pendente" class="hidden">
-                <h3 style="margin:0 0 5px 0; color:var(--warning);">Cadastro em Análise</h3>
-                <p style="font-size:0.8rem; color:#64748b; margin-bottom:15px;">Envie sua CNH para liberar o sistema.</p>
-                <button class="btn btn-warning" onclick="abrirZapAdmin()">
-                    <i class="fab fa-whatsapp"></i> FALAR COM SUPORTE
-                </button>
+                <h3 style="color:var(--warning);">Em Análise</h3>
+                <p style="font-size:0.8rem; color:#64748b;">Envie sua CNH para liberar.</p>
+                <button class="btn btn-warning" onclick="abrirZapAdmin()">ENVIAR DOCUMENTOS</button>
             </div>
         </div>
     </div>
 
     <script>
-        // --- CONFIGURAÇÕES ---
-        const ZAP_ADMIN = "5532984099000"; // Seu número para receber cadastros
-        
+        // CONFIGURAÇÕES
+        const ZAP_ADMIN = "5532984099000"; 
         const firebaseConfig = { apiKey: "AIzaSyBxbRiYNuGde5nwJIaoeRItWdZGR221cpY", authDomain: "rota-direta.firebaseapp.com", projectId: "rota-direta", databaseURL: "https://rota-direta-default-rtdb.firebaseio.com" };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
         const auth = firebase.auth();
         const provider = new firebase.auth.GoogleAuthProvider();
 
-        let map, currentUser, isOnline=false, watchId, markers={};
-        const audioAlert = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3'); // Som de notificação
+        let map, currentUser, isOnline=false, watchId, markers={}, myMarker;
+        const audioAlert = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
 
-        // UI & UTILS
-        function showScreen(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.add('hidden')); document.getElementById('app-ui').style.display='none'; if(id==='app-ui') document.getElementById('app-ui').style.display='flex'; else document.getElementById(id).classList.remove('hidden'); }
+        // ÍCONE DO CARRO (VISTO DE CIMA - PEQUENO)
+        const carIcon = L.icon({
+            iconUrl: 'https://cdn-icons-png.flaticon.com/512/575/575678.png', // Ícone top-down
+            iconSize: [32, 32], // Tamanho reduzido
+            iconAnchor: [16, 16],
+            popupAnchor: [0, -10]
+        });
+
+        // UI UTILS
+        function showScreen(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.add('hidden')); document.getElementById('app-ui').style.display='none'; if(id==='app-ui') document.getElementById('app-ui').style.display='block'; else document.getElementById(id).classList.remove('hidden'); }
         window.onload = () => { try{ IMask(document.getElementById('m-zap'),{mask:'(00) 00000-0000'}); }catch(e){} }
 
-        // --- LOGIN PASSAGEIRO (PADRÃO GOOGLE) ---
-        function loginGoogle(){ 
-            auth.signInWithPopup(provider).then(r=>{ 
-                const u=r.user; 
-                // Cria passageiro sem pedir telefone agora (mais rápido)
-                const dados={uid:u.uid, nome:u.displayName, foto:u.photoURL, email:u.email, type:'passenger'};
-                db.ref('passengers/'+u.uid).update(dados); 
-                currentUser=dados; 
-                entrarApp(); 
-            }).catch(e=>Swal.fire('Erro',e.message,'error')); 
-        }
-
-        // --- CADASTRO/LOGIN MOTORISTA ---
+        // --- AUTH ---
+        function loginGoogle(){ auth.signInWithPopup(provider).then(r=>{ const u=r.user; const d={uid:u.uid, nome:u.displayName, foto:u.photoURL, email:u.email, type:'passenger'}; db.ref('passengers/'+u.uid).update(d); currentUser=d; entrarApp(); }).catch(e=>Swal.fire('Erro',e.message,'error')); }
+        
         async function registrarMotorista() {
-            if(!document.getElementById('m-terms').checked) return Swal.fire('Atenção','Aceite os termos.','warning');
-            const nome = document.getElementById('m-nome').value;
-            const email = document.getElementById('m-email').value;
-            const pass = document.getElementById('m-pass').value;
-            const placa = document.getElementById('m-placa').value.toUpperCase();
-            const zap = document.getElementById('m-zap').value.replace(/\D/g,'');
-
+            if(!document.getElementById('m-terms').checked) return Swal.fire('Ops','Aceite os termos.','warning');
+            const [nome, email, pass, placa, zap] = ['m-nome','m-email','m-pass','m-placa','m-zap'].map(id=>document.getElementById(id).value);
             try {
                 const cred = await auth.createUserWithEmailAndPassword(email, pass);
-                const pin = Math.floor(1000+Math.random()*9000);
-                await db.ref('drivers/'+cred.user.uid).set({ uid: cred.user.uid, nome, email, placa, zap, pin, status: 'pendente', createdAt: Date.now() });
-                Swal.fire('Conta Criada!','Faça login para validar.','success').then(()=> showScreen('screen-login-mot'));
-            } catch(e) { Swal.fire('Erro', e.message, 'error'); }
+                await db.ref('drivers/'+cred.user.uid).set({ uid: cred.user.uid, nome, email, placa: placa.toUpperCase(), zap: zap.replace(/\D/g,''), status: 'pendente' });
+                Swal.fire('Sucesso!','Faça login.','success').then(()=>showScreen('screen-login-mot'));
+            } catch(e){ Swal.fire('Erro',e.message,'error'); }
         }
 
         async function fazerLoginMotorista() {
-            const email = document.getElementById('login-email').value;
-            const pass = document.getElementById('login-pass').value;
-            auth.signInWithEmailAndPassword(email, pass).then(async (cred) => {
+            try {
+                const cred = await auth.signInWithEmailAndPassword(document.getElementById('login-email').value, document.getElementById('login-pass').value);
                 const snap = await db.ref('drivers/'+cred.user.uid).get();
-                if(snap.exists()){ currentUser = snap.val(); currentUser.type = 'driver'; entrarApp(); } 
-                else Swal.fire('Erro','Motorista não encontrado.','error');
-            }).catch(e => Swal.fire('Erro', 'Dados incorretos.', 'error'));
+                if(snap.exists()){ currentUser=snap.val(); currentUser.type='driver'; entrarApp(); } else Swal.fire('Erro','Conta não achada.','error');
+            } catch(e){ Swal.fire('Erro','Login falhou.','error'); }
         }
 
-        function recuperarSenha() {
-            const email = document.getElementById('login-email').value;
-            if(!email) return Swal.fire('Info','Digite seu email acima.','info');
-            auth.sendPasswordResetEmail(email).then(()=>Swal.fire('Sucesso','Verifique seu email.','success'));
-        }
-
-        // --- LÓGICA DO APP (MAPA + NAVEGAÇÃO) ---
+        // --- APP LOGIC ---
         function entrarApp() {
             showScreen('app-ui');
             
-            // CONFIGURA TELA BASEADO NO TIPO
+            // Configura UI baseada no tipo
             if(currentUser.type === 'driver') {
                 document.getElementById('driver-dock').style.display = 'block';
                 if(currentUser.status === 'aprovado') {
                     document.getElementById('dock-aprovado').classList.remove('hidden');
-                    document.getElementById('dock-pendente').classList.add('hidden');
-                    escutarOfertas(); // Motorista escuta pedidos
-                } else {
-                    document.getElementById('dock-aprovado').classList.add('hidden');
-                    document.getElementById('dock-pendente').classList.remove('hidden');
-                }
+                    escutarOfertas();
+                } else document.getElementById('dock-pendente').classList.remove('hidden');
             } else {
-                // É Passageiro
                 document.getElementById('driver-dock').style.display = 'none';
-                document.getElementById('btn-ofertar').style.display = 'flex'; // Mostra botão ofertar
-                escutarCarros(); // Passageiro vê carros
+                document.getElementById('btn-ofertar').style.display = 'flex';
+                escutarCarros();
             }
 
-            // MAPA
-            if(!map) { map = L.map('map',{zoomControl:false}).setView([-23.55,-46.63],15); L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(map); }
-            navigator.geolocation.getCurrentPosition(p=>{
-                map.setView([p.coords.latitude, p.coords.longitude],17);
-                const html = currentUser.foto ? `<img src="${currentUser.foto}" style="width:30px;height:30px;border-radius:50%;border:2px solid blue;">` : `<div class="pin-eu"></div>`;
-                L.marker([p.coords.latitude, p.coords.longitude],{icon:L.divIcon({className:'eu',html:html})}).addTo(map);
-            });
-        }
-
-        // --- PASSAGEIRO: LANÇAR OFERTA ---
-        async function abrirOferta() {
-            const { value: formValues } = await Swal.fire({
-                title: 'Nova Oferta',
-                html:
-                    '<input id="swal-destino" class="swal2-input" placeholder="Para onde você vai?">' +
-                    '<input id="swal-valor" class="swal2-input" type="number" placeholder="Valor (R$)" style="width:100px; margin-top:10px;">',
-                focusConfirm: false,
-                confirmButtonText: 'LANÇAR OFERTA 📢',
-                showCancelButton: true,
-                preConfirm: () => {
-                    return [
-                        document.getElementById('swal-destino').value,
-                        document.getElementById('swal-valor').value
-                    ]
-                }
-            });
-
-            if (formValues && formValues[0] && formValues[1]) {
-                const offerId = Date.now(); // ID único
-                // Manda pro Mural
-                await db.ref('offers/'+offerId).set({
-                    id: offerId,
-                    passengerName: currentUser.nome,
-                    destino: formValues[0],
-                    valor: formValues[1],
-                    status: 'open',
-                    timestamp: Date.now()
-                });
-                Swal.fire('Oferta Enviada!', 'Aguarde um motorista aceitar.', 'success');
+            // Inicia Mapa (SJDR)
+            if(!map) { 
+                map = L.map('map',{zoomControl:false}).setView([-21.135, -44.261], 15);
+                L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(map);
             }
+            centralizarMapa();
         }
 
-        // --- MOTORISTA: RADAR DE OFERTAS ---
-        function escutarOfertas() {
-            const lista = document.getElementById('lista-ofertas');
-            // Escuta apenas ofertas "abertas"
-            db.ref('offers').orderByChild('status').equalTo('open').on('value', snap => {
-                lista.innerHTML = '';
-                if(!snap.exists()) {
-                    lista.innerHTML = '<p style="text-align:center; color:#94a3b8; font-size:0.9rem; padding:20px;">Nenhuma oferta no momento...</p>';
-                    return;
-                }
+        function centralizarMapa() {
+            if(!map) return;
+            navigator.geolocation.getCurrentPosition(p => {
+                const lat = p.coords.latitude;
+                const lng = p.coords.longitude;
+                map.setView([lat, lng], 17);
                 
-                // Toca som se chegou coisa nova
-                audioAlert.play().catch(e=>{});
+                // Marcador "EU" Personalizado
+                if(myMarker) map.removeLayer(myMarker);
+                const euIcon = L.divIcon({
+                    className: 'custom-pin',
+                    html: `<div class="pin-eu-wrapper"><div class="pin-eu-label">EU</div><div class="pin-eu-dot"></div></div>`,
+                    iconSize: [40, 40],
+                    iconAnchor: [20, 20]
+                });
+                myMarker = L.marker([lat, lng], {icon: euIcon}).addTo(map);
+            });
+        }
 
-                snap.forEach(item => {
-                    const o = item.val();
+        function chamarPolicia() {
+            Swal.fire({
+                title: 'EMERGÊNCIA',
+                text: "Deseja ligar para a Polícia (190)?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                confirmButtonText: 'SIM, LIGAR AGORA'
+            }).then((result) => {
+                if (result.isConfirmed) window.open('tel:190');
+            });
+        }
+
+        // --- OFERTAS E CARROS ---
+        async function abrirOferta() {
+            const { value: f } = await Swal.fire({
+                title: 'Ofertar Corrida',
+                html: '<input id="swal-dest" class="swal2-input" placeholder="Destino"><input id="swal-val" class="swal2-input" type="number" placeholder="Valor R$"><input id="swal-zap" class="swal2-input" type="tel" placeholder="Seu WhatsApp">',
+                focusConfirm: false,
+                preConfirm: () => [document.getElementById('swal-dest').value, document.getElementById('swal-val').value, document.getElementById('swal-zap').value]
+            });
+            if(f && f[0] && f[1] && f[2]) {
+                const oid = Date.now();
+                db.ref('offers/'+oid).set({ id:oid, passengerName:currentUser.nome, destino:f[0], valor:f[1], passengerZap:f[2].replace(/\D/g,''), status:'open' });
+                Swal.fire('Enviado!','Aguarde um motorista.','success');
+            }
+        }
+
+        function escutarOfertas() {
+            db.ref('offers').orderByChild('status').equalTo('open').on('value', snap => {
+                const lista = document.getElementById('lista-ofertas');
+                lista.innerHTML = '';
+                if(!snap.exists()) { lista.innerHTML='<p style="text-align:center;color:#ccc;padding:20px">Sem ofertas...</p>'; return; }
+                audioAlert.play().catch(()=>{});
+                snap.forEach(i => {
+                    const o = i.val();
                     const div = document.createElement('div');
                     div.className = 'offer-card';
-                    div.innerHTML = `
-                        <div style="display:flex; justify-content:space-between;">
-                            <h4>${o.passengerName}</h4>
-                            <span style="background:#22c55e; color:white; padding:2px 8px; border-radius:10px; font-weight:bold;">R$ ${o.valor}</span>
-                        </div>
-                        <p>📍 Indo para: <b>${o.destino}</b></p>
-                        <button class="btn btn-success" style="margin:0; padding:10px;" onclick="aceitarOferta('${o.id}')">
-                            <i class="fab fa-whatsapp"></i> ACEITAR CORRIDA
-                        </button>
-                    `;
+                    div.innerHTML = `<div style="display:flex;justify-content:space-between"><h4>${o.passengerName}</h4><span style="background:green;color:white;padding:2px 8px;border-radius:10px">R$ ${o.valor}</span></div><p>📍 ${o.destino}</p><button class="btn btn-success" style="padding:10px" onclick="aceitar('${o.id}','${o.passengerZap}')">ACEITAR CORRIDA</button>`;
                     lista.appendChild(div);
                 });
             });
         }
 
-        function aceitarOferta(id) {
-            // Remove a oferta do mural para ninguém mais pegar
+        function aceitar(id, zap) {
             db.ref('offers/'+id).remove();
-            
-            // Avisa o motorista
-            Swal.fire({
-                title: 'Oferta Aceita!', 
-                text: 'A oferta é sua! Combine os detalhes com o passageiro.', 
-                icon: 'success'
-            });
+            window.open(`https://wa.me/55${zap}?text=Ol%C3%A1,%20sou%20o%20motorista%20do%20Rota%20Direta.%20Aceitei%20sua%20oferta!`, '_blank');
         }
 
-        // --- STATUS ONLINE E GPS ---
         function toggleOnline() {
             if(!isOnline) {
                 isOnline=true; document.getElementById('btn-status').innerText = "VOCÊ ESTÁ VISÍVEL"; document.getElementById('btn-status').classList.replace('btn-success','btn-danger');
@@ -320,9 +280,8 @@
                 navigator.geolocation.clearWatch(watchId); db.ref('online/'+currentUser.uid).remove();
             }
         }
-        function abrirZapAdmin() { window.open(`https://wa.me/${ZAP_ADMIN}?text=Ol%C3%A1%2C%20quero%20liberar%20meu%20cadastro.`, '_blank'); }
+        function abrirZapAdmin() { window.open(`https://wa.me/${ZAP_ADMIN}?text=Quero%20liberar%20meu%20cadastro`, '_blank'); }
 
-        // --- MAPA DO PASSAGEIRO ---
         function escutarCarros() {
             db.ref('online').on('value', snap => {
                 const list = snap.val() || {};
@@ -330,10 +289,8 @@
                 for(let uid in list) {
                     const c = list[uid];
                     if(!markers[uid]) {
-                        const icon = L.divIcon({className:'car', html:'<div class="pin-car"></div>', iconSize:[40,40]});
-                        const m = L.marker([c.lat,c.lng],{icon}).addTo(map);
-                        // Clicar no carrinho abre o Zap do motorista
-                        m.bindPopup(`<b>${c.nome}</b><br>${c.placa}<br><a href="https://wa.me/55${c.zap}" target="_blank" style="background:#25d366; color:white; padding:5px 10px; text-decoration:none; border-radius:5px; display:inline-block; margin-top:5px;">Chamar no Zap</a>`);
+                        const m = L.marker([c.lat,c.lng],{icon:carIcon}).addTo(map);
+                        m.bindPopup(`<b>${c.nome}</b><br>${c.placa}<br><a href="https://wa.me/55${c.zap}" class="btn btn-success" style="margin-top:5px;padding:5px;text-decoration:none;color:white">Chamar no Zap</a>`);
                         markers[uid] = m;
                     } else markers[uid].setLatLng([c.lat, c.lng]);
                 }

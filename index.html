@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Rota Direta Oficial</title>
+    <title>Rota Direta - Oficial</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -20,6 +20,8 @@
     <style>
         :root { --primary: #0f172a; --accent: #2563eb; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; --bg: #f8fafc; }
         body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); overflow: hidden; display: flex; flex-direction: column; height: 100vh; }
+        
+        /* TELAS DE LOGIN/CADASTRO */
         .screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; transition: 0.3s; overflow-y: auto; }
         .hidden { display: none !important; }
         
@@ -38,7 +40,7 @@
         .btn-warning { background: var(--warning); color: #fff; }
         .btn-outline { background: white; border: 2px solid #e2e8f0; color: var(--primary); }
 
-        /* MAPA E UI */
+        /* MAPA E INTERFACE PRINCIPAL */
         #app-ui { display: none; flex: 1; position: relative; }
         #map { width: 100%; height: 100%; }
         
@@ -46,14 +48,16 @@
         #btn-ofertar { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); background: var(--primary); color: white; padding: 15px 30px; border-radius: 50px; font-weight: bold; box-shadow: 0 10px 20px rgba(0,0,0,0.3); z-index: 1000; cursor: pointer; display: none; align-items: center; gap: 10px; white-space: nowrap; }
         #btn-ofertar:active { transform: translateX(-50%) scale(0.95); }
 
-        /* DOCK MOTORISTA */
+        /* DOCK MOTORISTA (Barra inferior) */
         #driver-dock { position: absolute; bottom: 0; left: 0; right: 0; background: white; padding: 20px; border-radius: 24px 24px 0 0; z-index: 1000; display: none; box-shadow: 0 -10px 30px rgba(0,0,0,0.1); max-height: 50vh; overflow-y: auto; }
         
+        /* CARD DE OFERTA (Estilo inDrive) */
         .offer-card { background: #fffbeb; border: 2px solid #fcd34d; padding: 15px; border-radius: 12px; margin-bottom: 10px; animation: slideUp 0.3s ease; }
         .offer-card h4 { margin: 0 0 5px 0; color: #b45309; }
         .offer-card p { margin: 0 0 10px 0; font-size: 0.9rem; color: #78350f; }
         @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         
+        /* PINOS DO MAPA */
         .pin-eu { width: 20px; height: 20px; background: var(--accent); border: 3px solid white; border-radius: 50%; box-shadow: 0 2px 5px rgba(0,0,0,0.3); }
         .pin-car { width: 40px; height: 40px; background-image: url('https://cdn-icons-png.flaticon.com/512/3202/3202926.png'); background-size: contain; background-repeat: no-repeat; filter: drop-shadow(0 3px 2px rgba(0,0,0,0.3)); }
     </style>
@@ -136,8 +140,8 @@
     </div>
 
     <script>
-        // CONFIGURAÇÕES
-        const ZAP_ADMIN = "5532984099000"; // Seu número (Dilermando)
+        // --- CONFIGURAÇÕES ---
+        const ZAP_ADMIN = "5532984099000"; // Seu número para receber cadastros
         
         const firebaseConfig = { apiKey: "AIzaSyBxbRiYNuGde5nwJIaoeRItWdZGR221cpY", authDomain: "rota-direta.firebaseapp.com", projectId: "rota-direta", databaseURL: "https://rota-direta-default-rtdb.firebaseio.com" };
         firebase.initializeApp(firebaseConfig);
@@ -156,6 +160,7 @@
         function loginGoogle(){ 
             auth.signInWithPopup(provider).then(r=>{ 
                 const u=r.user; 
+                // Cria passageiro sem pedir telefone agora (mais rápido)
                 const dados={uid:u.uid, nome:u.displayName, foto:u.photoURL, email:u.email, type:'passenger'};
                 db.ref('passengers/'+u.uid).update(dados); 
                 currentUser=dados; 
@@ -163,7 +168,7 @@
             }).catch(e=>Swal.fire('Erro',e.message,'error')); 
         }
 
-        // --- MOTORISTA ---
+        // --- CADASTRO/LOGIN MOTORISTA ---
         async function registrarMotorista() {
             if(!document.getElementById('m-terms').checked) return Swal.fire('Atenção','Aceite os termos.','warning');
             const nome = document.getElementById('m-nome').value;
@@ -196,11 +201,11 @@
             auth.sendPasswordResetEmail(email).then(()=>Swal.fire('Sucesso','Verifique seu email.','success'));
         }
 
-        // --- LÓGICA DO APP ---
+        // --- LÓGICA DO APP (MAPA + NAVEGAÇÃO) ---
         function entrarApp() {
             showScreen('app-ui');
             
-            // CONFIGURA TELA
+            // CONFIGURA TELA BASEADO NO TIPO
             if(currentUser.type === 'driver') {
                 document.getElementById('driver-dock').style.display = 'block';
                 if(currentUser.status === 'aprovado') {
@@ -227,7 +232,7 @@
             });
         }
 
-        // --- PASSAGEIRO: SISTEMA DE OFERTAS ---
+        // --- PASSAGEIRO: LANÇAR OFERTA ---
         async function abrirOferta() {
             const { value: formValues } = await Swal.fire({
                 title: 'Nova Oferta',
@@ -247,8 +252,6 @@
 
             if (formValues && formValues[0] && formValues[1]) {
                 const offerId = Date.now(); // ID único
-                const zap = currentUser.zap || ''; // Se tiver salvo, senão vazio
-                
                 // Manda pro Mural
                 await db.ref('offers/'+offerId).set({
                     id: offerId,
@@ -258,7 +261,6 @@
                     status: 'open',
                     timestamp: Date.now()
                 });
-                
                 Swal.fire('Oferta Enviada!', 'Aguarde um motorista aceitar.', 'success');
             }
         }
@@ -266,6 +268,7 @@
         // --- MOTORISTA: RADAR DE OFERTAS ---
         function escutarOfertas() {
             const lista = document.getElementById('lista-ofertas');
+            // Escuta apenas ofertas "abertas"
             db.ref('offers').orderByChild('status').equalTo('open').on('value', snap => {
                 lista.innerHTML = '';
                 if(!snap.exists()) {
@@ -286,7 +289,7 @@
                             <span style="background:#22c55e; color:white; padding:2px 8px; border-radius:10px; font-weight:bold;">R$ ${o.valor}</span>
                         </div>
                         <p>📍 Indo para: <b>${o.destino}</b></p>
-                        <button class="btn btn-success" style="margin:0; padding:10px;" onclick="aceitarOferta('${o.id}', '${o.passengerName}', '${o.valor}', '${o.destino}')">
+                        <button class="btn btn-success" style="margin:0; padding:10px;" onclick="aceitarOferta('${o.id}')">
                             <i class="fab fa-whatsapp"></i> ACEITAR CORRIDA
                         </button>
                     `;
@@ -295,22 +298,19 @@
             });
         }
 
-        function aceitarOferta(id, nome, valor, destino) {
-            // 1. Remove a oferta do mural (para ninguém mais pegar)
+        function aceitarOferta(id) {
+            // Remove a oferta do mural para ninguém mais pegar
             db.ref('offers/'+id).remove();
-
-            // 2. Abre o Zap
-            // Como não temos o Zap do passageiro garantido no login Google, 
-            // aqui usamos um truque: o motorista tenta o contato ou o passageiro deixa no mural.
-            // MELHORIA: Na oferta, o passageiro poderia por o zap. Mas vamos simplificar:
-            // O App abre o Zap VAZIO para o motorista colar o numero se tiver, ou...
-            // PERA! Na estratégia Google, não temos o zap do passageiro. 
-            // AJUSTE RÁPIDO: Passageiro tem que por o ZAP na hora da oferta!
             
-            Swal.fire('Oferta Aceita!', 'A oferta saiu do radar. Combine com o passageiro.', 'success');
+            // Avisa o motorista
+            Swal.fire({
+                title: 'Oferta Aceita!', 
+                text: 'A oferta é sua! Combine os detalhes com o passageiro.', 
+                icon: 'success'
+            });
         }
 
-        // --- MÉTODOS AUXILIARES ---
+        // --- STATUS ONLINE E GPS ---
         function toggleOnline() {
             if(!isOnline) {
                 isOnline=true; document.getElementById('btn-status').innerText = "VOCÊ ESTÁ VISÍVEL"; document.getElementById('btn-status').classList.replace('btn-success','btn-danger');
@@ -322,6 +322,7 @@
         }
         function abrirZapAdmin() { window.open(`https://wa.me/${ZAP_ADMIN}?text=Ol%C3%A1%2C%20quero%20liberar%20meu%20cadastro.`, '_blank'); }
 
+        // --- MAPA DO PASSAGEIRO ---
         function escutarCarros() {
             db.ref('online').on('value', snap => {
                 const list = snap.val() || {};
@@ -331,6 +332,7 @@
                     if(!markers[uid]) {
                         const icon = L.divIcon({className:'car', html:'<div class="pin-car"></div>', iconSize:[40,40]});
                         const m = L.marker([c.lat,c.lng],{icon}).addTo(map);
+                        // Clicar no carrinho abre o Zap do motorista
                         m.bindPopup(`<b>${c.nome}</b><br>${c.placa}<br><a href="https://wa.me/55${c.zap}" target="_blank" style="background:#25d366; color:white; padding:5px 10px; text-decoration:none; border-radius:5px; display:inline-block; margin-top:5px;">Chamar no Zap</a>`);
                         markers[uid] = m;
                     } else markers[uid].setLatLng([c.lat, c.lng]);

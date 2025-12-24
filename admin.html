@@ -11,21 +11,30 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
-        body { font-family: 'Inter', sans-serif; background: #1e293b; color: white; padding: 20px; }
-        .card { background: #334155; padding: 20px; border-radius: 10px; margin-bottom: 15px; border: 1px solid #475569; }
-        .btn { padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; color: white; font-weight: bold; margin-right: 10px; }
+        body { font-family: 'Inter', sans-serif; background: #1e293b; color: white; padding: 20px; margin: 0; }
+        .container { max-width: 600px; margin: 0 auto; }
+        h1 { text-align: center; color: #38bdf8; margin-bottom: 30px; }
+        
+        .card { background: #334155; padding: 20px; border-radius: 12px; margin-bottom: 15px; border: 1px solid #475569; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        .card h3 { margin: 0 0 10px 0; color: #f8fafc; }
+        .info { font-size: 0.9rem; color: #cbd5e1; margin-bottom: 5px; }
+        .highlight { color: #fbbf24; font-weight: bold; }
+        
+        .actions { display: flex; gap: 10px; margin-top: 20px; }
+        .btn { flex: 1; padding: 12px; border: none; border-radius: 8px; cursor: pointer; color: white; font-weight: bold; font-size: 1rem; transition: 0.2s; }
+        .btn:hover { opacity: 0.9; }
         .ap { background: #10b981; }
         .re { background: #ef4444; }
-        .dr { background: #3b82f6; text-decoration: none; display: inline-block; padding: 10px 20px; border-radius: 5px; color: white; }
+        
+        .empty { text-align: center; color: #64748b; margin-top: 50px; }
     </style>
 </head>
 <body>
-    <h1 style="text-align:center; color:#38bdf8;">Painel de Aprovação</h1>
-    <div style="text-align:center; margin-bottom:20px;">
-        <a href="https://drive.google.com/drive/u/0/my-drive" target="_blank" class="dr">📂 Abrir Google Drive (Ver Fotos)</a>
+
+    <div class="container">
+        <h1>👮‍♂️ Painel de Aprovação</h1>
+        <div id="lista">Carregando...</div>
     </div>
-    
-    <div id="lista">Carregando...</div>
 
     <script>
         const firebaseConfig = {
@@ -37,30 +46,58 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
+        // ESCUTAR NOVOS CADASTROS PENDENTES
         db.ref('drivers').orderByChild('status').equalTo('pendente').on('value', snap => {
             const div = document.getElementById('lista');
-            div.innerHTML = '';
-            if(!snap.exists()) { div.innerHTML = '<p style="text-align:center">Nenhum pendente.</p>'; return; }
+            div.innerHTML = ''; // Limpa a lista
 
-            snap.forEach(i => {
-                const u = i.val();
+            if(!snap.exists()) {
+                div.innerHTML = '<div class="empty">Nenhum motorista aguardando aprovação no momento.</div>';
+                return;
+            }
+
+            snap.forEach(item => {
+                const u = item.val();
+                const uid = item.key; // ID do Motorista
+
                 div.innerHTML += `
                     <div class="card">
                         <h3>${u.nome}</h3>
-                        <p>Placa: <b>${u.placa}</b> | Email: ${u.email}</p>
-                        <p>PIN: ${u.pin} | WhatsApp: ${u.zap}</p>
-                        <br>
-                        <button class="btn ap" onclick="atu('${i.key}','aprovado')">APROVAR</button>
-                        <button class="btn re" onclick="atu('${i.key}','rejeitado')">REJEITAR</button>
+                        <div class="info">📧 Email: ${u.email}</div>
+                        <div class="info">🚗 Placa: <span class="highlight">${u.placa}</span></div>
+                        <div class="info">📱 WhatsApp: ${u.zap}</div>
+                        <div class="info">🔑 PIN de Acesso: <span class="highlight" style="font-size:1.2rem">${u.pin}</span></div>
+                        
+                        <div class="actions">
+                            <button class="btn re" onclick="decidir('${uid}', 'rejeitar')">REJEITAR</button>
+                            <button class="btn ap" onclick="decidir('${uid}', 'aprovar')">APROVAR ACESSO</button>
+                        </div>
                     </div>
                 `;
             });
         });
 
-        function atu(uid, st) {
-            if(confirm('Confirmar ação?')) {
-                if(st === 'rejeitado') db.ref('drivers/'+uid).remove();
-                else db.ref('drivers/'+uid).update({status: 'aprovado'});
+        function decidir(uid, acao) {
+            if(acao === 'aprovar') {
+                // Atualiza status para 'aprovado'
+                db.ref('drivers/'+uid).update({ status: 'aprovado' });
+                Swal.fire('Sucesso', 'Motorista liberado para trabalhar!', 'success');
+            } else {
+                // Apaga o cadastro
+                Swal.fire({
+                    title: 'Tem certeza?',
+                    text: "Isso vai apagar o cadastro.",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Sim, rejeitar'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        db.ref('drivers/'+uid).remove();
+                        Swal.fire('Removido!', 'Cadastro apagado.', 'success');
+                    }
+                })
             }
         }
     </script>

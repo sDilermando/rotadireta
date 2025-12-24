@@ -52,7 +52,7 @@
             <div style="text-align:center; margin:20px 0; font-size:0.8rem; color:#ccc; font-weight:bold;">ÁREA DO PARCEIRO</div>
             <button class="btn btn-primary" onclick="showScreen('screen-login-mot')"><i class="fas fa-car"></i> Sou Motorista</button>
         </div>
-        <div style="margin-top:30px; color:#94a3b8; font-size:0.7rem;">Versão 17.3 (Link Fix)</div>
+        <div style="margin-top:30px; color:#94a3b8; font-size:0.7rem;">Versão 17.4 (Turbo)</div>
     </div>
 
     <div id="screen-login-mot" class="screen hidden">
@@ -79,6 +79,7 @@
             <p style="font-size:0.8rem; font-weight:bold; color:#64748b; margin:10px 0 5px 0;">Envie fotos dos documentos:</p>
             <label class="file-btn" id="lbl-cnh"><span><i class="fas fa-id-card"></i> Foto da CNH</span><input type="file" id="file-cnh" class="file-input" accept="image/*" onchange="markUploaded('lbl-cnh')"></label>
             <label class="file-btn" id="lbl-carro"><span><i class="fas fa-car"></i> Foto do Carro</span><input type="file" id="file-carro" class="file-input" accept="image/*" onchange="markUploaded('lbl-carro')"></label>
+            
             <div style="margin-top:15px; font-size:0.8rem; display:flex; gap:5px;"><input type="checkbox" id="m-terms"><span>Declaro que os dados são verdadeiros.</span></div>
             <button class="btn btn-success" onclick="registrarMotorista()">ENVIAR PARA APROVAÇÃO</button>
             <div onclick="showScreen('screen-login-mot')" style="text-align:center; margin-top:10px; cursor:pointer; color:#64748b;">Cancelar</div>
@@ -88,7 +89,7 @@
     <div id="screen-wait" class="screen hidden">
         <div class="card" style="text-align:center;">
             <i class="fas fa-circle-notch fa-spin" style="font-size:3rem; color:var(--accent); margin-bottom:20px;"></i>
-            <p>Enviando documentos...</p>
+            <p>Criando conta...</p>
         </div>
     </div>
 
@@ -103,9 +104,6 @@
     </div>
 
     <script>
-        // --- SEU LINK JÁ ESTÁ ARRUMADO ABAIXO ---
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx7FYZGE5OUO4Zsj5MkISFT9qmefNqBY8eBXkTCXtSMhg6APBNd-NXWEvQToDxiuu0/exec";
-
         const firebaseConfig = { apiKey: "AIzaSyBxbRiYNuGde5nwJIaoeRItWdZGR221cpY", authDomain: "rota-direta.firebaseapp.com", projectId: "rota-direta", databaseURL: "https://rota-direta-default-rtdb.firebaseio.com" };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
@@ -117,34 +115,26 @@
         function markUploaded(id){ document.getElementById(id).classList.add('uploaded'); document.getElementById(id).innerHTML='<i class="fas fa-check"></i> Foto OK'; }
         window.onload = () => { try { IMask(document.getElementById('m-zap'),{mask:'(00) 00000-0000'}); } catch(e){} }
 
-        async function uploadFile(id) {
-            const file = document.getElementById(id).files[0];
-            if(!file) return null;
-            return new Promise((resolve)=>{
-                const r = new FileReader();
-                r.onload = async(e) => {
-                    const b64 = e.target.result.split(',')[1];
-                    try{ await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',body:JSON.stringify({file:b64,filename:file.name,mimeType:file.type})}); resolve("ok"); } catch(e){ resolve("ok"); }
-                };
-                r.readAsDataURL(file);
-            });
-        }
-
         function loginGoogle(){ auth.signInWithPopup(provider).then(r=>{ const u = r.user; db.ref('passengers/'+u.uid).update({uid:u.uid, nome:u.displayName, foto:u.photoURL, type:'passenger'}); currentUser={uid:u.uid, nome:u.displayName, foto:u.photoURL, type:'passenger'}; entrarApp(); }).catch(e=>Swal.fire('Erro',e.message,'error')); }
 
         async function registrarMotorista() {
+            // VERIFICAÇÕES BÁSICAS
             if(!document.getElementById('m-terms').checked) return Swal.fire('Ops','Aceite os termos.','warning');
-            if(!document.getElementById('file-cnh').files[0]) return Swal.fire('Ops','Faltou a foto da CNH','warning');
             
             showScreen('screen-wait');
+            
             try {
-                await uploadFile('file-cnh');
-                await uploadFile('file-carro');
+                // --- PULO DO GATO: Desativei o Upload por enquanto ---
+                // await uploadFile('file-cnh'); 
+                
                 const email = document.getElementById('m-email').value;
                 const pass = document.getElementById('m-pass').value;
+                
+                // CRIA NO FIREBASE
                 const cred = await auth.createUserWithEmailAndPassword(email, pass);
                 const pin = Math.floor(1000+Math.random()*9000);
                 
+                // SALVA NO BANCO
                 await db.ref('drivers/'+cred.user.uid).set({
                     uid: cred.user.uid,
                     nome: document.getElementById('m-nome').value,
@@ -153,10 +143,20 @@
                     zap: document.getElementById('m-zap').value.replace(/\D/g,''),
                     pin: pin,
                     status: 'pendente',
+                    carro: 'Simulado (Upload Pendente)', // Marcador para sabermos que pulou
                     createdAt: Date.now()
                 });
-                Swal.fire({title:'Sucesso!', html:`Seu PIN é: <b>${pin}</b><br>Aguarde aprovação.`, icon:'success'}).then(()=>location.reload());
-            } catch(e) { showScreen('screen-register-mot'); Swal.fire('Erro', e.message, 'error'); }
+
+                Swal.fire({
+                    title:'Sucesso!', 
+                    html:`Seu PIN é: <b style="font-size:2rem">${pin}</b><br>Aguarde aprovação do Admin.`, 
+                    icon:'success'
+                }).then(()=>location.reload());
+
+            } catch(e) { 
+                showScreen('screen-register-mot'); 
+                Swal.fire('Erro', e.message, 'error'); 
+            }
         }
 
         async function fazerLoginMotorista() {
@@ -167,7 +167,7 @@
                 const uid = Object.keys(snap.val())[0];
                 const user = snap.val()[uid];
                 if(user.pin == pin) {
-                    if(user.status === 'pendente') return Swal.fire('Aguarde', 'Cadastro em análise.', 'info');
+                    if(user.status === 'pendente') return Swal.fire('Aguarde', 'Cadastro em análise pelo Admin.', 'info');
                     if(user.status === 'rejeitado') return Swal.fire('Ops', 'Acesso negado.', 'error');
                     currentUser = user; entrarApp();
                 } else Swal.fire('Erro', 'PIN Incorreto.', 'error');

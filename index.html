@@ -4,12 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Rota Direta Oficial</title>
+    
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/imask/6.4.3/imask.min.js"></script>
 
@@ -63,7 +68,7 @@
                 <i class="fas fa-car"></i> Sou Motorista
             </button>
         </div>
-        <div style="margin-top:30px; color:#94a3b8; font-size:0.7rem;">Versão 17.0 (Secure)</div>
+        <div style="margin-top:30px; color:#94a3b8; font-size:0.7rem;">Versão 17.2 (Completa)</div>
     </div>
 
     <div id="screen-login-mot" class="screen hidden">
@@ -134,7 +139,7 @@
     </div>
 
     <script>
-        // --- SEU LINK DO GOOGLE JÁ INSERIDO AQUI ---
+        // --- SEU LINK JÁ ESTÁ CONECTADO AQUI ---
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx7FYZGE5OUO4Zsj5MkISFT9qmefNqBY8eBXkTCXtSMhg6APBNd-NXWEvQToDxiuu0/exec";
 
         const firebaseConfig = {

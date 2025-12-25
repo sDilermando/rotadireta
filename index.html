@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Rota Eco - Leve</title>
+    <title>EcoRota</title>
     
     <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/94/94203.png">
 
@@ -13,251 +13,314 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/imask/6.4.3/imask.min.js"></script>
 
     <style>
-        /* ESTILO SUPER LEVE */
+        /* ESTILO GERAL */
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { margin: 0; font-family: sans-serif; background: #f0fdf4; overflow: hidden; height: 100vh; width: 100vw; }
+        :root { --primary: #047857; --eco: #10b981; --bg: #ecfdf5; --dark: #064e3b; }
+        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); overflow: hidden; height: 100vh; width: 100vw; position: fixed; }
         
         /* TELAS */
-        .screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 10; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+        .screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; transition: 0.3s; }
         .hidden { display: none !important; }
         
-        /* ELEMENTOS */
-        .logo { font-size: 2rem; font-weight: 900; color: #064e3b; margin-bottom: 20px; }
-        .btn { width: 100%; padding: 15px; border: none; border-radius: 10px; font-weight: bold; margin-top: 10px; color: white; background: #10b981; cursor: pointer; font-size: 1rem; }
-        .btn:active { opacity: 0.8; }
-        .btn-outline { background: white; border: 2px solid #10b981; color: #10b981; }
-        .inp { width: 100%; padding: 15px; border: 1px solid #ccc; border-radius: 10px; margin-bottom: 10px; font-size: 1rem; }
+        /* LOGO */
+        .logo { font-size: 2.5rem; font-weight: 900; color: var(--dark); margin-bottom: 30px; letter-spacing: -1px; }
+        .logo span { color: var(--eco); }
 
-        /* MAPA */
+        /* BOTÕES */
+        .btn { width: 100%; padding: 16px; border: none; border-radius: 12px; font-weight: bold; margin-top: 15px; cursor: pointer; font-size: 1rem; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.2s; }
+        .btn:active { transform: scale(0.98); }
+        .btn-google { background: white; border: 2px solid #e5e7eb; color: #374151; }
+        .btn-eco { background: var(--eco); color: white; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4); }
+        .btn-outline { background: transparent; border: 2px solid var(--eco); color: var(--eco); }
+        
+        /* INPUTS */
+        .inp { width: 100%; padding: 15px; border: 2px solid #e5e7eb; border-radius: 12px; margin-bottom: 10px; font-size: 1rem; outline: none; background: #f9fafb; }
+        .inp:focus { border-color: var(--eco); background: white; }
+
+        /* MOSAICO (ESCOLHA DE VEÍCULO) */
+        .mosaic { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; margin-bottom: 15px; }
+        .mosaic-item { border: 2px solid #e5e7eb; border-radius: 15px; padding: 15px; text-align: center; cursor: pointer; transition: 0.2s; }
+        .mosaic-item i { font-size: 2rem; color: #9ca3af; display: block; margin-bottom: 5px; }
+        .mosaic-item span { font-size: 0.8rem; font-weight: bold; color: #4b5563; }
+        
+        .mosaic-item.selected { border-color: var(--eco); background: #d1fae5; }
+        .mosaic-item.selected i { color: var(--dark); }
+
+        /* UI DO MAPA */
         #map { width: 100%; height: 100%; position: absolute; top:0; left:0; z-index: 1; }
         
-        /* INTERFACE FLUTUANTE */
-        .ui-layer { position: absolute; z-index: 5; width: 100%; height: 100%; pointer-events: none; }
-        .pointer-events-auto { pointer-events: auto; }
+        .float-btn { position: absolute; z-index: 50; width: 45px; height: 45px; border-radius: 50%; background: white; border: none; box-shadow: 0 4px 10px rgba(0,0,0,0.2); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: #333; }
+        #btn-exit { top: 20px; left: 20px; color: var(--dark); }
+        #btn-sos { top: 20px; right: 20px; background: #ef4444; color: white; animation: pulse 2s infinite; font-weight: bold; font-size: 0.8rem; }
         
-        .float-btn { position: absolute; width: 45px; height: 45px; background: white; border-radius: 50%; border: none; box-shadow: 0 4px 10px rgba(0,0,0,0.2); cursor: pointer; pointer-events: auto; display:flex; align-items:center; justify-content:center; font-size:1.2rem; }
-        #btn-menu { top: 20px; left: 20px; }
-        #btn-sos { top: 20px; right: 20px; background: #ef4444; color: white; }
-        #btn-gps { bottom: 100px; right: 20px; color: #10b981; }
+        /* RODAPÉ INFORMATIVO */
+        .footer-info { position: absolute; bottom: 10px; width: 100%; text-align: center; font-size: 0.7rem; color: #6b7280; background: rgba(255,255,255,0.9); padding: 5px; z-index: 200; pointer-events: none; }
 
-        #bottom-panel { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; pointer-events: auto; }
-        
-        .req-btn { background: #064e3b; color: white; padding: 15px; border-radius: 50px; width: 100%; border: none; font-weight: bold; font-size: 1.1rem; box-shadow: 0 5px 15px rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; }
+        /* BOTÃO CENTRAL */
+        #action-btn { position: absolute; bottom: 50px; left: 50%; transform: translateX(-50%); background: var(--dark); color: white; padding: 15px 30px; border-radius: 50px; font-weight: bold; box-shadow: 0 10px 25px rgba(0,0,0,0.3); z-index: 50; border: 2px solid var(--eco); cursor: pointer; display: flex; align-items: center; gap: 10px; white-space: nowrap; }
 
-        /* LISTA PRESTADOR */
-        .provider-card { background: white; padding: 15px; border-radius: 15px; margin-bottom: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); display: none; pointer-events: auto; }
-        .active-card { display: block; animation: popUp 0.3s; }
+        /* MODAL DE PERFIL (PRESTADOR ENCONTRADO) */
+        .profile-modal { text-align: center; }
+        .profile-img { width: 80px; height: 80px; border-radius: 50%; border: 3px solid var(--eco); margin-bottom: 10px; }
 
-        @keyframes popUp { from { transform: translateY(20px); opacity:0; } to { transform: translateY(0); opacity:1; } }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
     </style>
 </head>
 <body>
 
     <div id="screen-login" class="screen">
-        <div class="logo">ROTA <span>ECO</span></div>
-        <div style="width: 100%; max-width: 300px;">
-            <button class="btn" onclick="entrar('user')">🙋 SOU CLIENTE</button>
-            <button class="btn btn-outline" onclick="entrar('provider')">🚲 SOU PRESTADOR</button>
+        <div class="logo">Eco<span>Rota</span></div>
+        <div style="width: 100%; max-width: 320px;">
+            <button class="btn btn-google" onclick="login()">
+                <i class="fab fa-google"></i> Entrar com Google
+            </button>
         </div>
-        <p style="margin-top:20px; font-size:0.8rem; color:#666;">Versão Leve 31.0</p>
+        <p style="margin-top:30px; font-size:0.8rem; color:#9ca3af;">Versão Sustentável 1.0</p>
     </div>
 
-    <div id="screen-register" class="screen hidden">
-        <h3>Cadastro Rápido</h3>
-        <div style="width: 100%; max-width: 300px;">
-            <select id="reg-veh" class="inp">
-                <option value="bike">Bicicleta</option>
-                <option value="ebike">Bike Elétrica</option>
-                <option value="scooter">Scooter</option>
-                <option value="ape">A Pé / Office Boy</option>
-            </select>
-            <input id="reg-nome" class="inp" placeholder="Seu Nome">
-            <div style="font-size:0.8rem; margin:10px 0;">
-                <input type="checkbox" id="terms" checked> Aceito os termos de uso.
+    <div id="screen-terms" class="screen hidden">
+        <h3 style="color:var(--dark)">Termos de Uso</h3>
+        <div style="height: 200px; overflow-y: auto; background: #f9fafb; padding: 15px; border-radius: 10px; border: 1px solid #e5e7eb; font-size: 0.85rem; text-align: justify; margin-bottom: 20px;">
+            <p><b>1. A PLATAFORMA:</b> O EcoRota conecta usuários a prestadores de mobilidade sustentável (Bike, E-Bike, A Pé).</p>
+            <p><b>2. PAGAMENTOS:</b> O aplicativo <b>NÃO</b> processa pagamentos. Toda negociação financeira é feita diretamente entre as partes.</p>
+            <p><b>3. RESPONSABILIDADE:</b> O EcoRota não se responsabiliza pela execução dos serviços. O prestador é autônomo.</p>
+            <p><b>4. SEGURANÇA:</b> Ao aceitar, você concorda em compartilhar sua localização durante o uso.</p>
+        </div>
+        <label style="display: flex; align-items: center; gap: 10px; font-size: 0.9rem;">
+            <input type="checkbox" id="check-terms" onchange="toggleTermBtn()"> Li e concordo com tudo.
+        </label>
+        <button id="btn-accept-terms" class="btn btn-eco" onclick="aceitarTermos()" disabled style="opacity: 0.5;">CONTINUAR</button>
+    </div>
+
+    <div id="screen-role" class="screen hidden">
+        <h3 style="color:var(--dark); margin-bottom: 20px;">Como deseja usar?</h3>
+        <div style="width: 100%; max-width: 320px;">
+            <button class="btn btn-eco" onclick="irPara('user')">🙋 SOU USUÁRIO</button>
+            <button class="btn btn-outline" onclick="irPara('provider')">🚲 SOU PRESTADOR</button>
+        </div>
+        <div class="footer-info" style="position: relative; margin-top: 30px; background: transparent;">
+            O App apenas conecta. Negocie valores livremente.
+        </div>
+    </div>
+
+    <div id="screen-provider-reg" class="screen hidden">
+        <h3 style="color:var(--dark); margin-top: 0;">Cadastro Eco</h3>
+        <div style="width: 100%; max-width: 320px; overflow-y: auto; max-height: 90vh;">
+            
+            <p style="font-size:0.9rem; color:#6b7280; text-align:center;">Qual seu meio de transporte?</p>
+            <div class="mosaic">
+                <div class="mosaic-item" onclick="selVeh(this, 'Bike Comum')"><i class="fas fa-bicycle"></i><span>Bike</span></div>
+                <div class="mosaic-item" onclick="selVeh(this, 'Bike Elétrica')"><i class="fas fa-bolt"></i><span>E-Bike</span></div>
+                <div class="mosaic-item" onclick="selVeh(this, 'Scooter')"><i class="fas fa-scooter"></i><span>Scooter</span></div>
+                <div class="mosaic-item" onclick="selVeh(this, 'Office Boy')"><i class="fas fa-walking"></i><span>A Pé</span></div>
             </div>
-            <button class="btn" onclick="finalizarCadastro()">ENTRAR ONLINE</button>
+            <input type="hidden" id="prov-veh">
+
+            <input id="prov-name" class="inp" placeholder="Nome Completo">
+            <input id="prov-zap" class="inp" type="tel" placeholder="WhatsApp (DDD)">
+            
+            <label style="font-size:0.8rem; display: flex; gap: 10px; margin: 10px 0;">
+                <input type="checkbox" id="prov-commit"> Comprometo-me a atuar com segurança.
+            </label>
+
+            <button class="btn btn-eco" onclick="enviarParaAdmin()">
+                <i class="fas fa-paper-plane"></i> ENVIAR CADASTRO
+            </button>
             <button class="btn btn-outline" onclick="location.reload()">VOLTAR</button>
         </div>
     </div>
 
-    <div id="screen-app" class="screen hidden" style="background:transparent; padding:0; display:block;">
+    <div id="screen-map" class="screen hidden" style="background: transparent; padding: 0; display: block;">
         <div id="map"></div>
         
-        <div class="ui-layer">
-            <button id="btn-menu" class="float-btn" onclick="msg('Menu do App')"><i class="fas fa-bars"></i></button>
-            <button id="btn-sos" class="float-btn" onclick="msg('Ligando 190...')">SOS</button>
-            <button id="btn-gps" class="float-btn" onclick="centralizar()"><i class="fas fa-crosshairs"></i></button>
+        <button id="btn-exit" class="float-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i></button>
+        <button id="btn-sos" class="float-btn" onclick="sos()">SOS</button>
 
-            <div id="bottom-panel">
-                <button id="btn-pedir" class="req-btn hidden" onclick="fazerPedido()">
-                    <i class="fas fa-leaf"></i> SOLICITAR AGORA
-                </button>
+        <button id="action-btn" onclick="pedirServico()">
+            <i class="fas fa-search-location"></i> BUSCAR PRESTADOR
+        </button>
 
-                <div id="provider-panel" class="hidden">
-                    <div style="background:white; padding:15px; border-radius:20px; text-align:center;">
-                        <span style="color:#10b981; font-weight:bold;">🟢 VOCÊ ESTÁ ONLINE</span>
-                        <div id="lista-pedidos" style="margin-top:10px;">
-                            <p style="color:#999; font-size:0.9rem;">Aguardando chamados...</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="footer-info">
+            <i class="fas fa-info-circle"></i> O EcoRota não recebe valores. Combine direto com o prestador.
         </div>
     </div>
 
     <script>
-        // --- MOTOR DO APP (SIMPLES E ROBUSTO) ---
-        
+        // --- VARIÁVEIS ---
         let map;
-        let myMarker;
         let role = '';
-        let icons = {};
+        let myMarker;
+        const adminEmail = "sdilersilva@gmail.com";
 
-        // INICIALIZAÇÃO SEGURA
-        window.onload = function() {
-            // Define ícones uma vez só
-            const size = [38, 38];
-            const anchor = [19, 19];
-            icons = {
-                bike: L.icon({iconUrl:'https://cdn-icons-png.flaticon.com/512/94/94203.png', iconSize:size, iconAnchor:anchor}),
-                ebike: L.icon({iconUrl:'https://cdn-icons-png.flaticon.com/512/3082/3082383.png', iconSize:size, iconAnchor:anchor}),
-                scooter: L.icon({iconUrl:'https://cdn-icons-png.flaticon.com/512/2554/2554936.png', iconSize:size, iconAnchor:anchor}),
-                ape: L.icon({iconUrl:'https://cdn-icons-png.flaticon.com/512/72/72908.png', iconSize:size, iconAnchor:anchor}),
-                user: L.divIcon({className:'eu', html:'<div style="width:16px;height:16px;background:#059669;border:3px solid white;border-radius:50%;box-shadow:0 0 0 10px rgba(16,185,129,0.3);"></div>'})
-            };
+        // --- INICIALIZAÇÃO ---
+        window.onload = () => {
+            IMask(document.getElementById('prov-zap'), {mask:'(00) 00000-0000'});
         };
 
-        // 1. NAVEGAÇÃO
-        function entrar(tipo) {
+        // 1. LOGIN
+        function login() {
+            Swal.fire({
+                title: 'Autenticando...',
+                timer: 1000,
+                didOpen: () => Swal.showLoading()
+            }).then(() => {
+                trocarTela('screen-login', 'screen-terms');
+            });
+        }
+
+        // 2. TERMOS
+        function toggleTermBtn() {
+            const chk = document.getElementById('check-terms');
+            const btn = document.getElementById('btn-accept-terms');
+            btn.disabled = !chk.checked;
+            btn.style.opacity = chk.checked ? 1 : 0.5;
+        }
+
+        function aceitarTermos() {
+            trocarTela('screen-terms', 'screen-role');
+        }
+
+        // 3. ROTEAMENTO
+        function irPara(tipo) {
             role = tipo;
-            document.getElementById('screen-login').classList.add('hidden');
-            
-            if (tipo === 'user') {
+            if(tipo === 'user') {
+                trocarTela('screen-role', 'screen-map');
                 iniciarMapa();
-                document.getElementById('btn-pedir').classList.remove('hidden');
             } else {
-                document.getElementById('screen-register').classList.remove('hidden');
+                trocarTela('screen-role', 'screen-provider-reg');
             }
         }
 
-        function finalizarCadastro() {
-            const nome = document.getElementById('reg-nome').value;
-            if(nome.length < 3) return alert("Digite seu nome!");
-            
-            document.getElementById('screen-register').classList.add('hidden');
-            iniciarMapa();
-            document.getElementById('provider-panel').classList.remove('hidden');
-            
-            // Simula pedidos chegando para o prestador
-            simularPedidos();
+        // 4. CADASTRO PRESTADOR
+        function selVeh(el, tipo) {
+            document.querySelectorAll('.mosaic-item').forEach(i => i.classList.remove('selected'));
+            el.classList.add('selected');
+            document.getElementById('prov-veh').value = tipo;
         }
 
-        // 2. SISTEMA DE MAPA (COM PROTEÇÃO)
+        function enviarParaAdmin() {
+            const nome = document.getElementById('prov-name').value;
+            const zap = document.getElementById('prov-zap').value;
+            const veiculo = document.getElementById('prov-veh').value;
+            const compromisso = document.getElementById('prov-commit').checked;
+
+            if(!nome || !zap || !veiculo || !compromisso) {
+                return Swal.fire('Atenção', 'Preencha todos os campos e aceite o compromisso.', 'warning');
+            }
+
+            // GERA LINK DE EMAIL REAL
+            const assunto = `Cadastro EcoRota: ${nome}`;
+            const corpo = `Nome: ${nome}%0AWhatsApp: ${zap}%0AVeículo: ${veiculo}%0A%0ASolicito habilitação no app.`;
+            const mailtoLink = `mailto:${adminEmail}?subject=${assunto}&body=${corpo}`;
+
+            window.location.href = mailtoLink;
+
+            Swal.fire({
+                title: 'Enviado!',
+                text: 'Seus dados foram enviados para análise. Aguarde nosso contato.',
+                icon: 'success'
+            }).then(() => location.reload());
+        }
+
+        // 5. MAPA E FLUXO USUÁRIO
         function iniciarMapa() {
-            document.getElementById('screen-app').classList.remove('hidden');
+            if(!map) {
+                map = L.map('map', {zoomControl: false}).setView([-21.135, -44.261], 15);
+                L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(map);
+            }
+            setTimeout(() => map.invalidateSize(), 500);
 
-            setTimeout(() => {
-                // Tenta carregar o mapa
-                if(!map) {
-                    map = L.map('map', {zoomControl: false}).setView([-21.135, -44.261], 15); // SJDR Padrão
-                    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-                        attribution: '&copy; OpenStreetMap'
-                    }).addTo(map);
-                }
-                map.invalidateSize(); // Destrava tela cinza
+            // Tenta Geolocalização Real
+            if(navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(p => {
+                    const lat = p.coords.latitude;
+                    const lng = p.coords.longitude;
+                    
+                    // Ícone Usuário
+                    const iconUser = L.divIcon({
+                        className: 'user-pin',
+                        html: '<div style="width:15px;height:15px;background:#047857;border:3px solid white;border-radius:50%;box-shadow:0 0 0 10px rgba(16,185,129,0.3);"></div>'
+                    });
+                    
+                    if(myMarker) map.removeLayer(myMarker);
+                    myMarker = L.marker([lat, lng], {icon: iconUser}).addTo(map);
+                    map.setView([lat, lng], 17);
 
-                // Tenta pegar GPS
-                if(navigator.geolocation) {
-                    navigator.geolocation.getCurrentPosition(
-                        (pos) => {
-                            const lat = pos.coords.latitude;
-                            const lng = pos.coords.longitude;
-                            
-                            // Cria ícone
-                            const icone = role === 'user' ? icons.user : icons.bike;
-                            myMarker = L.marker([lat, lng], {icon: icone}).addTo(map);
-                            map.setView([lat, lng], 16);
-                            
-                            // Se for usuário, cria uns prestadores fake em volta
-                            if(role === 'user') criarFakes(lat, lng);
-                        },
-                        (err) => {
-                            alert("GPS desligado ou bloqueado. Usando localização padrão.");
-                        },
-                        { enableHighAccuracy: true }
-                    );
-                }
-            }, 500);
+                    // Adiciona uns prestadores falsos ao redor para dar vida
+                    adicionarFakes(lat, lng);
+
+                }, () => alert('Ative o GPS para melhor precisão.'), {enableHighAccuracy: true});
+            }
         }
 
-        // 3. FLUXO DE PEDIDO (USUÁRIO)
-        async function fazerPedido() {
-            const { value: form } = await Swal.fire({
-                title: 'Novo Pedido',
-                html: `
-                    <select id="p-cat" class="inp"><option>🚲 Bike</option><option>👟 A Pé</option></select>
-                    <input id="p-desc" class="inp" placeholder="O que precisa?">
-                `,
-                confirmButtonText: 'CHAMAR',
-                confirmButtonColor: '#064e3b',
-                focusConfirm: false,
-                preConfirm: () => [document.getElementById('p-cat').value, document.getElementById('p-desc').value]
+        function adicionarFakes(lat, lng) {
+            const iconBike = L.icon({iconUrl:'https://cdn-icons-png.flaticon.com/512/94/94203.png', iconSize:[30,30]});
+            L.marker([lat+0.002, lng+0.002], {icon: iconBike}).addTo(map);
+            L.marker([lat-0.002, lng-0.002], {icon: iconBike}).addTo(map);
+        }
+
+        // 6. BUSCA E CONFIRMAÇÃO (O PULO DO GATO)
+        async function pedirServico() {
+            // 1. Pergunta o que quer
+            const { value: desc } = await Swal.fire({
+                title: 'O que você precisa?',
+                input: 'text',
+                inputPlaceholder: 'Ex: Levar chave no centro...',
+                confirmButtonText: 'BUSCAR',
+                confirmButtonColor: '#047857',
+                showCancelButton: true
             });
 
-            if(form) {
-                Swal.fire({
-                    title: 'Procurando...',
-                    text: 'Aguarde um prestador aceitar.',
-                    showConfirmButton: false,
-                    didOpen: () => { Swal.showLoading() }
-                });
+            if(!desc) return;
 
-                // Simula resposta em 3s
-                setTimeout(() => {
-                    Swal.fire('ACEITO! 🌟', 'Carlos (Bike) aceitou.<br>Indo para o WhatsApp...', 'success');
-                }, 3000);
-            }
+            // 2. Simula Busca
+            Swal.fire({
+                title: 'Localizando...',
+                text: 'Buscando o Eco-Prestador mais próximo',
+                timer: 2000,
+                didOpen: () => Swal.showLoading()
+            }).then(() => {
+                // 3. ENCONTROU! Mostra o perfil ANTES de confirmar
+                mostrarPerfilPrestador();
+            });
         }
 
-        // 4. SIMULAÇÃO PARA PRESTADOR
-        function simularPedidos() {
-            setInterval(() => {
-                const lista = document.getElementById('lista-pedidos');
-                const div = document.createElement('div');
-                div.className = 'provider-card active-card';
-                div.innerHTML = `
-                    <b>Novo Cliente (Centro)</b><br>
-                    Precisa de: Entrega Rápida<br>
-                    <button class="btn" style="margin-top:5px; padding:10px;" onclick="aceitar(this)">ACEITAR</button>
-                `;
-                lista.prepend(div);
-                
-                // Toca som se possível
-                try { new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3').play(); } catch(e){}
-            }, 5000); // Cria um pedido a cada 5s
-        }
-
-        function aceitar(btn) {
-            btn.parentElement.innerHTML = '<b style="color:green">ACEITO! 🎉 Abrindo WhatsApp...</b>';
-            setTimeout(() => { btn.parentElement.remove(); }, 2000);
+        function mostrarPerfilPrestador() {
+            Swal.fire({
+                html: `
+                    <div class="profile-modal">
+                        <img src="https://randomuser.me/api/portraits/men/32.jpg" class="profile-img">
+                        <h3>João da Silva</h3>
+                        <p style="color:#059669; font-weight:bold;">🚲 Bicicleta Elétrica</p>
+                        <p>⭐ 5.0 (54 corridas)</p>
+                        <hr>
+                        <small style="color:#6b7280">Encontramos este prestador próximo a você.</small>
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonText: '<i class="fab fa-whatsapp"></i> CHAMAR NO WHATSAPP',
+                confirmButtonColor: '#25D366', // Cor do Zap
+                cancelButtonText: 'Buscar Outro'
+            }).then((res) => {
+                if(res.isConfirmed) {
+                    // Aqui abriria o link real do zap do motorista
+                    window.open('https://wa.me/5532999999999?text=Olá,%20vi%20seu%20perfil%20no%20EcoRota%20e%20preciso%20de%20um%20serviço.', '_blank');
+                } else if (res.dismiss === Swal.DismissReason.cancel) {
+                    Swal.fire('Buscando outro...', '', 'info');
+                }
+            });
         }
 
         // UTILS
-        function criarFakes(lat, lng) {
-            L.marker([lat + 0.002, lng + 0.002], {icon: icons.bike}).addTo(map).bindPopup('João');
-            L.marker([lat - 0.002, lng - 0.001], {icon: icons.ape}).addTo(map).bindPopup('Maria');
+        function trocarTela(atual, proxima) {
+            document.getElementById(atual).classList.add('hidden');
+            document.getElementById(proxima).classList.remove('hidden');
         }
-        
-        function centralizar() {
-            if(myMarker) {
-                const ll = myMarker.getLatLng();
-                map.setView(ll, 17);
-            }
-        }
-        
-        function msg(texto) { alert(texto); }
+        function logout() { location.reload(); }
+        function sos() { window.open('tel:190'); }
 
     </script>
 </body>

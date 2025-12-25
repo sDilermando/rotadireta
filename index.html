@@ -3,336 +3,477 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>EcoRota - 100% Sustentável</title>
+    <title>EcoRota | Mobilidade Urbana</title>
     
-    <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/94/94203.png">
+    <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/3202/3202926.png">
+
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/imask/6.4.3/imask.min.js"></script>
 
     <style>
+        /* DESIGN SYSTEM STARTUP */
+        :root {
+            --primary: #10b981; /* Emerald Green */
+            --dark: #0f172a;    /* Slate 900 */
+            --light: #f8fafc;   /* Slate 50 */
+            --gray: #64748b;    /* Slate 500 */
+            --error: #ef4444;
+            --radius: 12px;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        :root { --primary: #065f46; --eco: #10b981; --bg: #ecfdf5; }
-        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); overflow: hidden; height: 100vh; width: 100vw; position: fixed; }
-        
-        .screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; transition: 0.3s; }
+        body { margin: 0; font-family: 'Roboto', sans-serif; background: var(--light); overflow: hidden; height: 100vh; width: 100vw; color: var(--dark); }
+
+        /* UTILITÁRIOS */
+        .screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 50; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; transition: opacity 0.3s ease; }
         .hidden { display: none !important; }
+        .w-full { width: 100%; }
+        .max-w-md { max-width: 400px; }
+        .text-center { text-align: center; }
         
-        .logo { font-size: 2.5rem; font-weight: 900; color: var(--primary); margin-bottom: 20px; }
-        .logo span { color: var(--eco); }
+        /* LOGO MODERNA */
+        .brand { font-size: 2rem; font-weight: 800; color: var(--dark); letter-spacing: -1px; margin-bottom: 8px; }
+        .brand span { color: var(--primary); }
+        .tagline { color: var(--gray); font-size: 0.9rem; margin-bottom: 32px; font-weight: 400; }
 
-        .btn { width: 100%; padding: 16px; border: none; border-radius: 12px; font-weight: bold; margin-top: 15px; cursor: pointer; font-size: 1rem; display: flex; align-items: center; justify-content: center; gap: 10px; }
-        .btn-google { background: white; border: 2px solid #e5e7eb; color: #374151; }
-        .btn-eco { background: var(--eco); color: white; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4); }
-        .btn-outline { background: transparent; border: 2px solid var(--eco); color: var(--eco); }
+        /* INPUTS ESTILO MATERIAL */
+        .input-group { position: relative; margin-bottom: 16px; width: 100%; }
+        .input-field { width: 100%; padding: 16px; border: 1px solid #cbd5e1; border-radius: var(--radius); font-size: 1rem; transition: 0.2s; outline: none; background: #fff; }
+        .input-field:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1); }
+        .input-label { position: absolute; left: 16px; top: 16px; color: var(--gray); pointer-events: none; transition: 0.2s; font-size: 1rem; background: white; padding: 0 4px; }
+        .input-field:focus ~ .input-label, .input-field:not(:placeholder-shown) ~ .input-label { top: -10px; font-size: 0.8rem; color: var(--primary); font-weight: 600; }
+
+        /* BOTÕES */
+        .btn { width: 100%; padding: 16px; border: none; border-radius: var(--radius); font-weight: 600; font-size: 1rem; cursor: pointer; transition: transform 0.1s; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: var(--shadow); }
+        .btn:active { transform: scale(0.98); }
+        .btn-primary { background: var(--dark); color: white; }
+        .btn-eco { background: var(--primary); color: white; }
+        .btn-outline { background: transparent; border: 2px solid #e2e8f0; color: var(--gray); box-shadow: none; }
+        .btn-link { background: none; color: var(--primary); box-shadow: none; font-size: 0.9rem; margin-top: 10px; }
+
+        /* TERMOS JURÍDICOS */
+        .legal-box { height: 180px; overflow-y: scroll; background: #f1f5f9; padding: 16px; border-radius: var(--radius); font-size: 0.8rem; line-height: 1.5; color: var(--gray); border: 1px solid #e2e8f0; margin-bottom: 16px; text-align: justify; }
         
-        .inp { width: 100%; padding: 15px; border: 2px solid #e5e7eb; border-radius: 12px; margin-bottom: 10px; font-size: 1rem; outline: none; }
-
-        /* MOSAICO ECO */
-        .mosaic { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; margin-bottom: 15px; }
-        .mosaic-item { border: 2px solid #e5e7eb; border-radius: 15px; padding: 15px; text-align: center; cursor: pointer; }
-        .mosaic-item.selected { border-color: var(--eco); background: #d1fae5; }
-        .mosaic-item i { font-size: 2rem; color: #9ca3af; display: block; margin-bottom: 5px; }
-
-        #map { width: 100%; height: 100%; position: absolute; top:0; left:0; z-index: 1; }
-        .float-btn { position: absolute; z-index: 50; width: 45px; height: 45px; border-radius: 50%; background: white; border: none; box-shadow: 0 4px 10px rgba(0,0,0,0.2); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
-        #btn-exit { top: 20px; left: 20px; color: #333; }
-        #btn-sos { top: 20px; right: 20px; background: #ef4444; color: white; animation: pulse 2s infinite; font-weight: bold; font-size: 0.7rem; }
+        /* MAPA CLEAN */
+        #map { width: 100%; height: 100%; position: absolute; top:0; left:0; z-index: 1; filter: saturate(0.8); }
         
-        #action-btn { position: absolute; bottom: 50px; left: 50%; transform: translateX(-50%); background: var(--primary); color: white; padding: 15px 30px; border-radius: 50px; font-weight: bold; box-shadow: 0 10px 25px rgba(0,0,0,0.3); z-index: 50; border: 2px solid var(--eco); cursor: pointer; display: flex; align-items: center; gap: 10px; white-space: nowrap; }
+        /* INTERFACE FLUTUANTE */
+        .ui-float { position: absolute; z-index: 100; }
+        .top-left { top: 20px; left: 20px; }
+        .top-right { top: 20px; right: 20px; }
+        .bottom-center { bottom: 40px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; }
 
-        .footer-info { position: absolute; bottom: 10px; width: 100%; text-align: center; font-size: 0.7rem; color: #6b7280; background: rgba(255,255,255,0.9); padding: 5px; z-index: 200; pointer-events: none; }
-        
-        /* ESTRELA ANIMADA */
-        .star-anim { font-size: 4rem; color: #fbbf24; animation: spinPop 0.8s ease-out; display: block; margin: 0 auto 10px auto; }
-        @keyframes spinPop { 0% { transform: scale(0) rotate(-180deg); } 80% { transform: scale(1.2) rotate(20deg); } 100% { transform: scale(1) rotate(0); } }
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+        .icon-btn { width: 48px; height: 48px; border-radius: 50%; background: white; border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; cursor: pointer; color: var(--dark); transition: 0.2s; }
+        .icon-btn:hover { transform: translateY(-2px); }
+        .sos-btn { background: var(--error); color: white; animation: pulse 2s infinite; font-weight: 700; font-size: 0.8rem; }
+
+        /* MODAL DE BUSCA/PRESTADOR */
+        .search-modal { background: white; border-radius: 20px; padding: 24px; box-shadow: 0 -10px 40px rgba(0,0,0,0.1); width: 100%; }
+        .provider-profile { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; }
+        .avatar { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; border: 3px solid var(--primary); }
+        .p-info h3 { margin: 0; font-size: 1.1rem; }
+        .p-info p { margin: 4px 0 0; font-size: 0.9rem; color: var(--gray); }
+        .stars { color: #fbbf24; font-size: 0.9rem; }
+
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
     </style>
 </head>
 <body>
 
-    <div id="screen-login" class="screen">
-        <div class="logo">Eco<span>Rota</span></div>
-        <div style="width: 100%; max-width: 320px;">
-            <button class="btn btn-google" onclick="loginFlow()">
-                <i class="fab fa-google"></i> Entrar / Cadastrar
-            </button>
-        </div>
-        <p style="margin-top:30px; font-size:0.8rem; color:#9ca3af;">Versão Sustentável 2.0</p>
-    </div>
-
-    <div id="screen-terms" class="screen hidden">
-        <h3 style="color:var(--primary)">Compromisso Verde</h3>
-        <div style="height: 150px; overflow-y: auto; background: #f9fafb; padding: 15px; border: 1px solid #e5e7eb; font-size: 0.85rem; text-align: justify; margin-bottom: 20px;">
-            <p>1. O EcoRota é exclusivo para mobilidade limpa (Bike, Elétrico, A Pé).</p>
-            <p>2. Veículos a combustão são proibidos.</p>
-            <p>3. Valores são negociados livremente.</p>
-            <p>4. Segurança é responsabilidade do prestador.</p>
-        </div>
-        <label><input type="checkbox" id="check-terms" onchange="toggleBtn()"> Aceito colaborar com o planeta.</label>
-        <button id="btn-accept" class="btn btn-eco" onclick="aceitarTermos()" disabled style="opacity:0.5">CONTINUAR</button>
-    </div>
-
-    <div id="screen-role" class="screen hidden">
-        <h3 style="color:var(--primary)">Quem é você?</h3>
-        <div style="width: 100%; max-width: 320px;">
-            <button class="btn btn-eco" onclick="escolherPerfil('user')">🙋 SOU USUÁRIO</button>
-            <button class="btn btn-outline" onclick="escolherPerfil('provider')">🚲 SOU PRESTADOR</button>
-        </div>
-    </div>
-
-    <div id="screen-provider-reg" class="screen hidden">
-        <h3 style="margin-top:0;">Cadastro Eco</h3>
-        <div style="width: 100%; max-width: 320px; max-height: 90vh; overflow-y: auto;">
-            <div class="mosaic">
-                <div class="mosaic-item" onclick="selVeh(this, 'Bike Comum')"><i class="fas fa-bicycle"></i><span>Bike</span></div>
-                <div class="mosaic-item" onclick="selVeh(this, 'Bike Elétrica')"><i class="fas fa-bolt"></i><span>E-Bike</span></div>
-                <div class="mosaic-item" onclick="selVeh(this, 'Patinete Elétrico')"><i class="fas fa-scooter"></i><span>Patinete</span></div>
-                <div class="mosaic-item" onclick="selVeh(this, 'Office Boy')"><i class="fas fa-walking"></i><span>A Pé</span></div>
+    <div id="screen-auth" class="screen">
+        <div class="brand">Eco<span>Rota</span></div>
+        <div class="tagline">Mobilidade Profissional Sustentável</div>
+        
+        <div class="w-full max-w-md">
+            <div style="display:flex; gap:10px; margin-bottom:20px;">
+                <button class="btn btn-outline" id="tab-user" onclick="switchTab('user')">Usuário</button>
+                <button class="btn btn-outline" id="tab-prov" onclick="switchTab('prov')">Prestador</button>
             </div>
-            <input type="hidden" id="prov-veh">
-            <input id="prov-name" class="inp" placeholder="Nome Completo">
-            <input id="prov-zap" class="inp" type="tel" placeholder="WhatsApp">
+
+            <div id="form-login">
+                <div class="input-group">
+                    <input type="tel" id="login-phone" class="input-field" placeholder=" ">
+                    <label class="input-label">Celular (DDD)</label>
+                </div>
+                <div class="input-group hidden" id="div-pass">
+                    <input type="password" id="login-pass" class="input-field" placeholder=" ">
+                    <label class="input-label">Senha de Acesso</label>
+                </div>
+                
+                <button class="btn btn-primary" onclick="processLogin()">ENTRAR</button>
+                <button class="btn btn-link" onclick="openRegister()">Não tem conta? Cadastre-se</button>
+            </div>
+        </div>
+        <p style="position:absolute; bottom:20px; color:#cbd5e1; font-size:0.75rem;">v35.0 Enterprise Build</p>
+    </div>
+
+    <div id="screen-register" class="screen hidden">
+        <h2 style="margin-top:0;">Criar Conta</h2>
+        <p style="color:var(--gray); font-size:0.9rem; margin-bottom:20px;">Segurança em primeiro lugar.</p>
+        
+        <div class="w-full max-w-md" style="overflow-y:auto;">
+            <div class="input-group">
+                <input type="text" id="reg-name" class="input-field" placeholder=" ">
+                <label class="input-label">Nome Completo (Sem abreviações)</label>
+            </div>
+            <div class="input-group">
+                <input type="tel" id="reg-phone" class="input-field" placeholder=" ">
+                <label class="input-label">WhatsApp Válido</label>
+            </div>
             
-            <p style="font-size:0.8rem; color:#6b7280; text-align:center;">
-                Envie seus dados para aprovação.
-            </p>
+            <div id="prov-fields" class="hidden">
+                <div class="input-group">
+                    <select id="reg-veh" class="input-field" style="background:white;">
+                        <option value="" disabled selected>Selecione o Veículo</option>
+                        <option value="Bike">🚲 Bicicleta</option>
+                        <option value="E-Bike">⚡ Bike Elétrica</option>
+                        <option value="Patinete">🛴 Patinete Elétrico</option>
+                        <option value="A Pé">👟 Office Boy (A Pé)</option>
+                    </select>
+                </div>
+            </div>
+
+            <label style="font-weight:bold; font-size:0.9rem; display:block; margin-bottom:5px;">Termos de Uso Obrigatórios</label>
+            <div class="legal-box" id="legal-scroll">
+                <p><strong>1. ACEITAÇÃO:</strong> Ao usar o EcoRota, você concorda com a política de tolerância zero para veículos poluentes.</p>
+                <p><strong>2. VERACIDADE:</strong> O usuário garante que seus dados são reais. Perfis falsos serão banidos.</p>
+                <p><strong>3. SEGURANÇA:</strong> O prestador é um profissional autônomo. O EcoRota conecta partes e não emprega motoristas.</p>
+                <p><strong>4. DADOS:</strong> Seus dados são protegidos e usados apenas para a prestação do serviço.</p>
+                <p><strong>5. PAGAMENTOS:</strong> A plataforma é isenta de transações financeiras.</p>
+                <br><br><br>
+                <p style="text-align:center; color:var(--primary);">Você chegou ao final.</p>
+            </div>
             
-            <button class="btn btn-outline" onclick="enviarZap()">1. ENVIAR PARA APROVAÇÃO</button>
-            <hr style="margin: 15px 0; border: 0; border-top: 1px solid #eee;">
-            <input id="prov-pass" class="inp" type="text" placeholder="Cole a SENHA aqui" style="text-align:center; letter-spacing: 2px; font-weight: bold;">
-            <button class="btn btn-eco" onclick="validarSenha()">2. ENTRAR ONLINE</button>
-            <button class="btn btn-outline" onclick="location.reload()" style="border:none; color:#999">Cancelar</button>
+            <div style="display:flex; align-items:center; gap:10px; margin-bottom:20px;">
+                <input type="checkbox" id="check-terms" disabled>
+                <label for="check-terms" style="font-size:0.9rem; color:var(--gray);">Li e aceito os termos.</label>
+            </div>
+
+            <button class="btn btn-eco" id="btn-reg-submit" onclick="submitRegister()" disabled>CONTINUAR</button>
+            <button class="btn btn-link" onclick="location.reload()">Voltar ao Login</button>
         </div>
     </div>
 
-    <div id="screen-map" class="screen hidden" style="background: transparent; padding: 0; display: block;">
+    <div id="screen-verify" class="screen hidden">
+        <div class="text-center">
+            <i class="fas fa-shield-alt" style="font-size:3rem; color:var(--primary); margin-bottom:20px;"></i>
+            <h3>Aprovação Necessária</h3>
+            <p style="color:var(--gray); margin-bottom:30px;">Para garantir a segurança, seu cadastro precisa ser aprovado manualmente.</p>
+            
+            <button class="btn btn-outline" onclick="sendToAdmin()">1. ENVIAR DADOS (WHATSAPP)</button>
+            <p style="font-size:0.8rem; margin:15px 0; color:#94a3b8;">Aguarde a senha que será enviada pelo Admin.</p>
+            
+            <div class="input-group">
+                <input type="text" id="verify-pass" class="input-field" placeholder=" " style="text-align:center; letter-spacing:3px; font-weight:bold;">
+                <label class="input-label">2. Digite a Senha Recebida</label>
+            </div>
+            
+            <button class="btn btn-primary" onclick="activateAccount()">ATIVAR CONTA</button>
+        </div>
+    </div>
+
+    <div id="screen-map" class="screen hidden" style="background:transparent; padding:0;">
         <div id="map"></div>
-        <button id="btn-exit" class="float-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i></button>
-        <button id="btn-sos" class="float-btn" onclick="sos()">SOS</button>
 
-        <button id="action-btn" onclick="acaoPrincipal()">
-            CARREGANDO...
-        </button>
+        <div class="ui-float top-left">
+            <button class="icon-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i></button>
+        </div>
+        <div class="ui-float top-right">
+            <button class="icon-btn sos-btn" onclick="sos()">SOS</button>
+        </div>
 
-        <div class="footer-info"><i class="fas fa-leaf"></i> Você está usando um app 100% sustentável.</div>
+        <div class="ui-float bottom-center hidden" id="panel-user">
+            <div class="search-modal">
+                <h3 style="margin-top:0;">Para onde vamos?</h3>
+                <div class="input-group">
+                    <select id="search-cat" class="input-field">
+                        <option value="Bike">🚲 Bike (Encomenda)</option>
+                        <option value="E-Bike">⚡ E-Bike (Rápido)</option>
+                        <option value="A Pé">👟 Office Boy (Curto)</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <input id="search-desc" class="input-field" placeholder=" " type="text">
+                    <label class="input-label">O que precisa fazer?</label>
+                </div>
+                <button class="btn btn-primary" onclick="startSearch()">BUSCAR PRESTADOR</button>
+            </div>
+        </div>
+
+        <div class="ui-float bottom-center hidden" id="panel-prov">
+            <div class="search-modal text-center">
+                <div style="background:#dcfce7; color:#166534; padding:8px 16px; border-radius:50px; display:inline-block; font-weight:bold; margin-bottom:15px;">
+                    🟢 VOCÊ ESTÁ ONLINE
+                </div>
+                <p style="color:var(--gray);">Aguardando chamados...</p>
+                <div id="prov-notification" style="margin-top:20px;"></div>
+            </div>
+        </div>
     </div>
 
     <script>
-        const SENHA_MESTRA = "ECO2025"; 
-        const ZAP_ADMIN = "5532984099000";
+        // CONFIGURAÇÃO DO ADMIN
+        const ADMIN_PHONE = "5532984099000"; 
+        
+        let map, userRole = 'user';
+        let currentMarker;
 
-        let map, myMarker, userRole;
-
-        const icons = {
-            bike: L.icon({iconUrl:'https://cdn-icons-png.flaticon.com/512/94/94203.png', iconSize:[32,32]}),
-            ebike: L.icon({iconUrl:'https://cdn-icons-png.flaticon.com/512/3082/3082383.png', iconSize:[32,32]}),
-            scooter: L.icon({iconUrl:'https://cdn-icons-png.flaticon.com/512/2554/2554936.png', iconSize:[32,32]}),
-            ape: L.icon({iconUrl:'https://cdn-icons-png.flaticon.com/512/72/72908.png', iconSize:[32,32]}),
-            eu: L.divIcon({className:'pin', html:`<div style="width:16px;height:16px;background:#047857;border:3px solid white;border-radius:50%;box-shadow:0 0 0 10px rgba(16,185,129,0.3);"></div>`})
-        };
-
+        // --- MÁSCARAS E INICIALIZAÇÃO ---
         window.onload = () => {
-            IMask(document.getElementById('prov-zap'), {mask:'(00) 00000-0000'});
-            const salvo = localStorage.getItem('ecoRotaUser');
-            if(salvo) {
-                const dados = JSON.parse(salvo);
-                iniciarAppDireto(dados.role, dados.nome);
+            IMask(document.getElementById('login-phone'), {mask:'(00) 00000-0000'});
+            IMask(document.getElementById('reg-phone'), {mask:'(00) 00000-0000'});
+            
+            // Lógica do Scroll dos Termos
+            const box = document.getElementById('legal-scroll');
+            box.addEventListener('scroll', () => {
+                if(box.scrollTop + box.clientHeight >= box.scrollHeight - 10) {
+                    document.getElementById('check-terms').disabled = false;
+                }
+            });
+            
+            document.getElementById('check-terms').addEventListener('change', (e) => {
+                document.getElementById('btn-reg-submit').disabled = !e.target.checked;
+            });
+
+            // Auto-Login
+            const saved = localStorage.getItem('ecoSession');
+            if(saved) {
+                const s = JSON.parse(saved);
+                enterApp(s.role, s.name);
             }
         };
 
-        function loginFlow() { trocarTela('screen-login', 'screen-terms'); }
-        function toggleBtn() {
-            const chk = document.getElementById('check-terms');
-            document.getElementById('btn-accept').disabled = !chk.checked;
-            document.getElementById('btn-accept').style.opacity = chk.checked ? 1 : 0.5;
-        }
-        function aceitarTermos() { trocarTela('screen-terms', 'screen-role'); }
-
-        function escolherPerfil(tipo) {
-            if(tipo === 'user') {
-                Swal.fire({
-                    title: 'Seu Nome',
-                    input: 'text',
-                    confirmButtonText: 'Entrar',
-                    confirmButtonColor: '#047857'
-                }).then((res) => {
-                    if(res.value) salvarELogar('user', res.value);
-                });
-            } else {
-                trocarTela('screen-role', 'screen-provider-reg');
-            }
-        }
-
-        function selVeh(el, tipo) {
-            document.querySelectorAll('.mosaic-item').forEach(i => i.classList.remove('selected'));
-            el.classList.add('selected');
-            document.getElementById('prov-veh').value = tipo;
-        }
-
-        function enviarZap() {
-            const nome = document.getElementById('prov-name').value;
-            const zap = document.getElementById('prov-zap').value;
-            const veh = document.getElementById('prov-veh').value;
-            if(!nome || !zap || !veh) return Swal.fire('Erro', 'Preencha tudo.', 'warning');
-            const msg = `Olá! Quero ser prestador EcoRota.%0A%0ANome: ${nome}%0AZap: ${zap}%0AVeículo: ${veh}`;
-            window.open(`https://wa.me/${ZAP_ADMIN}?text=${msg}`, '_blank');
-        }
-
-        function validarSenha() {
-            const senha = document.getElementById('prov-pass').value.toUpperCase().trim();
-            const nome = document.getElementById('prov-name').value;
-            if(senha === SENHA_MESTRA) {
-                Swal.fire('Liberado!', 'Bem-vindo.', 'success').then(() => salvarELogar('provider', nome));
-            } else {
-                Swal.fire('Senha Inválida', 'Aguarde aprovação.', 'error');
-            }
-        }
-
-        function salvarELogar(role, nome) {
-            localStorage.setItem('ecoRotaUser', JSON.stringify({ role, nome }));
-            iniciarAppDireto(role, nome);
-        }
-
-        function iniciarAppDireto(role, nome) {
+        // --- SISTEMA DE ABAS (LOGIN) ---
+        function switchTab(role) {
             userRole = role;
+            document.querySelectorAll('#screen-auth .btn-outline').forEach(b => {
+                b.style.background = 'transparent'; 
+                b.style.color = '#64748b';
+                b.style.borderColor = '#e2e8f0';
+            });
+            
+            const activeBtn = document.getElementById(role === 'user' ? 'tab-user' : 'tab-prov');
+            activeBtn.style.background = 'var(--dark)';
+            activeBtn.style.color = 'white';
+            activeBtn.style.borderColor = 'var(--dark)';
+
+            if(role === 'prov') {
+                document.getElementById('div-pass').classList.remove('hidden');
+            } else {
+                document.getElementById('div-pass').classList.add('hidden');
+            }
+        }
+        // Inicia na aba Usuário visualmente
+        switchTab('user');
+
+        // --- LÓGICA DE LOGIN ---
+        function processLogin() {
+            const phone = document.getElementById('login-phone').value;
+            
+            if(phone.length < 14) return Swal.fire('Erro', 'Digite um celular válido.', 'error');
+
+            if(userRole === 'user') {
+                // Usuário entra direto (Simulação segura)
+                enterApp('user', 'Visitante');
+            } else {
+                // Prestador precisa de senha
+                const pass = document.getElementById('login-pass').value;
+                const storedPass = localStorage.getItem('pass_' + phone.replace(/\D/g,''));
+                
+                if(pass && pass === storedPass) {
+                    enterApp('prov', 'Prestador');
+                } else {
+                    Swal.fire('Acesso Negado', 'Senha incorreta ou conta inexistente.', 'error');
+                }
+            }
+        }
+
+        // --- CADASTRO RIGOROSO ---
+        function openRegister() {
+            document.getElementById('screen-auth').classList.add('hidden');
+            document.getElementById('screen-register').classList.remove('hidden');
+            
+            if(userRole === 'prov') {
+                document.getElementById('prov-fields').classList.remove('hidden');
+            }
+        }
+
+        function submitRegister() {
+            const name = document.getElementById('reg-name').value.trim();
+            const phone = document.getElementById('reg-phone').value;
+            
+            // VALIDAÇÃO RIGOROSA
+            if(name.split(' ').length < 2) return Swal.fire('Nome Inválido', 'Digite Nome e Sobrenome.', 'warning');
+            if(phone.length < 14) return Swal.fire('WhatsApp Inválido', 'Número incorreto.', 'warning');
+
+            if(userRole === 'prov') {
+                const veh = document.getElementById('reg-veh').value;
+                if(!veh) return Swal.fire('Veículo', 'Selecione seu transporte.', 'warning');
+                
+                // Vai para tela de verificação
+                document.getElementById('screen-register').classList.add('hidden');
+                document.getElementById('screen-verify').classList.remove('hidden');
+            } else {
+                // Usuário cadastra e entra
+                localStorage.setItem('ecoSession', JSON.stringify({role:'user', name:name}));
+                Swal.fire('Sucesso', 'Cadastro realizado!', 'success').then(() => enterApp('user', name));
+            }
+        }
+
+        // --- APROVAÇÃO DO ADMIN (ZAP) ---
+        function sendToAdmin() {
+            const name = document.getElementById('reg-name').value;
+            const phone = document.getElementById('reg-phone').value;
+            const veh = document.getElementById('reg-veh').value;
+            
+            const msg = `*SOLICITAÇÃO DE CADASTRO*%0A%0ANome: ${name}%0AZap: ${phone}%0AVeículo: ${veh}%0A%0APor favor, gere minha senha de acesso.`;
+            window.open(`https://wa.me/${ADMIN_PHONE}?text=${msg}`, '_blank');
+        }
+
+        function activateAccount() {
+            const pass = document.getElementById('verify-pass').value;
+            const phone = document.getElementById('reg-phone').value.replace(/\D/g,'');
+            
+            if(pass.length < 3) return Swal.fire('Senha Inválida', 'Digite a senha que o Admin enviou.', 'error');
+            
+            // Salva a senha para o futuro
+            localStorage.setItem('pass_' + phone, pass);
+            localStorage.setItem('ecoSession', JSON.stringify({role:'prov', name:document.getElementById('reg-name').value}));
+            
+            Swal.fire('Conta Ativada!', 'Bem-vindo ao time.', 'success').then(() => enterApp('prov', ''));
+        }
+
+        // --- APP PRINCIPAL ---
+        function enterApp(role, name) {
             document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
             document.getElementById('screen-map').classList.remove('hidden');
+            
+            initMap(); // Mapa Inicia LIMPO
 
-            const btn = document.getElementById('action-btn');
             if(role === 'user') {
-                btn.innerHTML = '<i class="fas fa-search-location"></i> BUSCAR PRESTADOR';
-                btn.style.background = '#047857';
+                document.getElementById('panel-user').classList.remove('hidden');
             } else {
-                btn.innerHTML = '<i class="fas fa-leaf"></i> VOCÊ ESTÁ ONLINE';
-                btn.style.background = '#10b981';
-            }
-            iniciarMapa();
-        }
-
-        function iniciarMapa() {
-            if(!map) {
-                map = L.map('map', {zoomControl: false}).setView([-21.135, -44.261], 15);
-                L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(map);
-            }
-            setTimeout(() => map.invalidateSize(), 500);
-
-            if(navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(p => {
-                    const lat = p.coords.latitude;
-                    const lng = p.coords.longitude;
-                    
-                    if(myMarker) map.removeLayer(myMarker);
-                    myMarker = L.marker([lat, lng], {icon: icons.eu}).addTo(map);
-                    map.setView([lat, lng], 17);
-
-                    if(userRole === 'user') simularPrestadoresNoMapa(lat, lng);
-
-                }, () => {}, {enableHighAccuracy: true});
+                document.getElementById('panel-prov').classList.remove('hidden');
             }
         }
 
-        function simularPrestadoresNoMapa(lat, lng) {
-            L.marker([lat + 0.002, lng + 0.002], {icon: icons.bike}).addTo(map).bindPopup("Bike Próxima");
-            L.marker([lat - 0.002, lng - 0.002], {icon: icons.scooter}).addTo(map).bindPopup("Patinete Próximo");
-            L.marker([lat + 0.001, lng - 0.003], {icon: icons.ape}).addTo(map).bindPopup("Office Boy");
-        }
+        function initMap() {
+            if(map) return;
+            // Estilo Clean (CartoDB Positron)
+            map = L.map('map', {zoomControl: false}).setView([-21.135, -44.261], 15);
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+                attribution: ''
+            }).addTo(map);
 
-        // --- FLUXO PRINCIPAL COM PREMIAÇÃO ECOLÓGICA ---
-        async function acaoPrincipal() {
-            if(userRole === 'provider') {
-                Swal.fire('Online', 'Aguarde chamados no WhatsApp.', 'info');
-                return;
-            }
-
-            // 1. ESCOLHA (SEM MOTO)
-            const { value: cat } = await Swal.fire({
-                title: 'Escolha Sustentável',
-                input: 'select',
-                inputOptions: {
-                    'bike': '🚲 Bicicleta Comum (Barato)',
-                    'ebike': '⚡ E-Bike (Rápido)',
-                    'scooter': '🛴 Patinete Elétrico',
-                    'ape': '👟 A Pé (Office Boy)'
-                },
-                inputPlaceholder: 'Selecione...',
-                showCancelButton: true,
-                confirmButtonText: 'PRÓXIMO >>',
-                confirmButtonColor: '#047857'
-            });
-
-            if(!cat) return;
-
-            // 2. DESCRIÇÃO
-            const { value: desc } = await Swal.fire({
-                title: 'O que precisa?',
-                input: 'text',
-                inputPlaceholder: 'Ex: Buscar envelope...',
-                confirmButtonText: 'BUSCAR',
-                confirmButtonColor: '#047857'
-            });
-
-            if(desc) {
-                Swal.fire({title: 'Localizando...', html: 'Buscando parceiro <b>'+cat.toUpperCase()+'</b>...', didOpen: () => Swal.showLoading()});
+            // Tenta pegar localização real
+            navigator.geolocation.getCurrentPosition(p => {
+                const lat = p.coords.latitude;
+                const lng = p.coords.longitude;
+                map.setView([lat, lng], 16);
                 
-                setTimeout(() => {
-                    const nomes = ["Carlos", "Maria", "João", "Ana"];
-                    const nome = nomes[Math.floor(Math.random() * nomes.length)];
-                    
-                    // 3. ENCONTRADO
-                    Swal.fire({
-                        title: 'Encontrado!',
-                        html: `
-                            <div style="text-align:center;">
-                                <div style="font-size:3rem; margin-bottom:10px;">${obterIconeHtml(cat)}</div>
-                                <h3>${nome}</h3>
-                                <p style="color:#059669; font-weight:bold;">${cat.toUpperCase()}</p>
-                                <p>📍 A 300 metros</p>
-                                <hr>
-                                <small>Combine o valor no WhatsApp</small>
+                // Ícone EU
+                L.marker([lat, lng], {
+                    icon: L.divIcon({className:'', html:`<div style="width:16px;height:16px;background:#0f172a;border:3px solid white;border-radius:50%;box-shadow:0 0 0 4px rgba(0,0,0,0.1);"></div>`})
+                }).addTo(map);
+            });
+        }
+
+        // --- ALGORITMO DE BUSCA (A MÁGICA) ---
+        function startSearch() {
+            const cat = document.getElementById('search-cat').value;
+            const desc = document.getElementById('search-desc').value;
+
+            if(!desc) return Swal.fire('Onde?', 'Diga o que precisa ser feito.', 'question');
+
+            // 1. Radar Animation
+            Swal.fire({
+                title: 'Localizando...',
+                html: 'Buscando o melhor prestador <b>Eco</b> na região.',
+                timer: 2500,
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading()
+            }).then(() => {
+                // 2. Prestador Encontrado (Mockup Profissional)
+                const providerName = "Carlos Mendes";
+                const providerRating = "4.9";
+                
+                Swal.fire({
+                    title: 'Prestador Encontrado',
+                    html: `
+                        <div class="provider-profile" style="justify-content:center; text-align:left;">
+                            <img src="https://randomuser.me/api/portraits/men/45.jpg" class="avatar">
+                            <div class="p-info">
+                                <h3>${providerName}</h3>
+                                <p>${cat} • <span class="stars">★ ${providerRating}</span></p>
+                                <p style="font-size:0.8rem; color:green;">✅ Verificado</p>
                             </div>
-                        `,
-                        confirmButtonText: 'ACEITAR E CHAMAR',
-                        confirmButtonColor: '#047857',
-                        showCancelButton: true,
-                        cancelButtonText: 'Cancelar'
-                    }).then((res) => {
-                        if(res.isConfirmed) {
-                            // 4. PREMIAÇÃO ECOLÓGICA (O GRAN FINALE)
-                            Swal.fire({
-                                title: 'PARABÉNS! 🌍',
-                                html: `
-                                    <i class="fas fa-star star-anim"></i>
-                                    <h3>Você colaborou com o planeta!</h3>
-                                    <p>Evitou CO2 usando transporte limpo.</p>
-                                    <p style="color:#fbbf24; font-weight:bold; font-size:1.2rem;">+1 Estrela Eco</p>
-                                `,
-                                confirmButtonText: '<i class="fab fa-whatsapp"></i> ABRIR WHATSAPP',
-                                confirmButtonColor: '#25D366'
-                            }).then((final) => {
-                                if(final.isConfirmed) window.open('https://wa.me/5532999999999', '_blank');
-                            });
-                        }
-                    });
-                }, 2000);
-            }
+                        </div>
+                        <div style="background:#f0fdf4; padding:10px; border-radius:8px; font-size:0.9rem; margin-bottom:15px;">
+                            "Olá, estou a 3 minutos. Posso realizar: <b>${desc}</b>"
+                        </div>
+                    `,
+                    confirmButtonText: 'ACEITAR E CONVERSAR',
+                    confirmButtonColor: '#10b981',
+                    showCancelButton: true,
+                    cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                    if(result.isConfirmed) {
+                        showEcoImpact();
+                    } else {
+                        // Limpa o mapa se cancelar
+                        if(currentMarker) map.removeLayer(currentMarker);
+                    }
+                });
+
+                // Mostra o ícone dele no mapa AGORA
+                const center = map.getCenter();
+                const iconUrl = 'https://cdn-icons-png.flaticon.com/512/94/94203.png'; // Exemplo Bike
+                const customIcon = L.icon({iconUrl: iconUrl, iconSize: [40, 40]});
+                
+                if(currentMarker) map.removeLayer(currentMarker);
+                currentMarker = L.marker([center.lat + 0.001, center.lng + 0.001], {icon: customIcon}).addTo(map);
+                
+                // Zoom para mostrar os dois
+                const group = new L.featureGroup([
+                    L.marker(center), // Eu
+                    currentMarker     // Ele
+                ]);
+                map.fitBounds(group.getBounds().pad(0.2));
+            });
         }
 
-        function obterIconeHtml(cat) {
-            if(cat === 'bike') return '🚲';
-            if(cat === 'ebike') return '⚡';
-            if(cat === 'scooter') return '🛴';
-            return '👟';
+        // --- GAMIFICAÇÃO IMPACTO ---
+        function showEcoImpact() {
+            Swal.fire({
+                title: 'Impacto Positivo! 🌍',
+                html: `
+                    <div style="margin:20px 0;">
+                        <i class="fas fa-leaf" style="font-size:4rem; color:#10b981; animation:pulse 2s infinite;"></i>
+                    </div>
+                    <h3>Você economizou 0.4kg de CO2</h3>
+                    <p>Ao escolher transporte limpo, você ajuda o futuro.</p>
+                `,
+                confirmButtonText: '<i class="fab fa-whatsapp"></i> ABRIR WHATSAPP',
+                confirmButtonColor: '#25D366',
+                allowOutsideClick: false
+            }).then(() => {
+                window.open(`https://wa.me/5532999999999`, '_blank');
+            });
         }
 
-        function trocarTela(atual, proxima) {
-            document.getElementById(atual).classList.add('hidden');
-            document.getElementById(proxima).classList.remove('hidden');
+        function logout() {
+            localStorage.removeItem('ecoSession');
+            location.reload();
         }
-        function logout() { localStorage.removeItem('ecoRotaUser'); location.reload(); }
         function sos() { window.open('tel:190'); }
+
     </script>
 </body>
 </html>

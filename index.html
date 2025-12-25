@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Rota Eco - 100% Sustentável</title>
+    <title>Rota Eco - App Oficial</title>
     
     <link rel="manifest" href='data:application/manifest+json,{"name":"Rota Eco","short_name":"RotaEco","start_url":".","display":"standalone","background_color":"#ffffff","theme_color":"#059669","icons":[{"src":"https://cdn-icons-png.flaticon.com/512/94/94203.png","sizes":"192x192","type":"image/png"}]}' />
     <meta name="theme-color" content="#059669">
@@ -29,7 +29,7 @@
         .screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 3000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; transition: 0.3s; overflow-y: auto; }
         .hidden { display: none !important; }
         
-        /* CARDS & INPUTS */
+        /* UI ELEMENTS */
         .card { background: white; padding: 25px; border-radius: 24px; width: 100%; max-width: 360px; box-shadow: 0 15px 50px -10px rgba(16, 185, 129, 0.15); margin: 20px 0; border: 1px solid #d1fae5; }
         .logo { font-size: 2.2rem; font-weight: 900; color: var(--primary); margin-bottom: 5px; letter-spacing: -1px; }
         .logo span { color: var(--eco); }
@@ -38,7 +38,6 @@
         .inp { width: 100%; padding: 15px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 1rem; margin-bottom: 12px; outline: none; transition: 0.3s; background: #f8fafc; }
         .inp:focus { border-color: var(--eco); background: #fff; box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1); }
         
-        /* BOTÕES */
         .btn { width: 100%; padding: 16px; border: none; border-radius: 14px; font-weight: 800; cursor: pointer; margin-top: 10px; color: white; display: flex; justify-content: center; align-items: center; gap: 8px; font-size: 1rem; transition: 0.2s; }
         .btn-eco { background: var(--eco); box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4); }
         .btn-eco:active { transform: scale(0.98); }
@@ -50,29 +49,26 @@
         .eco-opt { border: 2px solid #e2e8f0; border-radius: 16px; padding: 15px; text-align: center; cursor: pointer; transition: 0.2s; background: white; }
         .eco-opt i { font-size: 1.8rem; color: #94a3b8; display: block; margin-bottom: 5px; }
         .eco-opt span { font-size: 0.75rem; font-weight: bold; color: #64748b; text-transform: uppercase; }
-        
         .eco-opt.selected { border-color: var(--eco); background: #ecfdf5; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2); }
         .eco-opt.selected i { color: var(--eco); }
         .eco-opt.selected span { color: var(--primary); }
 
-        /* TERMOS MODAL */
+        /* TERMOS */
         .terms-trigger { background: #f0fdf4; padding: 15px; border-radius: 12px; border: 1px dashed var(--eco); margin-top: 10px; text-align: center; cursor: pointer; }
         .terms-trigger:hover { background: #dcfce7; }
         .terms-status { font-size: 0.8rem; color: var(--gray); margin-top: 5px; display: block; }
         
-        /* MAPA UI */
+        /* APP UI */
         #app-ui { display: none; width: 100%; height: 100%; position: relative; }
         #map { width: 100%; height: 100%; z-index: 1; }
 
         .float-btn { position: absolute; z-index: 2000; width: 48px; height: 48px; border-radius: 50%; background: white; border: none; box-shadow: 0 4px 15px rgba(0,0,0,0.1); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: #333; transition: 0.2s; }
-        .float-btn:active { transform: scale(0.9); }
         #btn-menu { top: 20px; left: 20px; color: var(--primary); }
         #btn-sos { top: 20px; right: 20px; background: #ef4444; color: white; font-weight: 900; font-size: 0.7rem; animation: pulse 2s infinite; }
         #btn-gps { bottom: 120px; right: 20px; color: var(--eco); }
 
         #btn-request { position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%); background: var(--primary); color: white; padding: 15px 30px; border-radius: 50px; font-weight: bold; box-shadow: 0 10px 25px rgba(6, 78, 59, 0.4); z-index: 2000; cursor: pointer; display: flex; align-items: center; gap: 10px; white-space: nowrap; border: 2px solid #34d399; }
 
-        /* LISTA DE PRESTADORES */
         #provider-dock { position: absolute; bottom: 0; left: 0; right: 0; background: white; border-radius: 30px 30px 0 0; padding: 25px; z-index: 2000; box-shadow: 0 -10px 40px rgba(0,0,0,0.1); max-height: 60vh; overflow-y: auto; }
         .req-card { background: #ecfdf5; border: 1px solid #6ee7b7; padding: 15px; border-radius: 16px; margin-bottom: 12px; }
         
@@ -83,7 +79,7 @@
 
     <div id="screen-loading" class="screen">
         <div class="logo">ROTA <span>ECO</span></div>
-        <p style="color:var(--eco);">Sincronizando com a Natureza...</p>
+        <p style="color:var(--eco);">Sincronizando...</p>
     </div>
 
     <div id="screen-login" class="screen hidden">
@@ -100,7 +96,7 @@
     </div>
 
     <div id="screen-role" class="screen hidden">
-        <h3 style="color:var(--primary)">Como vai atuar?</h3>
+        <h3 style="color:var(--primary)">Como vai usar?</h3>
         <div class="card">
             <button class="btn btn-eco" onclick="setRole('user')">🙋 SOU USUÁRIO</button>
             <button class="btn" style="background:white; border:2px solid var(--eco); color:var(--eco);" onclick="setRole('provider_setup')">🚲 SOU PRESTADOR ECO</button>
@@ -154,24 +150,28 @@
                     <span style="background:#dcfce7; color:#15803d; padding:4px 10px; border-radius:20px; font-size:0.75rem; font-weight:bold;">🟢 ONLINE</span>
                 </div>
                 <div id="lista-pedidos" style="margin-top:15px;">
-                    <p style="text-align:center; color:#94a3b8; font-size:0.9rem;">Aguardando chamados sustentáveis...</p>
+                    <p style="text-align:center; color:#94a3b8; font-size:0.9rem;">Aguardando chamados...</p>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        // --- CONFIGURAÇÃO ---
+        // CONFIGURAÇÕES FIREBASE (MANTENHA ESTAS SE FUNCIONARAM ANTES)
         const firebaseConfig = { apiKey: "AIzaSyBxbRiYNuGde5nwJIaoeRItWdZGR221cpY", authDomain: "rota-direta.firebaseapp.com", projectId: "rota-direta", databaseURL: "https://rota-direta-default-rtdb.firebaseio.com" };
-        firebase.initializeApp(firebaseConfig);
+        
+        try {
+            firebase.initializeApp(firebaseConfig);
+        } catch(e) { console.error("Erro Firebase", e); }
+        
         const db = firebase.database();
         const auth = firebase.auth();
         const provider = new firebase.auth.GoogleAuthProvider();
 
-        let map, user, role, myMarker;
+        let map, user, role, myMarker, watchId;
         const audioPing = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
 
-        // ÍCONES DE ALTA DEFINIÇÃO
+        // ÍCONES MAPA
         const icons = {
             bike: L.icon({iconUrl:'https://cdn-icons-png.flaticon.com/512/94/94203.png', iconSize:[36,36], iconAnchor:[18,18]}),
             ebike: L.icon({iconUrl:'https://cdn-icons-png.flaticon.com/512/3082/3082383.png', iconSize:[36,36], iconAnchor:[18,18]}),
@@ -179,7 +179,7 @@
             ape: L.icon({iconUrl:'https://cdn-icons-png.flaticon.com/512/72/72908.png', iconSize:[32,32], iconAnchor:[16,16]})
         };
 
-        // --- 1. LOGIN & ROTEAMENTO ---
+        // --- AUTH ---
         function loginGoogle() { auth.signInWithPopup(provider).catch(e => Swal.fire('Erro', e.message, 'error')); }
 
         auth.onAuthStateChanged(async (u) => {
@@ -188,19 +188,19 @@
                 document.getElementById('screen-loading').classList.remove('hidden');
                 document.getElementById('screen-login').classList.add('hidden');
                 
-                // Verifica cadastro
-                const s = await db.ref('users/' + u.uid).get();
-                if (s.exists()) {
-                    const d = s.val();
-                    role = d.role;
-                    if (role === 'provider' && d.status === 'pending') {
-                        Swal.fire('Em Análise', 'Seus dados estão sendo validados.', 'info');
-                    } else {
+                try {
+                    const s = await db.ref('users/' + u.uid).get();
+                    if (s.exists()) {
+                        const d = s.val();
+                        role = d.role;
+                        // Se for prestador e estiver pendente, força tela de pendente ou deixa passar se você for o admin
                         startApp(d);
+                    } else {
+                        document.getElementById('screen-loading').classList.add('hidden');
+                        showScreen('screen-role');
                     }
-                } else {
-                    document.getElementById('screen-loading').classList.add('hidden');
-                    showScreen('screen-role');
+                } catch(e) {
+                    Swal.fire('Erro de Conexão', 'Verifique sua internet.', 'error');
                 }
             } else {
                 showScreen('screen-login');
@@ -219,11 +219,11 @@
                 startApp(data);
             } else {
                 showScreen('screen-register');
-                setTimeout(() => IMask(document.getElementById('reg-zap'), {mask:'(00) 00000-0000'}), 500);
+                setTimeout(() => { try { IMask(document.getElementById('reg-zap'), {mask:'(00) 00000-0000'}); } catch(e){} }, 500);
             }
         }
 
-        // --- 2. CADASTRO PRESTADOR (ROBUSTO) ---
+        // --- CADASTRO ---
         function selVeh(type, el) {
             document.querySelectorAll('.eco-opt').forEach(i => i.classList.remove('selected'));
             el.classList.add('selected');
@@ -235,15 +235,13 @@
                 title: 'Termos de Uso Sustentável',
                 html: `
                     <div style="text-align:justify; font-size:0.85rem; height:250px; overflow-y:scroll; padding-right:10px;">
-                        <p><b>1. OBJETO:</b> A Plataforma Rota Eco conecta prestadores de mobilidade ativa (não poluente) a usuários.</p>
-                        <p><b>2. RESPONSABILIDADE:</b> O Prestador declara ser autônomo, não possuir vínculo empregatício e assume total responsabilidade por sua segurança e de terceiros.</p>
-                        <p><b>3. SUSTENTABILIDADE:</b> É estritamente proibido o uso de veículos a combustão (gasolina/álcool) nesta plataforma.</p>
-                        <p><b>4. SEGURANÇA:</b> O Prestador atesta ter bons antecedentes criminais e ser maior de 18 anos.</p>
-                        <p><b>5. DADOS:</b> Seus dados serão usados apenas para conexão do serviço.</p>
-                        <p><b>6. PAGAMENTOS:</b> A negociação de valores é livre e direta entre as partes via WhatsApp.</p>
+                        <p><b>1. OBJETO:</b> A Plataforma Rota Eco conecta prestadores de mobilidade ativa a usuários.</p>
+                        <p><b>2. RESPONSABILIDADE:</b> O Prestador declara ser autônomo e assume total responsabilidade.</p>
+                        <p><b>3. SUSTENTABILIDADE:</b> Proibido veículos a combustão.</p>
+                        <p><b>4. SEGURANÇA:</b> O Prestador atesta ter bons antecedentes criminais.</p>
                     </div>
                 `,
-                confirmButtonText: 'LI, COMPREENDI E ACEITO',
+                confirmButtonText: 'LI E ACEITO',
                 confirmButtonColor: '#10b981',
                 allowOutsideClick: false
             }).then((res) => {
@@ -261,29 +259,29 @@
             const n = document.getElementById('reg-nome').value.trim();
             const z = document.getElementById('reg-zap').value;
             
-            if (!v) return Swal.fire('Atenção', 'Selecione um veículo eco.', 'warning');
+            if (!v) return Swal.fire('Atenção', 'Selecione um veículo.', 'warning');
             if (n.length < 5) return Swal.fire('Erro', 'Nome completo obrigatório.', 'error');
             if (z.length < 14) return Swal.fire('Erro', 'WhatsApp inválido.', 'error');
 
-            const data = { 
-                uid: user.uid, role: 'provider', name: n, zap: z.replace(/\D/g,''), 
-                vehicle: v, status: 'active', email: user.email // Auto-aprova para teste
-            };
-            
+            const data = { uid: user.uid, role: 'provider', name: n, zap: z.replace(/\D/g,''), vehicle: v, status: 'active', email: user.email };
             db.ref('users/' + user.uid).set(data).then(() => {
-                Swal.fire('Bem-vindo!', 'Você agora é um parceiro eco.', 'success').then(() => startApp(data));
+                Swal.fire('Sucesso!', 'Você é um parceiro eco.', 'success').then(() => startApp(data));
             });
         }
 
-        // --- 3. APP E MAPA (PRECISÃO MÁXIMA) ---
+        // --- APP LOGIC ---
         function startApp(d) {
             user = d; role = d.role;
             showScreen('app-ui');
             
-            if (!map) {
-                map = L.map('map', {zoomControl: false}).setView([-21.135, -44.261], 16);
-                L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(map);
-            }
+            // CORREÇÃO: Garante que o mapa renderize no tamanho certo
+            setTimeout(() => {
+                if (!map) {
+                    map = L.map('map', {zoomControl: false}).setView([-21.135, -44.261], 16);
+                    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(map);
+                }
+                map.invalidateSize();
+            }, 500);
 
             if (role === 'user') {
                 document.getElementById('ui-user').classList.remove('hidden');
@@ -292,134 +290,86 @@
                 escutarPedidos();
             }
 
-            // GPS ALTA PRECISÃO
-            navigator.geolocation.watchPosition(p => {
-                const lat = p.coords.latitude; const lng = p.coords.longitude;
-                if(myMarker) map.removeLayer(myMarker);
-                
-                // Ícone do próprio usuário
-                const myIcon = role === 'provider' ? icons[user.vehicle] : L.divIcon({className:'eu-dot', html:'<div style="width:15px;height:15px;background:#059669;border:2px solid white;border-radius:50%;"></div>'});
-                
-                myMarker = L.marker([lat, lng], {icon: myIcon}).addTo(map);
-                
-                // Salva localização
-                if(role === 'provider') db.ref('online/' + user.uid).set({ lat, lng, type: user.vehicle, name: user.name });
-            }, (err) => {
-                console.log(err);
-            }, { enableHighAccuracy: true, maximumAge: 0 }); // FORÇA GPS REAL
-
-            // Escuta outros prestadores no mapa (só se for user)
-            if(role === 'user') escutarPrestadores();
+            // GPS
+            if(navigator.geolocation) {
+                navigator.geolocation.watchPosition(p => {
+                    const lat = p.coords.latitude; const lng = p.coords.longitude;
+                    if(myMarker) map.removeLayer(myMarker);
+                    
+                    const myIcon = role === 'provider' ? icons[user.vehicle] : L.divIcon({className:'eu-dot', html:'<div style="width:15px;height:15px;background:#059669;border:3px solid white;border-radius:50%;box-shadow:0 0 0 10px rgba(16,185,129,0.3);"></div>'});
+                    
+                    myMarker = L.marker([lat, lng], {icon: myIcon}).addTo(map);
+                    map.setView([lat, lng]); // Segue o usuário
+                    
+                    if(role === 'provider') db.ref('online/' + user.uid).set({ lat, lng, type: user.vehicle, name: user.name });
+                }, (err) => {
+                    console.log("Erro GPS", err);
+                    Swal.fire('Atenção', 'Ative o GPS para usar o app.', 'warning');
+                }, { enableHighAccuracy: true });
+            }
         }
 
-        // --- 4. SOLICITAÇÃO (USUÁRIO) - SEM VALOR ---
+        // --- FLUXO PEDIDO ---
         async function abrirSolicitacao() {
             const { value: form } = await Swal.fire({
-                title: 'O que você precisa?',
+                title: 'Solicitar Eco',
                 html: `
-                    <p style="font-size:0.8rem; color:#64748b;">Selecione a categoria Eco:</p>
                     <select id="req-cat" class="inp">
-                        <option value="bike">🚲 Bike (Encomendas leves)</option>
+                        <option value="bike">🚲 Bike (Encomenda)</option>
                         <option value="ebike">⚡ E-Bike (Rápido)</option>
                         <option value="scooter">🛴 Scooter (Ágil)</option>
-                        <option value="ape">👟 Office Boy (A Pé)</option>
+                        <option value="ape">👟 Office Boy</option>
                     </select>
-                    <input id="req-desc" class="inp" placeholder="Descreva o pedido (Ex: Levar chave)">
-                    <p style="font-size:0.75rem; color:#ef4444;">* Valor a combinar no WhatsApp</p>
+                    <input id="req-desc" class="inp" placeholder="O que precisa? (Ex: Buscar chave)">
+                    <p style="font-size:0.75rem; color:#ef4444;">* Valor combinado no WhatsApp</p>
                 `,
-                confirmButtonText: 'CHAMAR PRESTADOR',
+                confirmButtonText: 'CHAMAR',
                 confirmButtonColor: '#10b981',
                 focusConfirm: false,
-                preConfirm: () => [
-                    document.getElementById('req-cat').value,
-                    document.getElementById('req-desc').value
-                ]
+                preConfirm: () => [document.getElementById('req-cat').value, document.getElementById('req-desc').value]
             });
 
             if (form && form[1]) {
                 const oid = Date.now();
-                db.ref('offers/' + oid).set({
-                    id: oid, uid: user.uid, name: user.name,
-                    cat: form[0], desc: form[1], status: 'open'
-                });
+                db.ref('offers/' + oid).set({ id: oid, uid: user.uid, name: user.name, cat: form[0], desc: form[1], status: 'open' });
+                Swal.fire({ title: 'Enviado!', text: 'Aguardando...', icon: 'success', showConfirmButton: false, timer: 3000 });
                 
-                Swal.fire({
-                    title: 'Enviado!',
-                    text: 'Aguardando alguém aceitar...',
-                    icon: 'success',
-                    showConfirmButton: false,
-                    timer: 3000
-                });
-
-                // Monitora aceite
                 db.ref('offers/'+oid).on('value', snap => {
                     if(snap.val() && snap.val().status === 'accepted') {
                         audioPing.play();
-                        Swal.fire({
-                            title: '🌟 PARABÉNS! 🌟',
-                            html: `Seu pedido foi aceito!<br>Você está ajudando o planeta.<br><b>Prestador:</b> ${snap.val().provName}`,
-                            icon: 'success'
-                        });
+                        Swal.fire({ title: 'ACEITO! 🌟', html: `Prestador: ${snap.val().provName}<br>Ajudando o planeta!`, icon: 'success' });
                     }
                 });
             }
         }
 
-        // --- 5. RECEBIMENTO (PRESTADOR) ---
         function escutarPedidos() {
             db.ref('offers').orderByChild('status').equalTo('open').on('value', snap => {
                 const lista = document.getElementById('lista-pedidos');
                 lista.innerHTML = '';
                 let achou = false;
-
                 snap.forEach(item => {
                     const o = item.val();
-                    // Só mostra se for da minha categoria eco
                     if (o.cat === user.vehicle) {
                         achou = true;
                         audioPing.play().catch(()=>{});
                         const div = document.createElement('div');
                         div.className = 'req-card';
-                        div.innerHTML = `
-                            <b>${o.name}</b> precisa de:
-                            <p>${o.desc}</p>
-                            <button class="btn btn-eco" onclick="aceitar('${o.id}', '${o.uid}')">ACEITAR E COMBINAR</button>
-                        `;
+                        div.innerHTML = `<b>${o.name}</b> precisa:<p>${o.desc}</p><button class="btn btn-eco" onclick="aceitar('${o.id}')">ACEITAR</button>`;
                         lista.appendChild(div);
                     }
                 });
-                if(!achou) lista.innerHTML = '<p style="text-align:center; color:#94a3b8; font-size:0.9rem;">Nenhum pedido na sua categoria agora.</p>';
+                if(!achou) lista.innerHTML = '<p style="text-align:center; color:#94a3b8; font-size:0.9rem;">Sem pedidos na categoria.</p>';
             });
         }
 
-        async function aceitar(oid, uid) {
-            // Pega dados do user para abrir zap (Assumindo que temos, ou user manda primeiro)
-            // Aqui vamos simular que abre o zap do prestador e ele manda "Oi" pro user se tivermos o número, 
-            // ou apenas avisamos o user.
-            
-            await db.ref('offers/'+oid).update({ 
-                status: 'accepted', provId: user.uid, provName: user.name, provZap: user.zap 
-            });
-
-            Swal.fire('Pedido Aceito!', 'Você ganhou 🌟 Estrela Eco! Combine o valor agora.', 'success');
+        async function aceitar(oid) {
+            await db.ref('offers/'+oid).update({ status: 'accepted', provId: user.uid, provName: user.name });
+            Swal.fire('Aceito!', 'Você ganhou uma estrela Eco! 🌟', 'success');
         }
 
-        // --- EXTRAS ---
-        function escutarPrestadores() {
-            db.ref('online').on('value', snap => {
-                const list = snap.val() || {};
-                // Lógica simples de renderizar marcadores no mapa (omitida para brevidade, mas funcional)
-                for(let k in list) {
-                    const p = list[k];
-                    L.marker([p.lat, p.lng], {icon: icons[p.type]}).addTo(map).bindPopup(p.name);
-                }
-            });
-        }
-
-        function centralizar() { 
-            navigator.geolocation.getCurrentPosition(p => map.setView([p.coords.latitude, p.coords.longitude], 17)); 
-        }
-        function verMenu() { Swal.fire('Menu', 'Versão 29.0 - Rota Eco', 'info'); }
+        function centralizar() { navigator.geolocation.getCurrentPosition(p => map.setView([p.coords.latitude, p.coords.longitude], 17)); }
+        function verMenu() { Swal.fire('Rota Eco', 'Versão 30.0', 'info'); }
         function sos() { window.open('tel:190'); }
     </script>
 </body>

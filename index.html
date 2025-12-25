@@ -3,110 +3,108 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Rota Eco - App Oficial</title>
+    <title>Rota Eco - Protótipo Funcional</title>
     
-    <link rel="manifest" href='data:application/manifest+json,{"name":"Rota Eco","short_name":"RotaEco","start_url":".","display":"standalone","background_color":"#ffffff","theme_color":"#059669","icons":[{"src":"https://cdn-icons-png.flaticon.com/512/94/94203.png","sizes":"192x192","type":"image/png"}]}' />
-    <meta name="theme-color" content="#059669">
-    
+    <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/94/94203.png">
+
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-    
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/imask/6.4.3/imask.min.js"></script>
 
     <style>
+        /* RESET E CORES */
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        :root { --primary: #064e3b; --eco: #10b981; --eco-dark: #059669; --bg: #f0fdf4; --gray: #64748b; }
+        :root { --primary: #064e3b; --eco: #10b981; --bg: #f0fdf4; --gray: #64748b; }
         body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); overflow: hidden; height: 100vh; width: 100vw; position: fixed; }
         
-        /* TELAS */
+        /* TELAS (SCREENS) */
         .screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 3000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; transition: 0.3s; overflow-y: auto; }
         .hidden { display: none !important; }
         
-        /* UI ELEMENTS */
-        .card { background: white; padding: 25px; border-radius: 24px; width: 100%; max-width: 360px; box-shadow: 0 15px 50px -10px rgba(16, 185, 129, 0.15); margin: 20px 0; border: 1px solid #d1fae5; }
-        .logo { font-size: 2.2rem; font-weight: 900; color: var(--primary); margin-bottom: 5px; letter-spacing: -1px; }
+        /* LOGO E TEXTO */
+        .logo { font-size: 2.5rem; font-weight: 900; color: var(--primary); margin-bottom: 5px; }
         .logo span { color: var(--eco); }
-        .subtitle { color: var(--gray); font-size: 0.9rem; margin-bottom: 25px; text-align: center; }
+        .subtitle { color: var(--gray); margin-bottom: 30px; font-size: 0.9rem; }
 
-        .inp { width: 100%; padding: 15px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 1rem; margin-bottom: 12px; outline: none; transition: 0.3s; background: #f8fafc; }
-        .inp:focus { border-color: var(--eco); background: #fff; box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1); }
-        
-        .btn { width: 100%; padding: 16px; border: none; border-radius: 14px; font-weight: 800; cursor: pointer; margin-top: 10px; color: white; display: flex; justify-content: center; align-items: center; gap: 8px; font-size: 1rem; transition: 0.2s; }
-        .btn-eco { background: var(--eco); box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4); }
-        .btn-eco:active { transform: scale(0.98); }
-        .btn-eco:disabled { background: #cbd5e1; cursor: not-allowed; box-shadow: none; }
+        /* CARTÃO BRANCO */
+        .card { background: white; padding: 25px; border-radius: 20px; width: 100%; max-width: 350px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; }
+
+        /* BOTÕES */
+        .btn { width: 100%; padding: 15px; border: none; border-radius: 12px; font-weight: 800; cursor: pointer; margin-top: 10px; color: white; display: flex; justify-content: center; align-items: center; gap: 10px; font-size: 1rem; transition: 0.2s; }
+        .btn:active { transform: scale(0.98); }
+        .btn-eco { background: var(--eco); box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); }
         .btn-google { background: white; color: #333; border: 2px solid #e2e8f0; }
+        .btn-outline { background: transparent; border: 2px solid var(--eco); color: var(--eco); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-        /* MOSAICO ECO */
-        .grid-eco { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; margin-bottom: 20px; }
-        .eco-opt { border: 2px solid #e2e8f0; border-radius: 16px; padding: 15px; text-align: center; cursor: pointer; transition: 0.2s; background: white; }
-        .eco-opt i { font-size: 1.8rem; color: #94a3b8; display: block; margin-bottom: 5px; }
-        .eco-opt span { font-size: 0.75rem; font-weight: bold; color: #64748b; text-transform: uppercase; }
-        .eco-opt.selected { border-color: var(--eco); background: #ecfdf5; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2); }
+        /* INPUTS */
+        .inp { width: 100%; padding: 15px; border: 2px solid #e2e8f0; border-radius: 12px; margin-bottom: 10px; font-size: 1rem; outline: none; background: #f8fafc; }
+        .inp:focus { border-color: var(--eco); background: white; }
+
+        /* MOSAICO DE VEÍCULOS */
+        .grid-eco { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        .eco-opt { border: 2px solid #e2e8f0; border-radius: 12px; padding: 15px; text-align: center; cursor: pointer; transition: 0.2s; }
+        .eco-opt i { font-size: 2rem; color: #94a3b8; display: block; margin-bottom: 5px; }
+        .eco-opt span { font-size: 0.7rem; font-weight: bold; color: #64748b; text-transform: uppercase; }
+        .eco-opt.selected { border-color: var(--eco); background: #ecfdf5; }
         .eco-opt.selected i { color: var(--eco); }
-        .eco-opt.selected span { color: var(--primary); }
 
         /* TERMOS */
-        .terms-trigger { background: #f0fdf4; padding: 15px; border-radius: 12px; border: 1px dashed var(--eco); margin-top: 10px; text-align: center; cursor: pointer; }
-        .terms-trigger:hover { background: #dcfce7; }
-        .terms-status { font-size: 0.8rem; color: var(--gray); margin-top: 5px; display: block; }
+        .terms-box { background: #f0fdf4; border: 1px dashed var(--eco); padding: 15px; border-radius: 10px; text-align: center; cursor: pointer; margin-top: 10px; }
         
-        /* APP UI */
+        /* UI DO APP (MAPA E BOTÕES) */
         #app-ui { display: none; width: 100%; height: 100%; position: relative; }
         #map { width: 100%; height: 100%; z-index: 1; }
 
-        .float-btn { position: absolute; z-index: 2000; width: 48px; height: 48px; border-radius: 50%; background: white; border: none; box-shadow: 0 4px 15px rgba(0,0,0,0.1); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: #333; transition: 0.2s; }
-        #btn-menu { top: 20px; left: 20px; color: var(--primary); }
+        .float-btn { position: absolute; z-index: 2000; width: 45px; height: 45px; border-radius: 50%; background: white; border: none; box-shadow: 0 4px 10px rgba(0,0,0,0.1); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: #333; }
+        #btn-menu { top: 20px; left: 20px; }
         #btn-sos { top: 20px; right: 20px; background: #ef4444; color: white; font-weight: 900; font-size: 0.7rem; animation: pulse 2s infinite; }
         #btn-gps { bottom: 120px; right: 20px; color: var(--eco); }
 
-        #btn-request { position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%); background: var(--primary); color: white; padding: 15px 30px; border-radius: 50px; font-weight: bold; box-shadow: 0 10px 25px rgba(6, 78, 59, 0.4); z-index: 2000; cursor: pointer; display: flex; align-items: center; gap: 10px; white-space: nowrap; border: 2px solid #34d399; }
+        /* BOTÃO SOLICITAR (CENTRAL) */
+        #btn-request { position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%); background: var(--primary); color: white; padding: 15px 35px; border-radius: 50px; font-weight: bold; box-shadow: 0 10px 25px rgba(6, 78, 59, 0.4); z-index: 2000; cursor: pointer; display: flex; align-items: center; gap: 10px; white-space: nowrap; border: 2px solid #34d399; font-size: 1.1rem; }
 
-        #provider-dock { position: absolute; bottom: 0; left: 0; right: 0; background: white; border-radius: 30px 30px 0 0; padding: 25px; z-index: 2000; box-shadow: 0 -10px 40px rgba(0,0,0,0.1); max-height: 60vh; overflow-y: auto; }
-        .req-card { background: #ecfdf5; border: 1px solid #6ee7b7; padding: 15px; border-radius: 16px; margin-bottom: 12px; }
+        /* PAINEL INFERIOR (PRESTADOR) */
+        #provider-dock { position: absolute; bottom: 0; left: 0; right: 0; background: white; border-radius: 25px 25px 0 0; padding: 20px; z-index: 2000; box-shadow: 0 -10px 30px rgba(0,0,0,0.1); max-height: 50vh; overflow-y: auto; }
+        .req-card { background: #ecfdf5; border: 1px solid #6ee7b7; padding: 15px; border-radius: 12px; margin-bottom: 10px; animation: slideUp 0.3s; }
         
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+        @keyframes slideUp { from { transform: translateY(20px); opacity:0; } to { transform: translateY(0); opacity:1; } }
     </style>
 </head>
 <body>
 
-    <div id="screen-loading" class="screen">
+    <div id="screen-login" class="screen">
         <div class="logo">ROTA <span>ECO</span></div>
-        <p style="color:var(--eco);">Sincronizando...</p>
-    </div>
-
-    <div id="screen-login" class="screen hidden">
-        <div class="logo">ROTA <span>ECO</span></div>
-        <p class="subtitle">Mobilidade 100% Sustentável</p>
+        <p class="subtitle">Protótipo v30.0 (Simulação)</p>
         <div class="card">
-            <button class="btn btn-google" onclick="loginGoogle()">
-                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20"> Entrar com Google
+            <button class="btn btn-google" onclick="loginGoogleFake()">
+                <i class="fab fa-google"></i> Entrar com Google
             </button>
             <p style="font-size:0.75rem; text-align:center; color:#94a3b8; margin-top:20px;">
-                Ao entrar, você apoia um mundo mais verde. 🌿
+                Ao entrar, você concorda com os Termos de Uso.
             </p>
         </div>
     </div>
 
     <div id="screen-role" class="screen hidden">
-        <h3 style="color:var(--primary)">Como vai usar?</h3>
+        <h3 style="color:var(--primary)">Como deseja usar?</h3>
         <div class="card">
             <button class="btn btn-eco" onclick="setRole('user')">🙋 SOU USUÁRIO</button>
-            <button class="btn" style="background:white; border:2px solid var(--eco); color:var(--eco);" onclick="setRole('provider_setup')">🚲 SOU PRESTADOR ECO</button>
+            <button class="btn btn-outline" onclick="setRole('provider')">🚲 SOU PRESTADOR ECO</button>
         </div>
     </div>
 
     <div id="screen-register" class="screen hidden">
         <div class="card" style="max-height:95vh; overflow-y:auto;">
-            <h3 style="text-align:center; color:var(--primary); margin-top:0;">Parceiro Eco</h3>
-            <p style="font-size:0.8rem; text-align:center; color:#64748b;">Escolha seu Veículo Sustentável:</p>
+            <h3 style="text-align:center; color:var(--primary); margin:0 0 15px 0;">Parceiro Eco</h3>
+            <p style="text-align:center; font-size:0.8rem; color:#64748b;">Selecione seu veículo:</p>
             
             <div class="grid-eco">
                 <div class="eco-opt" onclick="selVeh('bike', this)"><i class="fas fa-bicycle"></i><span>BIKE</span></div>
@@ -116,17 +114,18 @@
             </div>
             <input type="hidden" id="reg-veh">
 
-            <input id="reg-nome" class="inp" placeholder="Nome Completo (RG)">
+            <input id="reg-nome" class="inp" placeholder="Nome Completo">
             <input id="reg-zap" class="inp" type="tel" placeholder="WhatsApp (DDD)">
             
-            <div class="terms-trigger" onclick="abrirTermos()">
-                <i class="fas fa-file-contract" style="font-size:1.5rem; color:var(--eco);"></i>
-                <div style="font-weight:bold; color:var(--primary);">LER TERMOS DE USO</div>
-                <span id="termos-status" class="terms-status">Clique para ler e aceitar</span>
+            <div class="terms-box" onclick="abrirTermos()">
+                <i class="fas fa-file-contract" style="color:var(--eco); font-size:1.5rem;"></i>
+                <div style="font-weight:bold; font-size:0.9rem; color:var(--primary);">LER TERMOS DE USO</div>
+                <span id="termos-status" style="font-size:0.75rem; color:#64748b;">Obrigatório ler e aceitar</span>
             </div>
             <input type="checkbox" id="check-termos" style="display:none;">
 
-            <button id="btn-submit-reg" class="btn btn-eco" onclick="finalizarCadastro()" disabled style="margin-top:20px;">ENVIAR DADOS</button>
+            <button id="btn-submit" class="btn btn-eco" onclick="finalizarCadastro()" disabled style="margin-top:15px;">ENVIAR CADASTRO</button>
+            <div onclick="location.reload()" style="text-align:center; margin-top:10px; font-size:0.8rem; color:#94a3b8; cursor:pointer;">Cancelar</div>
         </div>
     </div>
 
@@ -147,83 +146,60 @@
             <div id="provider-dock">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
                     <b style="color:var(--primary)">RADAR ECO</b>
-                    <span style="background:#dcfce7; color:#15803d; padding:4px 10px; border-radius:20px; font-size:0.75rem; font-weight:bold;">🟢 ONLINE</span>
+                    <span style="background:#dcfce7; color:#15803d; padding:5px 10px; border-radius:20px; font-size:0.75rem; font-weight:bold;">🟢 ONLINE</span>
                 </div>
                 <div id="lista-pedidos" style="margin-top:15px;">
-                    <p style="text-align:center; color:#94a3b8; font-size:0.9rem;">Aguardando chamados...</p>
+                    <p id="msg-sem-pedidos" style="text-align:center; color:#94a3b8; font-size:0.9rem;">Buscando pedidos próximos...</p>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        // CONFIGURAÇÕES FIREBASE (MANTENHA ESTAS SE FUNCIONARAM ANTES)
-        const firebaseConfig = { apiKey: "AIzaSyBxbRiYNuGde5nwJIaoeRItWdZGR221cpY", authDomain: "rota-direta.firebaseapp.com", projectId: "rota-direta", databaseURL: "https://rota-direta-default-rtdb.firebaseio.com" };
-        
-        try {
-            firebase.initializeApp(firebaseConfig);
-        } catch(e) { console.error("Erro Firebase", e); }
-        
-        const db = firebase.database();
-        const auth = firebase.auth();
-        const provider = new firebase.auth.GoogleAuthProvider();
-
-        let map, user, role, myMarker, watchId;
+        // --- VARIÁVEIS GLOBAIS ---
+        let map, myMarker;
+        let userData = { role: null, name: '', vehicle: '' };
         const audioPing = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
 
-        // ÍCONES MAPA
+        // --- ÍCONES ---
         const icons = {
-            bike: L.icon({iconUrl:'https://cdn-icons-png.flaticon.com/512/94/94203.png', iconSize:[36,36], iconAnchor:[18,18]}),
-            ebike: L.icon({iconUrl:'https://cdn-icons-png.flaticon.com/512/3082/3082383.png', iconSize:[36,36], iconAnchor:[18,18]}),
-            scooter: L.icon({iconUrl:'https://cdn-icons-png.flaticon.com/512/2554/2554936.png', iconSize:[36,36], iconAnchor:[18,18]}),
-            ape: L.icon({iconUrl:'https://cdn-icons-png.flaticon.com/512/72/72908.png', iconSize:[32,32], iconAnchor:[16,16]})
+            bike: L.icon({iconUrl:'https://cdn-icons-png.flaticon.com/512/94/94203.png', iconSize:[38,38], iconAnchor:[19,19]}),
+            ebike: L.icon({iconUrl:'https://cdn-icons-png.flaticon.com/512/3082/3082383.png', iconSize:[38,38], iconAnchor:[19,19]}),
+            scooter: L.icon({iconUrl:'https://cdn-icons-png.flaticon.com/512/2554/2554936.png', iconSize:[38,38], iconAnchor:[19,19]}),
+            ape: L.icon({iconUrl:'https://cdn-icons-png.flaticon.com/512/72/72908.png', iconSize:[34,34], iconAnchor:[17,17]}),
+            eu: L.divIcon({className:'eu-dot', html:'<div style="width:16px;height:16px;background:#059669;border:3px solid white;border-radius:50%;box-shadow:0 0 0 10px rgba(16,185,129,0.3);"></div>', iconSize:[16,16], iconAnchor:[8,8]})
         };
 
-        // --- AUTH ---
-        function loginGoogle() { auth.signInWithPopup(provider).catch(e => Swal.fire('Erro', e.message, 'error')); }
-
-        auth.onAuthStateChanged(async (u) => {
-            if (u) {
-                user = u;
-                document.getElementById('screen-loading').classList.remove('hidden');
-                document.getElementById('screen-login').classList.add('hidden');
-                
-                try {
-                    const s = await db.ref('users/' + u.uid).get();
-                    if (s.exists()) {
-                        const d = s.val();
-                        role = d.role;
-                        // Se for prestador e estiver pendente, força tela de pendente ou deixa passar se você for o admin
-                        startApp(d);
-                    } else {
-                        document.getElementById('screen-loading').classList.add('hidden');
-                        showScreen('screen-role');
-                    }
-                } catch(e) {
-                    Swal.fire('Erro de Conexão', 'Verifique sua internet.', 'error');
-                }
-            } else {
-                showScreen('screen-login');
-            }
-        });
+        // --- 1. SIMULAÇÃO DE LOGIN ---
+        function loginGoogleFake() {
+            // Finge que logou com Google
+            Swal.fire({
+                title: 'Login Google',
+                text: 'Simulando autenticação...',
+                timer: 1000,
+                timerProgressBar: true,
+                didOpen: () => { Swal.showLoading() }
+            }).then(() => {
+                showScreen('screen-role');
+            });
+        }
 
         function showScreen(id) {
             document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
             document.getElementById(id).classList.remove('hidden');
         }
 
-        async function setRole(r) {
-            if (r === 'user') {
-                const data = { uid: user.uid, role: 'user', name: user.displayName, email: user.email };
-                await db.ref('users/' + user.uid).set(data);
-                startApp(data);
+        function setRole(role) {
+            userData.role = role;
+            if(role === 'user') {
+                startApp();
             } else {
                 showScreen('screen-register');
-                setTimeout(() => { try { IMask(document.getElementById('reg-zap'), {mask:'(00) 00000-0000'}); } catch(e){} }, 500);
+                setTimeout(() => IMask(document.getElementById('reg-zap'), {mask:'(00) 00000-0000'}), 500);
             }
         }
 
-        // --- CADASTRO ---
+        // --- 2. CADASTRO PRESTADOR ---
         function selVeh(type, el) {
             document.querySelectorAll('.eco-opt').forEach(i => i.classList.remove('selected'));
             el.classList.add('selected');
@@ -232,144 +208,168 @@
 
         function abrirTermos() {
             Swal.fire({
-                title: 'Termos de Uso Sustentável',
+                title: 'Termos de Uso',
                 html: `
-                    <div style="text-align:justify; font-size:0.85rem; height:250px; overflow-y:scroll; padding-right:10px;">
-                        <p><b>1. OBJETO:</b> A Plataforma Rota Eco conecta prestadores de mobilidade ativa a usuários.</p>
-                        <p><b>2. RESPONSABILIDADE:</b> O Prestador declara ser autônomo e assume total responsabilidade.</p>
-                        <p><b>3. SUSTENTABILIDADE:</b> Proibido veículos a combustão.</p>
-                        <p><b>4. SEGURANÇA:</b> O Prestador atesta ter bons antecedentes criminais.</p>
+                    <div style="text-align:justify; font-size:0.85rem; height:200px; overflow-y:scroll; padding-right:10px;">
+                        <p><b>1. ECO-PLATAFORMA:</b> O Rota Eco conecta prestadores de serviços sustentáveis a usuários.</p>
+                        <p><b>2. RESPONSABILIDADE:</b> O Prestador declara ser autônomo e responsável pela execução do serviço.</p>
+                        <p><b>3. PROIBIDO:</b> Veículos a combustão (gasolina) não são permitidos.</p>
+                        <p><b>4. SEGURANÇA:</b> Obrigatório ter mais de 18 anos e bons antecedentes.</p>
                     </div>
                 `,
                 confirmButtonText: 'LI E ACEITO',
                 confirmButtonColor: '#10b981',
                 allowOutsideClick: false
-            }).then((res) => {
-                if (res.isConfirmed) {
+            }).then((result) => {
+                if(result.isConfirmed) {
                     document.getElementById('check-termos').checked = true;
-                    document.getElementById('termos-status').innerText = "✅ Termos Aceitos!";
-                    document.getElementById('termos-status').style.color = "#15803d";
-                    document.getElementById('btn-submit-reg').disabled = false;
+                    document.getElementById('termos-status').innerText = '✅ Termos Aceitos';
+                    document.getElementById('termos-status').style.color = 'green';
+                    document.getElementById('btn-submit').disabled = false;
                 }
             });
         }
 
         function finalizarCadastro() {
-            const v = document.getElementById('reg-veh').value;
-            const n = document.getElementById('reg-nome').value.trim();
-            const z = document.getElementById('reg-zap').value;
-            
-            if (!v) return Swal.fire('Atenção', 'Selecione um veículo.', 'warning');
-            if (n.length < 5) return Swal.fire('Erro', 'Nome completo obrigatório.', 'error');
-            if (z.length < 14) return Swal.fire('Erro', 'WhatsApp inválido.', 'error');
+            const nome = document.getElementById('reg-nome').value;
+            const zap = document.getElementById('reg-zap').value;
+            const veh = document.getElementById('reg-veh').value;
 
-            const data = { uid: user.uid, role: 'provider', name: n, zap: z.replace(/\D/g,''), vehicle: v, status: 'active', email: user.email };
-            db.ref('users/' + user.uid).set(data).then(() => {
-                Swal.fire('Sucesso!', 'Você é um parceiro eco.', 'success').then(() => startApp(data));
+            if(!veh) return Swal.fire('Erro', 'Escolha um veículo.', 'error');
+            if(nome.length < 3) return Swal.fire('Erro', 'Nome inválido.', 'error');
+            if(zap.length < 14) return Swal.fire('Erro', 'WhatsApp inválido.', 'error');
+
+            userData.name = nome;
+            userData.vehicle = veh;
+            
+            Swal.fire('Cadastro Aprovado!', 'Bem-vindo ao time Eco.', 'success').then(() => {
+                startApp();
             });
         }
 
-        // --- APP LOGIC ---
-        function startApp(d) {
-            user = d; role = d.role;
+        // --- 3. INICIAR APP (MAPA) ---
+        function startApp() {
             showScreen('app-ui');
             
-            // CORREÇÃO: Garante que o mapa renderize no tamanho certo
+            // Força o mapa a carregar corretamente
             setTimeout(() => {
-                if (!map) {
-                    map = L.map('map', {zoomControl: false}).setView([-21.135, -44.261], 16);
+                if(!map) {
+                    // Posição padrão (SJDR) caso GPS falhe
+                    map = L.map('map', {zoomControl: false}).setView([-21.135, -44.261], 15);
                     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(map);
                 }
                 map.invalidateSize();
+                
+                // Tenta pegar GPS
+                if(navigator.geolocation) {
+                    navigator.geolocation.watchPosition(p => {
+                        const lat = p.coords.latitude;
+                        const lng = p.coords.longitude;
+                        if(myMarker) map.removeLayer(myMarker);
+                        
+                        // Ícone muda se for prestador ou usuário
+                        const icone = userData.role === 'provider' ? icons[userData.vehicle] : icons.eu;
+                        myMarker = L.marker([lat, lng], {icon: icone}).addTo(map);
+                        map.setView([lat, lng]);
+                    }, () => {
+                        // Se GPS falhar, não faz nada (mantém em SJDR)
+                    }, {enableHighAccuracy: true});
+                }
             }, 500);
 
-            if (role === 'user') {
+            if(userData.role === 'user') {
                 document.getElementById('ui-user').classList.remove('hidden');
+                // Simula prestadores no mapa
+                adicionarPrestadoresFakes();
             } else {
                 document.getElementById('ui-provider').classList.remove('hidden');
-                escutarPedidos();
-            }
-
-            // GPS
-            if(navigator.geolocation) {
-                navigator.geolocation.watchPosition(p => {
-                    const lat = p.coords.latitude; const lng = p.coords.longitude;
-                    if(myMarker) map.removeLayer(myMarker);
-                    
-                    const myIcon = role === 'provider' ? icons[user.vehicle] : L.divIcon({className:'eu-dot', html:'<div style="width:15px;height:15px;background:#059669;border:3px solid white;border-radius:50%;box-shadow:0 0 0 10px rgba(16,185,129,0.3);"></div>'});
-                    
-                    myMarker = L.marker([lat, lng], {icon: myIcon}).addTo(map);
-                    map.setView([lat, lng]); // Segue o usuário
-                    
-                    if(role === 'provider') db.ref('online/' + user.uid).set({ lat, lng, type: user.vehicle, name: user.name });
-                }, (err) => {
-                    console.log("Erro GPS", err);
-                    Swal.fire('Atenção', 'Ative o GPS para usar o app.', 'warning');
-                }, { enableHighAccuracy: true });
+                // Inicia simulação de pedidos chegando
+                iniciarSimulacaoPedidos();
             }
         }
 
-        // --- FLUXO PEDIDO ---
+        function adicionarPrestadoresFakes() {
+            // Adiciona umas bikes fake no mapa pra ficar bonito
+            const latBase = -21.135;
+            const lngBase = -44.261;
+            
+            L.marker([latBase + 0.002, lngBase + 0.002], {icon: icons.bike}).addTo(map).bindPopup("João - Bike");
+            L.marker([latBase - 0.002, lngBase - 0.002], {icon: icons.ebike}).addTo(map).bindPopup("Maria - E-Bike");
+            L.marker([latBase + 0.001, lngBase - 0.003], {icon: icons.ape}).addTo(map).bindPopup("Pedro - Office Boy");
+        }
+
+        // --- 4. FLUXO DE PEDIDO (USUÁRIO) ---
         async function abrirSolicitacao() {
             const { value: form } = await Swal.fire({
-                title: 'Solicitar Eco',
+                title: 'O que você precisa?',
                 html: `
                     <select id="req-cat" class="inp">
-                        <option value="bike">🚲 Bike (Encomenda)</option>
+                        <option value="bike">🚲 Bike (Encomenda Leve)</option>
                         <option value="ebike">⚡ E-Bike (Rápido)</option>
                         <option value="scooter">🛴 Scooter (Ágil)</option>
-                        <option value="ape">👟 Office Boy</option>
+                        <option value="ape">👟 Office Boy (A Pé)</option>
                     </select>
-                    <input id="req-desc" class="inp" placeholder="O que precisa? (Ex: Buscar chave)">
+                    <input id="req-desc" class="inp" placeholder="Descreva (Ex: Buscar remédio)">
                     <p style="font-size:0.75rem; color:#ef4444;">* Valor combinado no WhatsApp</p>
                 `,
-                confirmButtonText: 'CHAMAR',
+                confirmButtonText: 'CHAMAR PRESTADOR',
                 confirmButtonColor: '#10b981',
                 focusConfirm: false,
                 preConfirm: () => [document.getElementById('req-cat').value, document.getElementById('req-desc').value]
             });
 
             if (form && form[1]) {
-                const oid = Date.now();
-                db.ref('offers/' + oid).set({ id: oid, uid: user.uid, name: user.name, cat: form[0], desc: form[1], status: 'open' });
-                Swal.fire({ title: 'Enviado!', text: 'Aguardando...', icon: 'success', showConfirmButton: false, timer: 3000 });
-                
-                db.ref('offers/'+oid).on('value', snap => {
-                    if(snap.val() && snap.val().status === 'accepted') {
-                        audioPing.play();
-                        Swal.fire({ title: 'ACEITO! 🌟', html: `Prestador: ${snap.val().provName}<br>Ajudando o planeta!`, icon: 'success' });
-                    }
+                Swal.fire({
+                    title: 'Buscando...',
+                    text: 'Aguarde um prestador aceitar.',
+                    icon: 'info',
+                    showConfirmButton: false,
+                    allowOutsideClick: false
                 });
+
+                // SIMULAÇÃO: Prestador aceita em 4 segundos
+                setTimeout(() => {
+                    audioPing.play();
+                    Swal.fire({
+                        title: 'ACEITO! 🌟',
+                        html: `<b>Carlos (Bike)</b> aceitou seu pedido!<br>Ele vai te chamar no WhatsApp.`,
+                        icon: 'success'
+                    });
+                }, 4000);
             }
         }
 
-        function escutarPedidos() {
-            db.ref('offers').orderByChild('status').equalTo('open').on('value', snap => {
+        // --- 5. FLUXO DE RECEBER PEDIDO (PRESTADOR) ---
+        function iniciarSimulacaoPedidos() {
+            // A cada 10 segundos, aparece um pedido falso pra testar
+            setInterval(() => {
                 const lista = document.getElementById('lista-pedidos');
-                lista.innerHTML = '';
-                let achou = false;
-                snap.forEach(item => {
-                    const o = item.val();
-                    if (o.cat === user.vehicle) {
-                        achou = true;
-                        audioPing.play().catch(()=>{});
-                        const div = document.createElement('div');
-                        div.className = 'req-card';
-                        div.innerHTML = `<b>${o.name}</b> precisa:<p>${o.desc}</p><button class="btn btn-eco" onclick="aceitar('${o.id}')">ACEITAR</button>`;
-                        lista.appendChild(div);
-                    }
-                });
-                if(!achou) lista.innerHTML = '<p style="text-align:center; color:#94a3b8; font-size:0.9rem;">Sem pedidos na categoria.</p>';
-            });
+                const msg = document.getElementById('msg-sem-pedidos');
+                if(msg) msg.style.display = 'none';
+
+                audioPing.play().catch(()=>{});
+                
+                const div = document.createElement('div');
+                div.className = 'req-card';
+                div.innerHTML = `
+                    <b>Cliente Novo</b> precisa de:<br>
+                    Entrega de Chaves (Centro)<br>
+                    <button class="btn btn-eco" style="margin-top:10px; padding:10px;" onclick="aceitarFake(this)">ACEITAR</button>
+                `;
+                lista.prepend(div);
+            }, 8000); // 8 segundos
         }
 
-        async function aceitar(oid) {
-            await db.ref('offers/'+oid).update({ status: 'accepted', provId: user.uid, provName: user.name });
-            Swal.fire('Aceito!', 'Você ganhou uma estrela Eco! 🌟', 'success');
+        function aceitarFake(btn) {
+            btn.parentElement.remove();
+            Swal.fire('Sucesso!', 'Você ganhou uma estrela Eco! 🌟<br>Abrindo WhatsApp...', 'success');
         }
 
-        function centralizar() { navigator.geolocation.getCurrentPosition(p => map.setView([p.coords.latitude, p.coords.longitude], 17)); }
-        function verMenu() { Swal.fire('Rota Eco', 'Versão 30.0', 'info'); }
+        // --- UTILITÁRIOS ---
+        function centralizar() { 
+            navigator.geolocation.getCurrentPosition(p => map.setView([p.coords.latitude, p.coords.longitude], 17)); 
+        }
+        function verMenu() { Swal.fire('Menu', 'Configurações / Histórico', 'info'); }
         function sos() { window.open('tel:190'); }
     </script>
 </body>

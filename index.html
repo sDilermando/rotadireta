@@ -3,379 +3,294 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Rota Eco - Sustentável</title>
+    <title>Rota Eco (Simulador)</title>
     
-    <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/94/94203.png">
-
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/imask/6.4.3/imask.min.js"></script>
 
     <style>
-        /* CSS LIMPO E MODERNO */
+        /* ESTILO VISUAL LIMPO */
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        :root { --primary: #064e3b; --eco: #10b981; --bg: #f0fdf4; --gray: #64748b; }
-        body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); overflow: hidden; height: 100vh; width: 100vw; position: fixed; }
+        body { margin: 0; font-family: 'Inter', sans-serif; background: #f0fdf4; overflow: hidden; height: 100vh; width: 100vw; }
         
         /* TELAS */
-        .screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 3000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; transition: 0.3s; }
-        .hidden { display: none !important; opacity: 0; pointer-events: none; }
+        .screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 999; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; transition: 0.3s; }
+        .hidden { display: none !important; }
         
-        /* LOGO */
-        .logo { font-size: 2.5rem; font-weight: 900; color: var(--primary); margin-bottom: 5px; }
-        .logo span { color: var(--eco); }
-        .subtitle { color: var(--gray); margin-bottom: 30px; font-size: 0.9rem; text-align: center; }
-
-        /* CARDS */
-        .card { background: white; padding: 25px; border-radius: 20px; width: 100%; max-width: 350px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); border: 1px solid #dcfce7; max-height: 90vh; overflow-y: auto; }
-
-        /* INPUTS E BOTÕES */
-        .inp { width: 100%; padding: 15px; border: 2px solid #e2e8f0; border-radius: 12px; margin-bottom: 12px; font-size: 1rem; outline: none; background: #f8fafc; transition: 0.3s; }
-        .inp:focus { border-color: var(--eco); background: white; }
-
-        .btn { width: 100%; padding: 16px; border: none; border-radius: 12px; font-weight: 800; cursor: pointer; margin-top: 10px; color: white; display: flex; justify-content: center; align-items: center; gap: 10px; font-size: 1rem; transition: 0.2s; }
-        .btn:active { transform: scale(0.96); }
-        .btn-eco { background: var(--eco); box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); }
-        .btn-google { background: white; color: #333; border: 2px solid #e2e8f0; }
-        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        /* ELEMENTOS */
+        .logo { font-size: 2.5rem; font-weight: 900; color: #064e3b; margin-bottom: 10px; }
+        .logo span { color: #10b981; }
+        .card { background: white; padding: 20px; border-radius: 20px; width: 100%; max-width: 350px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: 1px solid #dcfce7; }
+        
+        .btn { width: 100%; padding: 15px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; margin-top: 10px; color: white; display: flex; justify-content: center; align-items: center; gap: 10px; font-size: 1rem; }
+        .btn-eco { background: #10b981; }
+        .btn-outline { background: white; border: 2px solid #10b981; color: #10b981; }
+        
+        .inp { width: 100%; padding: 15px; border: 2px solid #e2e8f0; border-radius: 12px; margin-bottom: 10px; font-size: 1rem; outline: none; background: #f8fafc; }
+        
+        /* MAPA */
+        #map { width: 100%; height: 100%; position: absolute; top:0; left:0; z-index: 1; }
+        
+        /* BOTÕES FLUTUANTES */
+        .float-btn { position: absolute; z-index: 500; width: 45px; height: 45px; border-radius: 50%; background: white; border: none; box-shadow: 0 4px 10px rgba(0,0,0,0.2); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: #333; }
+        #btn-menu { top: 20px; left: 20px; }
+        #btn-sos { top: 20px; right: 20px; background: #ef4444; color: white; font-weight: 900; font-size: 0.7rem; animation: pulse 2s infinite; }
+        
+        #btn-request { position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%); background: #064e3b; color: white; padding: 15px 30px; border-radius: 50px; font-weight: bold; box-shadow: 0 10px 25px rgba(0,0,0,0.3); z-index: 500; cursor: pointer; display: flex; align-items: center; gap: 10px; white-space: nowrap; border: 2px solid #34d399; }
 
         /* GRID VEÍCULOS */
         .grid-eco { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
-        .eco-opt { border: 2px solid #e2e8f0; border-radius: 12px; padding: 15px; text-align: center; cursor: pointer; transition: 0.2s; }
-        .eco-opt i { font-size: 1.8rem; color: #94a3b8; display: block; margin-bottom: 5px; }
-        .eco-opt span { font-size: 0.7rem; font-weight: bold; color: #64748b; text-transform: uppercase; }
-        .eco-opt.selected { border-color: var(--eco); background: #ecfdf5; box-shadow: 0 0 0 2px var(--eco); }
-        .eco-opt.selected i { color: var(--eco); }
+        .eco-opt { border: 2px solid #e2e8f0; border-radius: 12px; padding: 10px; text-align: center; cursor: pointer; }
+        .eco-opt.selected { background: #d1fae5; border-color: #10b981; }
+        .eco-opt i { font-size: 1.5rem; color: #64748b; }
+        .eco-opt span { display: block; font-size: 0.7rem; font-weight: bold; margin-top: 5px; color: #334155; }
 
-        /* TERMOS */
-        .terms-box { background: #f0fdf4; border: 1px dashed var(--eco); padding: 15px; border-radius: 10px; text-align: center; cursor: pointer; margin-top: 10px; transition: 0.2s; }
-        .terms-box:active { background: #dcfce7; }
-        
-        /* MAPA UI */
-        #app-ui { display: none; width: 100%; height: 100%; position: relative; }
-        #map { width: 100%; height: 100%; z-index: 1; }
-
-        .float-btn { position: absolute; z-index: 2000; width: 45px; height: 45px; border-radius: 50%; background: white; border: none; box-shadow: 0 4px 10px rgba(0,0,0,0.1); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: #333; }
-        #btn-menu { top: 20px; left: 20px; }
-        #btn-sos { top: 20px; right: 20px; background: #ef4444; color: white; font-weight: 900; font-size: 0.7rem; animation: pulse 2s infinite; }
-        #btn-gps { bottom: 120px; right: 20px; color: var(--eco); }
-
-        /* BOTÃO SOLICITAR (FLUTUANTE GRANDE) */
-        #btn-request { position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%); background: var(--primary); color: white; padding: 15px 35px; border-radius: 50px; font-weight: bold; box-shadow: 0 10px 25px rgba(6, 78, 59, 0.4); z-index: 2000; cursor: pointer; display: flex; align-items: center; gap: 10px; white-space: nowrap; border: 2px solid #34d399; font-size: 1.1rem; }
-
-        /* DOCK PRESTADOR */
-        #provider-dock { position: absolute; bottom: 0; left: 0; right: 0; background: white; border-radius: 25px 25px 0 0; padding: 20px; z-index: 2000; box-shadow: 0 -10px 30px rgba(0,0,0,0.1); max-height: 50vh; overflow-y: auto; }
-        .req-card { background: #ecfdf5; border: 1px solid #6ee7b7; padding: 15px; border-radius: 12px; margin-bottom: 10px; animation: slideUp 0.3s; }
+        /* PAINEL INFERIOR (PRESTADOR) */
+        #panel-provider { position: absolute; bottom: 0; left: 0; width: 100%; background: white; border-radius: 20px 20px 0 0; padding: 20px; z-index: 600; box-shadow: 0 -5px 20px rgba(0,0,0,0.1); display: none; }
 
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
-        @keyframes slideUp { from { transform: translateY(20px); opacity:0; } to { transform: translateY(0); opacity:1; } }
     </style>
 </head>
 <body>
 
     <div id="screen-loading" class="screen">
         <div class="logo">ROTA <span>ECO</span></div>
-        <p style="color:var(--eco);">Carregando sistema...</p>
+        <p style="color:#10b981;">Carregando...</p>
     </div>
 
     <div id="screen-login" class="screen hidden">
         <div class="logo">ROTA <span>ECO</span></div>
-        <p class="subtitle">Mobilidade 100% Sustentável</p>
+        <p style="text-align:center; color:#64748b;">O App que move São João</p>
         <div class="card">
-            <button class="btn btn-google" onclick="fazerLogin()">
+            <button class="btn btn-outline" onclick="login('google')">
                 <i class="fab fa-google"></i> Entrar com Google
             </button>
-            <p style="font-size:0.75rem; text-align:center; color:#94a3b8; margin-top:20px;">
-                Ambiente Seguro & Verificado
+            <p style="font-size:0.7rem; text-align:center; color:#94a3b8; margin-top:20px;">
+                Ao entrar, você aceita os Termos de Uso Sustentável.
             </p>
         </div>
     </div>
 
     <div id="screen-role" class="screen hidden">
-        <h3 style="color:var(--primary); margin-bottom:20px;">Como deseja usar?</h3>
+        <h3 style="color:#064e3b; margin-bottom:20px;">Como deseja usar?</h3>
         <div class="card">
-            <button class="btn btn-eco" onclick="setRole('user')">🙋 SOU USUÁRIO</button>
-            <button class="btn btn-outline" onclick="setRole('provider')">🚲 SOU PRESTADOR ECO</button>
+            <button class="btn btn-eco" onclick="escolherPerfil('usuario')">🙋 SOU USUÁRIO</button>
+            <button class="btn btn-outline" onclick="escolherPerfil('prestador')">🚲 SOU PRESTADOR</button>
         </div>
     </div>
 
     <div id="screen-register" class="screen hidden">
-        <div class="card">
-            <h3 style="text-align:center; color:var(--primary); margin:0 0 15px 0;">Parceiro Eco</h3>
-            <p style="text-align:center; font-size:0.8rem; color:#64748b;">Qual seu veículo sustentável?</p>
+        <div class="card" style="max-height:90vh; overflow-y:auto;">
+            <h3 style="text-align:center; margin:0 0 15px 0;">Parceiro Eco</h3>
+            <p style="text-align:center; font-size:0.8rem;">Selecione seu veículo:</p>
             
             <div class="grid-eco">
-                <div class="eco-opt" onclick="selVeh('bike', this)"><i class="fas fa-bicycle"></i><span>BIKE</span></div>
-                <div class="eco-opt" onclick="selVeh('ebike', this)"><i class="fas fa-bolt"></i><span>E-BIKE</span></div>
-                <div class="eco-opt" onclick="selVeh('scooter', this)"><i class="fas fa-scooter"></i><span>SCOOTER</span></div>
-                <div class="eco-opt" onclick="selVeh('ape', this)"><i class="fas fa-walking"></i><span>A PÉ</span></div>
+                <div class="eco-opt" onclick="selVeh(this, 'Bike')"><i class="fas fa-bicycle"></i><span>BIKE</span></div>
+                <div class="eco-opt" onclick="selVeh(this, 'E-Bike')"><i class="fas fa-bolt"></i><span>E-BIKE</span></div>
+                <div class="eco-opt" onclick="selVeh(this, 'Scooter')"><i class="fas fa-scooter"></i><span>SCOOTER</span></div>
+                <div class="eco-opt" onclick="selVeh(this, 'A Pé')"><i class="fas fa-walking"></i><span>A PÉ</span></div>
             </div>
-            <input type="hidden" id="reg-veh">
 
-            <input id="reg-nome" class="inp" placeholder="Nome Completo">
-            <input id="reg-zap" class="inp" type="tel" placeholder="WhatsApp (DDD)">
+            <input class="inp" placeholder="Nome Completo">
+            <input id="zap-input" class="inp" type="tel" placeholder="WhatsApp (DDD)">
             
-            <div class="terms-box" onclick="abrirTermos()">
-                <i class="fas fa-file-contract" style="color:var(--eco); font-size:1.5rem;"></i>
-                <div style="font-weight:bold; font-size:0.9rem; color:var(--primary);">LER TERMOS DE USO</div>
-                <span id="termos-status" style="font-size:0.75rem; color:#64748b;">Clique para ler e aceitar</span>
+            <div style="background:#f0fdf4; padding:10px; border-radius:8px; font-size:0.8rem; margin-bottom:10px; cursor:pointer;" onclick="verTermos()">
+                📄 <b>Ler Termos de Uso</b> (Clique aqui)
             </div>
-            <input type="checkbox" id="check-termos" style="display:none;">
+            <label style="font-size:0.8rem; display:flex; align-items:center; gap:5px;">
+                <input type="checkbox" id="check-termos"> Li e concordo
+            </label>
 
-            <button id="btn-submit" class="btn btn-eco" onclick="finalizarCadastro()" disabled style="margin-top:15px;">ENVIAR CADASTRO</button>
-            <div onclick="location.reload()" style="text-align:center; margin-top:10px; font-size:0.8rem; color:#94a3b8; cursor:pointer;">Cancelar</div>
+            <button class="btn btn-eco" onclick="finalizarCadastro()">CRIAR CONTA</button>
+            <div onclick="location.reload()" style="text-align:center; margin-top:10px; font-size:0.8rem; cursor:pointer;">Cancelar</div>
         </div>
     </div>
 
-    <div id="app-ui">
+    <div id="screen-app" class="screen hidden" style="background:transparent; padding:0; display:block;">
         <div id="map"></div>
         
-        <button id="btn-menu" class="float-btn" onclick="verMenu()"><i class="fas fa-bars"></i></button>
-        <button id="btn-sos" class="float-btn" onclick="sos()"><i class="fas fa-shield-alt"></i></button>
-        <button id="btn-gps" class="float-btn" onclick="centralizar()"><i class="fas fa-crosshairs"></i></button>
+        <button id="btn-menu" class="float-btn" onclick="menu()"><i class="fas fa-bars"></i></button>
+        <button id="btn-sos" class="float-btn" onclick="sos()">SOS</button>
 
-        <div id="ui-user" class="hidden">
-            <button id="btn-request" onclick="abrirSolicitacao()">
-                <i class="fas fa-leaf"></i> SOLICITAR ECO
-            </button>
-        </div>
+        <button id="btn-request" class="hidden" onclick="pedirEco()">
+            <i class="fas fa-leaf"></i> SOLICITAR ECO
+        </button>
 
-        <div id="ui-provider" class="hidden">
-            <div id="provider-dock">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <b style="color:var(--primary)">RADAR ECO</b>
-                    <span style="background:#dcfce7; color:#15803d; padding:5px 10px; border-radius:20px; font-size:0.75rem; font-weight:bold;">🟢 ONLINE</span>
-                </div>
-                <div id="lista-pedidos" style="margin-top:15px;">
-                    <p id="msg-wait" style="text-align:center; color:#94a3b8; font-size:0.9rem;">Buscando pedidos próximos...</p>
-                </div>
+        <div id="panel-provider">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <b>Radar Eco</b>
+                <span style="background:#dcfce7; color:#15803d; padding:5px 10px; border-radius:20px; font-size:0.75rem; font-weight:bold;">🟢 ONLINE</span>
+            </div>
+            <div id="lista-pedidos" style="margin-top:15px;">
+                <p style="text-align:center; color:#94a3b8; font-size:0.9rem;">Procurando clientes...</p>
             </div>
         </div>
     </div>
 
     <script>
-        // --- SISTEMA INTERNO ---
-        let map, myMarker;
-        let userData = { role: null, name: '', vehicle: '' };
-        const audioPing = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
-
-        // ÍCONES PERSONALIZADOS
-        const icons = {
-            bike: L.icon({iconUrl:'https://cdn-icons-png.flaticon.com/512/94/94203.png', iconSize:[40,40], iconAnchor:[20,20]}),
-            ebike: L.icon({iconUrl:'https://cdn-icons-png.flaticon.com/512/3082/3082383.png', iconSize:[40,40], iconAnchor:[20,20]}),
-            scooter: L.icon({iconUrl:'https://cdn-icons-png.flaticon.com/512/2554/2554936.png', iconSize:[40,40], iconAnchor:[20,20]}),
-            ape: L.icon({iconUrl:'https://cdn-icons-png.flaticon.com/512/72/72908.png', iconSize:[35,35], iconAnchor:[17,17]}),
-            user: L.divIcon({className:'eu-dot', html:'<div style="width:18px;height:18px;background:#059669;border:3px solid white;border-radius:50%;box-shadow:0 0 0 8px rgba(16,185,129,0.3);"></div>', iconSize:[18,18], iconAnchor:[9,9]})
-        };
-
-        // --- INICIALIZAÇÃO SEGURA ---
-        window.onload = function() {
-            // Remove tela de loading após 2 segundos no máximo (Correção do Travamento)
+        // --- LÓGICA DO SIMULADOR (SEM BANCO DE DADOS PARA NÃO TRAVAR) ---
+        
+        let map;
+        let perfilAtual = '';
+        
+        // 1. Inicialização
+        window.onload = () => {
             setTimeout(() => {
-                const loading = document.getElementById('screen-loading');
-                if(!loading.classList.contains('hidden')){
-                    showScreen('screen-login');
-                }
-            }, 1500);
+                document.getElementById('screen-loading').classList.add('hidden');
+                document.getElementById('screen-login').classList.remove('hidden');
+            }, 1500); // 1.5 seg pra carregar
+            
+            try { IMask(document.getElementById('zap-input'), {mask:'(00) 00000-0000'}); } catch(e){}
         };
 
-        function showScreen(id) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
-            document.getElementById(id).classList.remove('hidden');
-        }
-
-        // --- 1. LOGIN ---
-        function fazerLogin() {
+        // 2. Login Falso
+        function login() {
             Swal.fire({
-                title: 'Autenticando...',
+                title: 'Conectando Google...',
                 timer: 1000,
                 didOpen: () => { Swal.showLoading() }
             }).then(() => {
-                showScreen('screen-role');
+                document.getElementById('screen-login').classList.add('hidden');
+                document.getElementById('screen-role').classList.remove('hidden');
             });
         }
 
-        function setRole(role) {
-            userData.role = role;
-            if(role === 'user') {
-                startApp();
+        // 3. Escolha de Perfil
+        function escolherPerfil(tipo) {
+            perfilAtual = tipo;
+            document.getElementById('screen-role').classList.add('hidden');
+            
+            if(tipo === 'usuario') {
+                iniciarMapa(true); // true = mostra botão solicitar
             } else {
-                showScreen('screen-register');
-                setTimeout(() => IMask(document.getElementById('reg-zap'), {mask:'(00) 00000-0000'}), 500);
+                document.getElementById('screen-register').classList.remove('hidden');
             }
         }
 
-        // --- 2. CADASTRO PRESTADOR ---
-        function selVeh(type, el) {
-            document.querySelectorAll('.eco-opt').forEach(i => i.classList.remove('selected'));
+        // 4. Cadastro Falso
+        function selVeh(el, tipo) {
+            document.querySelectorAll('.eco-opt').forEach(d => d.classList.remove('selected'));
             el.classList.add('selected');
-            document.getElementById('reg-veh').value = type;
         }
 
-        function abrirTermos() {
+        function verTermos() {
             Swal.fire({
                 title: 'Termos de Uso',
-                html: `
-                    <div style="text-align:justify; font-size:0.85rem; height:200px; overflow-y:scroll; padding-right:10px;">
-                        <p><b>1. ECO-PLATAFORMA:</b> O Rota Eco conecta prestadores de serviços sustentáveis a usuários.</p>
-                        <p><b>2. RESPONSABILIDADE:</b> O Prestador declara ser autônomo e responsável pela execução do serviço.</p>
-                        <p><b>3. PROIBIDO:</b> Veículos a combustão (gasolina) não são permitidos.</p>
-                        <p><b>4. SEGURANÇA:</b> Obrigatório ter mais de 18 anos e bons antecedentes.</p>
-                    </div>
-                `,
-                confirmButtonText: 'LI E ACEITO',
-                confirmButtonColor: '#10b981',
-                allowOutsideClick: false
-            }).then((result) => {
-                if(result.isConfirmed) {
-                    document.getElementById('check-termos').checked = true;
-                    document.getElementById('termos-status').innerText = '✅ Aceito';
-                    document.getElementById('termos-status').style.color = '#15803d';
-                    document.getElementById('btn-submit').disabled = false;
-                }
+                text: '1. Proibido veículos a gasolina. 2. Seja maior de 18 anos. 3. Você é autônomo. 4. Pagamento direto no PIX/Dinheiro.',
+                confirmButtonText: 'Entendi'
             });
         }
 
         function finalizarCadastro() {
-            const nome = document.getElementById('reg-nome').value;
-            const zap = document.getElementById('reg-zap').value;
-            const veh = document.getElementById('reg-veh').value;
-
-            if(!veh) return Swal.fire('Erro', 'Selecione um veículo.', 'warning');
-            if(nome.length < 3) return Swal.fire('Erro', 'Nome inválido.', 'warning');
-            if(zap.length < 14) return Swal.fire('Erro', 'WhatsApp incompleto.', 'warning');
-
-            userData.name = nome;
-            userData.vehicle = veh;
-            
-            Swal.fire('Aprovado!', 'Bem-vindo ao Rota Eco. 🌱', 'success').then(() => {
-                startApp();
+            if(!document.getElementById('check-termos').checked) {
+                return Swal.fire('Erro', 'Aceite os termos.', 'warning');
+            }
+            Swal.fire('Sucesso!', 'Você agora é um parceiro Eco.', 'success').then(() => {
+                document.getElementById('screen-register').classList.add('hidden');
+                iniciarMapa(false); // false = mostra painel prestador
             });
         }
 
-        // --- 3. APP E MAPA ---
-        function startApp() {
-            showScreen('app-ui');
+        // 5. O Mapa (O Coração do App)
+        function iniciarMapa(isUser) {
+            document.getElementById('screen-app').classList.remove('hidden');
             
-            // Renderiza o mapa com atraso mínimo para garantir tamanho correto
-            setTimeout(() => {
-                if(!map) {
-                    // Ponto padrão (SJDR)
-                    map = L.map('map', {zoomControl: false}).setView([-21.135, -44.261], 15);
-                    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(map);
-                }
-                map.invalidateSize(); // CORREÇÃO CRÍTICA DO MAPA CINZA
+            // Inicia Leaflet (Mapa Grátis)
+            if(!map) {
+                map = L.map('map', { zoomControl: false }).setView([-21.135, -44.261], 15); // SJDR
+                L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(map);
+                
+                // Adiciona ícones falsos para dar vida
+                const iconBike = L.icon({iconUrl:'https://cdn-icons-png.flaticon.com/512/94/94203.png', iconSize:[30,30]});
+                L.marker([-21.136, -44.262], {icon: iconBike}).addTo(map).bindPopup('João (Bike)');
+                L.marker([-21.134, -44.260], {icon: iconBike}).addTo(map).bindPopup('Maria (Scooter)');
+            }
+            
+            // Força recalculo do tamanho (Corrige tela cinza)
+            setTimeout(() => { map.invalidateSize(); }, 200);
 
-                // Tenta pegar GPS real
-                if(navigator.geolocation) {
-                    navigator.geolocation.watchPosition(p => {
-                        const lat = p.coords.latitude;
-                        const lng = p.coords.longitude;
-                        if(myMarker) map.removeLayer(myMarker);
-                        
-                        // Ícone correto
-                        const icone = userData.role === 'provider' ? icons[userData.vehicle] : icons.user;
-                        myMarker = L.marker([lat, lng], {icon: icone}).addTo(map);
-                        map.setView([lat, lng]);
-                    }, (err) => {
-                        console.log("GPS não permitido, usando padrão.");
-                    }, {enableHighAccuracy: true});
-                }
-            }, 300);
-
-            if(userData.role === 'user') {
-                document.getElementById('ui-user').classList.remove('hidden');
-                // Simula prestadores próximos
-                fakeProviders();
+            if(isUser) {
+                document.getElementById('btn-request').classList.remove('hidden');
+                document.getElementById('panel-provider').style.display = 'none';
             } else {
-                document.getElementById('ui-provider').classList.remove('hidden');
-                // Simula pedidos chegando
-                fakeIncomingRequests();
+                document.getElementById('panel-provider').style.display = 'block';
+                iniciarSimulacaoPedidos(); // Começa a chegar pedido falso
             }
         }
 
-        function fakeProviders() {
-            // Adiciona bikes fake no mapa
-            const lat = -21.135; const lng = -44.261;
-            L.marker([lat+0.002, lng+0.002], {icon: icons.bike}).addTo(map).bindPopup('Bike 01');
-            L.marker([lat-0.002, lng-0.002], {icon: icons.ape}).addTo(map).bindPopup('Office Boy');
-        }
-
-        // --- 4. FLUXO USUÁRIO (SOLICITAR) ---
-        async function abrirSolicitacao() {
+        // 6. Fluxo: Usuário Pede
+        async function pedirEco() {
             const { value: form } = await Swal.fire({
-                title: 'Solicitar Eco',
+                title: 'Novo Pedido',
                 html: `
-                    <select id="req-cat" class="inp">
-                        <option value="bike">🚲 Bike (Encomenda Leve)</option>
-                        <option value="ebike">⚡ E-Bike (Rápido)</option>
-                        <option value="scooter">🛴 Scooter (Ágil)</option>
-                        <option value="ape">👟 Office Boy (A Pé)</option>
+                    <select id="swal-cat" class="inp">
+                        <option>🚲 Bike (Encomenda)</option>
+                        <option>⚡ E-Bike (Rápido)</option>
+                        <option>👟 Office Boy (A Pé)</option>
                     </select>
-                    <input id="req-desc" class="inp" placeholder="O que precisa? (Ex: Buscar remédio)">
-                    <p style="font-size:0.75rem; color:#ef4444;">* Valor combinado no WhatsApp</p>
+                    <input id="swal-desc" class="inp" placeholder="O que precisa? (Ex: Levar chave)">
                 `,
                 confirmButtonText: 'CHAMAR',
-                confirmButtonColor: '#10b981',
+                confirmButtonColor: '#064e3b',
                 focusConfirm: false,
-                preConfirm: () => [document.getElementById('req-cat').value, document.getElementById('req-desc').value]
+                preConfirm: () => [
+                    document.getElementById('swal-cat').value,
+                    document.getElementById('swal-desc').value
+                ]
             });
 
-            if (form && form[1]) {
+            if (form) {
                 Swal.fire({
-                    title: 'Buscando...',
-                    text: 'Aguarde um prestador aceitar.',
-                    icon: 'info',
+                    title: 'Procurando...',
+                    text: 'Aguarde um parceiro aceitar.',
                     showConfirmButton: false,
-                    allowOutsideClick: false
+                    allowOutsideClick: false,
+                    didOpen: () => { Swal.showLoading() }
                 });
 
-                // Simulação: Aceita em 5s
+                // Simula espera de 3 segundos
                 setTimeout(() => {
-                    audioPing.play();
                     Swal.fire({
                         title: 'ACEITO! 🌟',
-                        html: `<b>Carlos (Bike)</b> aceitou seu pedido!<br>Ele vai te chamar no WhatsApp.`,
+                        html: '<b>Carlos (Bike)</b> aceitou seu pedido.<br>Ele vai te chamar no WhatsApp.',
                         icon: 'success'
                     });
-                }, 5000);
+                }, 3000);
             }
         }
 
-        // --- 5. FLUXO PRESTADOR (RECEBER) ---
-        function fakeIncomingRequests() {
+        // 7. Fluxo: Prestador Recebe (Simulação)
+        function iniciarSimulacaoPedidos() {
             setInterval(() => {
-                const list = document.getElementById('lista-pedidos');
-                const msg = document.getElementById('msg-wait');
-                if(msg) msg.style.display = 'none';
-
-                audioPing.play().catch(()=>{});
-                const item = document.createElement('div');
-                item.className = 'req-card';
-                item.innerHTML = `
-                    <b>Cliente Novo</b> precisa:<br>
-                    Entrega leve (Centro)<br>
-                    <button class="btn btn-eco" style="margin-top:10px; padding:10px;" onclick="aceitarFake(this)">ACEITAR</button>
+                const lista = document.getElementById('lista-pedidos');
+                lista.innerHTML = `
+                    <div class="req-card">
+                        <b>Novo Cliente</b> (Centro)<br>
+                        Precisa de: Entrega de Envelope<br>
+                        <button class="btn btn-eco" style="margin-top:10px; padding:10px;" onclick="aceitarSimulado(this)">ACEITAR</button>
+                    </div>
                 `;
-                list.prepend(item);
-            }, 8000);
+                // Toca som (se navegador deixar)
+                const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+                audio.play().catch(e => {});
+            }, 6000); // A cada 6 segundos chega um pedido
         }
 
-        function aceitarFake(btn) {
-            btn.parentElement.remove();
-            Swal.fire('Pedido Aceito!', 'Você ganhou uma estrela Eco! 🌟<br>Iniciando conversa...', 'success');
+        function aceitarSimulado(btn) {
+            btn.parentElement.innerHTML = "<b style='color:green'>Você aceitou! 🎉</b><br>Abrindo WhatsApp...";
+            setTimeout(() => {
+                btn.parentElement.remove(); // Limpa
+            }, 2000);
         }
 
-        // --- UTILS ---
-        function centralizar() { navigator.geolocation.getCurrentPosition(p => map.setView([p.coords.latitude, p.coords.longitude], 17)); }
-        function verMenu() { Swal.fire('Menu', 'Histórico / Configurações', 'info'); }
+        function menu() { Swal.fire('Menu', 'Histórico e Configurações', 'info'); }
         function sos() { window.open('tel:190'); }
+
     </script>
 </body>
 </html>

@@ -3,15 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>EcoRota | Beta</title>
+    <title>EcoRota | App Real</title>
     
     <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/3202/3202926.png">
+    
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/imask/6.4.3/imask.min.js"></script>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
     <style>
         :root { --primary: #10b981; --dark: #0f172a; --light: #f8fafc; --gray: #64748b; --radius: 12px; }
@@ -21,286 +26,282 @@
         .screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 50; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; transition: opacity 0.3s ease; }
         .hidden { display: none !important; }
         .w-full { width: 100%; }
-        .max-w-md { max-width: 400px; }
         
         .brand { font-size: 2.5rem; font-weight: 800; color: var(--dark); letter-spacing: -1px; margin-bottom: 30px; }
         .brand span { color: var(--primary); }
 
-        .input-group { position: relative; margin-bottom: 16px; width: 100%; }
-        .input-field { width: 100%; padding: 16px; border: 1px solid #cbd5e1; border-radius: var(--radius); font-size: 1rem; outline: none; background: #fff; }
-        .input-field:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1); }
-
-        .btn { width: 100%; padding: 16px; border: none; border-radius: var(--radius); font-weight: 600; font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 12px; transition: 0.2s; }
-        .btn:active { transform: scale(0.98); }
+        .input-field { width: 100%; padding: 16px; border: 1px solid #cbd5e1; border-radius: var(--radius); font-size: 1rem; margin-bottom: 15px; outline: none; background: #fff; }
+        .btn { width: 100%; padding: 16px; border: none; border-radius: var(--radius); font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 12px; }
         .btn-primary { background: var(--dark); color: white; }
-        .btn-eco { background: var(--primary); color: white; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3); }
-        .btn-google { background: white; border: 1px solid #e2e8f0; color: #334155; }
-        .btn-link { background: none; color: var(--gray); font-size: 0.9rem; }
+        .btn-eco { background: var(--primary); color: white; }
+        .btn-outline { background: white; border: 2px solid #e2e8f0; color: #64748b; }
 
-        .legal-box { height: 120px; overflow-y: scroll; background: #f8fafc; padding: 12px; border-radius: var(--radius); font-size: 0.75rem; color: #334155; border: 1px solid #cbd5e1; margin-bottom: 15px; text-align: justify; }
-
+        /* MAPA */
         #map { width: 100%; height: 100%; position: absolute; top:0; left:0; z-index: 1; filter: saturate(0.8); }
-        
-        .ui-float { position: absolute; z-index: 100; }
-        .top-left { top: 20px; left: 20px; }
-        .top-right { top: 20px; right: 20px; }
-        .bottom-center { bottom: 30px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; }
+        .ui-float { position: absolute; z-index: 100; pointer-events: none; width: 100%; height: 100%; }
+        .pointer { pointer-events: auto; }
 
-        .icon-btn { width: 48px; height: 48px; border-radius: 50%; background: white; border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; cursor: pointer; color: var(--dark); }
-        .sos-btn { background: #ef4444; color: white; animation: pulse 2s infinite; font-weight: 700; font-size: 0.8rem; }
+        .bottom-panel { position: absolute; bottom: 0; left: 0; width: 100%; background: white; border-radius: 20px 20px 0 0; padding: 25px; box-shadow: 0 -5px 20px rgba(0,0,0,0.1); transform: translateY(120%); transition: 0.3s; }
+        .panel-visible { transform: translateY(0); }
 
-        .search-modal { background: white; border-radius: 20px; padding: 24px; box-shadow: 0 -10px 40px rgba(0,0,0,0.1); width: 100%; }
+        /* LISTA DE PEDIDOS (PRESTADOR) */
+        #orders-list { max-height: 300px; overflow-y: auto; width: 100%; }
+        .order-card { background: #f0fdf4; border: 1px solid #bbf7d0; padding: 15px; border-radius: 12px; margin-bottom: 10px; animation: slideIn 0.3s; }
+        @keyframes slideIn { from { transform: translateX(-20px); opacity:0; } to { transform: translateX(0); opacity:1; } }
 
-        /* RADAR MODERNO */
-        #radar-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.9); z-index: 200; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; text-align: center; }
-        .radar-circle { width: 150px; height: 150px; border: 4px solid #10b981; border-radius: 50%; position: relative; animation: pulse-radar 2s infinite; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; }
-        .radar-line { width: 100%; height: 2px; background: #10b981; position: absolute; animation: scan 2s linear infinite; box-shadow: 0 0 10px #10b981; }
-        .radar-text { font-size: 1.2rem; font-weight: bold; letter-spacing: 1px; }
-        .radar-sub { font-size: 0.9rem; color: #94a3b8; margin-top: 5px; }
-        
-        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
-        @keyframes pulse-radar { 0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); } 70% { box-shadow: 0 0 0 20px rgba(16, 185, 129, 0); } 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); } }
-        @keyframes scan { 0% { top: 0; opacity: 0; } 50% { opacity: 1; } 100% { top: 100%; opacity: 0; } }
+        .status-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: bold; margin-bottom: 5px; }
+        .st-pending { background: #fef3c7; color: #d97706; }
+        .st-accepted { background: #dcfce7; color: #166534; }
     </style>
 </head>
 <body>
 
     <div id="screen-home" class="screen">
         <div class="brand">Eco<span>Rota</span></div>
-        <div class="w-full max-w-md">
-            <button class="btn btn-primary" onclick="startFlow('user')">
-                <i class="fas fa-user"></i> SOU CLIENTE
-            </button>
-            <button class="btn btn-google" onclick="startFlow('prov')">
-                <i class="fas fa-bicycle"></i> SOU PRESTADOR
-            </button>
+        <div class="w-full" style="max-width:320px;">
+            <button class="btn btn-primary" onclick="gotoLogin('user')">SOU USUÁRIO</button>
+            <button class="btn btn-outline" onclick="gotoLogin('prov')">SOU PRESTADOR</button>
         </div>
-        <p style="position:absolute; bottom:20px; color:#cbd5e1; font-size:0.75rem;">Versão 39.0 (Smart Search)</p>
+        <p style="margin-top:20px; font-size:0.8rem; color:#10b981;">● Sistema Conectado</p>
     </div>
 
-    <div id="screen-google" class="screen hidden">
-        <div class="w-full max-w-md text-center">
-            <h3>Autenticação</h3>
-            <p style="color:var(--gray); font-size:0.9rem; margin-bottom:20px;">Ambiente seguro.</p>
-            <button class="btn btn-google" onclick="finishGoogle()">
-                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20"> Entrar com Google
-            </button>
-        </div>
-    </div>
-
-    <div id="screen-form" class="screen hidden">
-        <h3 id="form-title" style="margin-top:0;">Seus Dados</h3>
-        <div class="w-full max-w-md" style="overflow-y:auto;">
-            <div id="field-vehicle" class="hidden input-group">
-                <select id="input-veh" class="input-field" style="background:white;">
-                    <option value="" disabled selected>Selecione seu Veículo</option>
+    <div id="screen-login" class="screen hidden">
+        <h3 id="login-title">Seus Dados</h3>
+        <div class="w-full" style="max-width:320px;">
+            <div id="div-veh" class="hidden">
+                <select id="reg-veh" class="input-field">
+                    <option value="" disabled selected>Veículo</option>
                     <option value="Bike">🚲 Bicicleta</option>
                     <option value="E-Bike">⚡ Bike Elétrica</option>
-                    <option value="Patinete">🛴 Patinete Elétrico</option>
-                    <option value="A Pé">👟 A Pé (Office Boy)</option>
+                    <option value="Patinete">🛴 Patinete</option>
+                    <option value="A Pé">👟 A Pé</option>
                 </select>
             </div>
-            <div class="input-group"><input type="text" id="input-name" class="input-field" placeholder="Nome Completo"></div>
-            <div class="input-group"><input type="tel" id="input-phone" class="input-field" placeholder="WhatsApp (DDD)"></div>
-            <div class="legal-box">
-                <b>TERMOS DE USO:</b><br>1. O App é apenas intermediador.<br>2. Pagamentos são diretos (P2P).<br>3. O usuário assume risco integral.<br>4. Dados não ficam em nuvem.<br>5. Proibido veículos a combustão.<br>6. Ao usar, você concorda com tudo acima.
+            <input id="reg-name" class="input-field" placeholder="Nome Completo">
+            <input id="reg-phone" class="input-field" type="tel" placeholder="WhatsApp">
+            
+            <div style="font-size:0.8rem; margin-bottom:20px;">
+                <input type="checkbox" id="terms"> Aceito os termos de uso (P2P).
             </div>
-            <div style="margin-bottom:20px; display:flex; gap:10px; align-items:center;">
-                <input type="checkbox" id="check-terms">
-                <label for="check-terms" style="font-size:0.9rem;">Li e aceito os termos.</label>
-            </div>
-            <button class="btn btn-eco" onclick="enterApp()">ENTRAR AGORA</button>
-            <button class="btn btn-link" onclick="location.reload()">Cancelar</button>
-        </div>
-    </div>
 
-    <div id="radar-overlay" class="hidden">
-        <div class="radar-circle">
-            <i class="fas fa-search-location" style="font-size:3rem; color:white;"></i>
-        </div>
-        <div class="radar-text">Localizando Parceiros...</div>
-        <div class="radar-sub" id="radar-status">Varrendo perímetro (500m)</div>
-        
-        <div id="retry-box" class="hidden" style="margin-top:30px; width: 80%; max-width:300px;">
-            <p style="color:#ef4444; font-weight:bold;">Ops! Todos ocupados.</p>
-            <p id="countdown" style="font-size:0.9rem; color:#cbd5e1; margin-bottom:15px;">Nova busca automática em 10s...</p>
-            <button class="btn btn-eco" onclick="retryNow()">🔄 CHAMAR AGORA</button>
-            <button class="btn btn-link" onclick="cancelSearch()" style="color:white;">Cancelar</button>
+            <button class="btn btn-eco" onclick="doLogin()">ENTRAR</button>
+            <button class="btn btn-link" onclick="location.reload()" style="background:none; border:none; color:#999;">Voltar</button>
         </div>
     </div>
 
     <div id="screen-map" class="screen hidden" style="background:transparent; padding:0;">
         <div id="map"></div>
-        <div class="ui-float top-left"><button class="icon-btn" onclick="location.reload()"><i class="fas fa-sign-out-alt"></i></button></div>
-        <div class="ui-float top-right"><button class="icon-btn sos-btn" onclick="sos()">SOS</button></div>
-        
-        <div class="ui-float bottom-center hidden" id="panel-user">
-            <div class="search-modal">
-                <h3 style="margin-top:0;">O que vamos fazer?</h3>
-                <div class="input-group">
-                    <select id="search-cat" class="input-field">
-                        <option value="Bike">🚲 Bike (Encomenda)</option>
-                        <option value="E-Bike">⚡ E-Bike (Rápido)</option>
-                        <option value="A Pé">👟 A Pé (Curto)</option>
-                    </select>
-                </div>
-                <div class="input-group"><input id="search-desc" class="input-field" placeholder="Descreva o pedido..."></div>
-                <button class="btn btn-primary" onclick="initiateSearch()">ENVIAR PEDIDO</button>
-            </div>
+
+        <div id="panel-user" class="bottom-panel pointer">
+            <h3>Nova Solicitação</h3>
+            <select id="req-type" class="input-field">
+                <option value="Bike">🚲 Bike (Encomenda)</option>
+                <option value="E-Bike">⚡ E-Bike (Rápido)</option>
+                <option value="A Pé">👟 A Pé (Curto)</option>
+            </select>
+            <input id="req-desc" class="input-field" placeholder="O que precisa? (Ex: Levar chaves)">
+            <button class="btn btn-primary" onclick="criarPedido()">SOLICITAR AGORA</button>
         </div>
 
-        <div class="ui-float bottom-center hidden" id="panel-prov">
-            <div class="search-modal text-center">
-                <div style="background:#dcfce7; color:#166534; padding:8px 16px; border-radius:50px; display:inline-block; font-weight:bold; margin-bottom:15px;">🟢 ONLINE</div>
-                <p style="color:var(--gray); font-size:0.9rem;">Seu cadastro está ativo.<br>A Central entrará em contato.</p>
+        <div id="panel-waiting" class="bottom-panel pointer text-center">
+            <div style="font-size:3rem; margin-bottom:10px;">📡</div>
+            <h3>Procurando Parceiro...</h3>
+            <p style="color:#64748b;">Seu pedido está visível para os prestadores.</p>
+            <button class="btn btn-outline" onclick="cancelarPedido()">CANCELAR</button>
+        </div>
+
+        <div id="panel-prov" class="bottom-panel pointer">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                <h3 style="margin:0;">Pedidos Disponíveis</h3>
+                <span class="status-badge st-accepted">🟢 ONLINE</span>
+            </div>
+            <div id="orders-list">
+                <p style="text-align:center; color:#94a3b8; padding:20px;">Aguardando chamados...</p>
             </div>
         </div>
     </div>
 
     <script>
-        const ADMIN_PHONE = "5532984099000";
-        let map, role = 'user', currentUser = {}, searchAttempt = 0, retryTimer;
+        // --- SUAS CHAVES DO FIREBASE VINCULADAS ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyBxbRiYNuGde5nwJIaoeRItWdZGR221cpY",
+            authDomain: "rota-direta.firebaseapp.com",
+            databaseURL: "https://rota-direta-default-rtdb.firebaseio.com",
+            projectId: "rota-direta",
+            storageBucket: "rota-direta.firebasestorage.app",
+            messagingSenderId: "468273971962",
+            appId: "1:468273971962:web:f536de2e2aa74f84dfff43"
+        };
 
-        window.onload = () => { IMask(document.getElementById('input-phone'), {mask:'(00) 00000-0000'}); };
+        let db;
+        try {
+            firebase.initializeApp(firebaseConfig);
+            db = firebase.database();
+            console.log("Firebase Conectado com Sucesso!");
+        } catch(e) {
+            console.error("Erro Firebase", e);
+            Swal.fire('Erro', 'Falha ao conectar no servidor.', 'error');
+        }
 
-        function startFlow(type) {
-            role = type;
+        let map, role = 'user', currentUser = {}, currentOrderId = null;
+        const audioPing = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+
+        window.onload = () => { IMask(document.getElementById('reg-phone'), {mask:'(00) 00000-0000'}); };
+
+        function gotoLogin(r) {
+            role = r;
             document.getElementById('screen-home').classList.add('hidden');
-            document.getElementById('screen-google').classList.remove('hidden');
+            document.getElementById('screen-login').classList.remove('hidden');
+            if(role === 'prov') document.getElementById('div-veh').classList.remove('hidden');
         }
 
-        function finishGoogle() {
-            Swal.fire({ title: 'Conectando...', timer: 700, didOpen: () => Swal.showLoading() }).then(() => {
-                document.getElementById('screen-google').classList.add('hidden');
-                document.getElementById('screen-form').classList.remove('hidden');
-                if(role === 'prov') {
-                    document.getElementById('field-vehicle').classList.remove('hidden');
-                    document.getElementById('form-title').innerText = 'Cadastro Prestador';
-                } else {
-                    document.getElementById('form-title').innerText = 'Dados do Cliente';
-                }
-            });
-        }
+        function doLogin() {
+            const name = document.getElementById('reg-name').value;
+            const phone = document.getElementById('reg-phone').value;
+            const terms = document.getElementById('terms').checked;
 
-        function enterApp() {
-            const name = document.getElementById('input-name').value.trim();
-            const phone = document.getElementById('input-phone').value;
-            const terms = document.getElementById('check-terms').checked;
-            if(!terms) return Swal.fire('Termos', 'Aceite os termos.', 'warning');
-            if(name.split(' ').length < 2) return Swal.fire('Nome', 'Nome completo obrigatório.', 'warning');
-            if(phone.length < 14) return Swal.fire('WhatsApp', 'Número inválido.', 'warning');
+            if(!terms) return Swal.fire('Termos', 'É necessário aceitar os termos.', 'warning');
+            if(!name || phone.length < 14) return Swal.fire('Erro', 'Preencha tudo corretamente.', 'warning');
+            
             currentUser = { name, phone };
+            
             if(role === 'prov') {
-                const veh = document.getElementById('input-veh').value;
-                if(!veh) return Swal.fire('Veículo', 'Selecione seu veículo.', 'warning');
-                currentUser.vehicle = veh;
+                currentUser.vehicle = document.getElementById('reg-veh').value;
+                if(!currentUser.vehicle) return Swal.fire('Erro', 'Escolha veículo.', 'warning');
             }
-            document.getElementById('screen-form').classList.add('hidden');
+
+            document.getElementById('screen-login').classList.add('hidden');
             document.getElementById('screen-map').classList.remove('hidden');
             initMap();
-            if(role === 'user') document.getElementById('panel-user').classList.remove('hidden');
-            else document.getElementById('panel-prov').classList.remove('hidden');
+
+            if(role === 'user') {
+                document.getElementById('panel-user').classList.add('panel-visible');
+            } else {
+                document.getElementById('panel-prov').classList.add('panel-visible');
+                escutarPedidos(); 
+            }
         }
 
         function initMap() {
-            if(map) return;
             map = L.map('map', {zoomControl: false}).setView([-21.135, -44.261], 15);
             L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(map);
+            
+            // Ícone diferente para user e prestador
+            const iconUrl = role === 'user' 
+                ? 'https://cdn-icons-png.flaticon.com/512/1077/1077114.png' // User
+                : 'https://cdn-icons-png.flaticon.com/512/94/94203.png'; // Prestador
+
+            const customIcon = L.icon({iconUrl: iconUrl, iconSize: [30, 30]});
+
             navigator.geolocation.getCurrentPosition(p => {
                 const lat = p.coords.latitude;
                 const lng = p.coords.longitude;
                 currentUser.lat = lat; currentUser.lng = lng;
                 map.setView([lat, lng], 16);
-                L.marker([lat, lng], {icon: L.divIcon({html:`<div style="width:16px;height:16px;background:#0f172a;border:3px solid white;border-radius:50%;box-shadow:0 0 0 5px rgba(0,0,0,0.1);"></div>`})}).addTo(map);
-            }, () => { Swal.fire('GPS', 'Ative a localização.', 'info'); }, {enableHighAccuracy: true});
+                L.marker([lat, lng], {icon: customIcon}).addTo(map);
+            });
         }
 
-        // --- SISTEMA DE RADAR INTELIGENTE ---
-        function initiateSearch() {
-            const desc = document.getElementById('search-desc').value;
-            if(!desc) return Swal.fire('Onde?', 'Diga o que precisa.', 'question');
-            
-            // Abre o Radar
-            document.getElementById('radar-overlay').classList.remove('hidden');
-            searchAttempt = 0; // Reseta tentativas
-            runRadarLogic();
-        }
+        // --- USUÁRIO: CRIA PEDIDO NA NUVEM ---
+        function criarPedido() {
+            if(!db) return Swal.fire('Erro', 'Sistema offline.', 'error');
 
-        function runRadarLogic() {
-            // Atualiza status do texto
-            document.getElementById('radar-status').innerText = "Varrendo perímetro (500m)...";
-            document.getElementById('retry-box').classList.add('hidden');
-            
-            // Tempo de "Busca" (simulado)
-            setTimeout(() => {
-                if(searchAttempt === 0) {
-                    // PRIMEIRA VEZ: FALHA (Simulação de ocupado)
-                    showBusyState();
-                } else {
-                    // SEGUNDA VEZ: SUCESSO
-                    foundProvider();
-                }
-                searchAttempt++;
-            }, 5000); // 5 segundos de radar
-        }
+            const type = document.getElementById('req-type').value;
+            const desc = document.getElementById('req-desc').value;
+            if(!desc) return Swal.fire('Onde?', 'Descreva o pedido.', 'question');
 
-        function showBusyState() {
-            document.getElementById('radar-status').innerText = "Nenhum parceiro livre no momento.";
-            document.getElementById('retry-box').classList.remove('hidden');
-            
-            // Contagem Regressiva
-            let count = 10;
-            const countEl = document.getElementById('countdown');
-            countEl.innerText = `Nova busca automática em ${count}s...`;
-            
-            retryTimer = setInterval(() => {
-                count--;
-                countEl.innerText = `Nova busca automática em ${count}s...`;
-                if(count <= 0) {
-                    clearInterval(retryTimer);
-                    retryNow(); // Auto-retry
-                }
-            }, 1000);
-        }
+            const newOrderRef = db.ref('orders').push();
+            currentOrderId = newOrderRef.key;
 
-        function retryNow() {
-            clearInterval(retryTimer);
-            runRadarLogic(); // Busca de novo (agora vai achar)
-        }
+            const orderData = {
+                id: currentOrderId,
+                user: currentUser.name,
+                phone: currentUser.phone,
+                type: type,
+                desc: desc,
+                lat: currentUser.lat || 0,
+                lng: currentUser.lng || 0,
+                status: 'pending',
+                timestamp: Date.now()
+            };
 
-        function cancelSearch() {
-            clearInterval(retryTimer);
-            document.getElementById('radar-overlay').classList.add('hidden');
-        }
+            newOrderRef.set(orderData);
 
-        function foundProvider() {
-            document.getElementById('radar-overlay').classList.add('hidden');
-            
-            // Confirmação Final com Envio Zap
-            const cat = document.getElementById('search-cat').value;
-            const desc = document.getElementById('search-desc').value;
-            const mapsLink = `https://maps.google.com/?q=${currentUser.lat},${currentUser.lng}`;
-            const msg = `*NOVO PEDIDO ECOROTA*%0A%0A👤 Cliente: ${currentUser.name}%0A📞 Tel: ${currentUser.phone}%0A🚲 Categoria: ${cat}%0A📝 Pedido: ${desc}%0A📍 Local: ${mapsLink}`;
+            document.getElementById('panel-user').classList.remove('panel-visible');
+            document.getElementById('panel-waiting').classList.add('panel-visible');
 
-            Swal.fire({
-                title: 'Parceiro Encontrado! 🌟',
-                html: `
-                    <p>Sua solicitação foi processada.</p>
-                    <p style="color:#10b981; font-weight:bold;">+1 Estrela Eco Garantida</p>
-                    <small>Envie para a Central conectar você.</small>
-                `,
-                confirmButtonText: '<i class="fab fa-whatsapp"></i> ENVIAR AGORA',
-                confirmButtonColor: '#25D366',
-                showCancelButton: true,
-                cancelButtonText: 'Cancelar'
-            }).then((res) => {
-                if(res.isConfirmed) {
-                    window.open(`https://wa.me/${ADMIN_PHONE}?text=${msg}`, '_blank');
+            // Monitora resposta
+            newOrderRef.on('value', (snapshot) => {
+                const data = snapshot.val();
+                if(data && data.status === 'accepted') {
+                    audioPing.play();
+                    // GAMIFICAÇÃO FINAL + LINK ZAP
+                    Swal.fire({
+                        title: 'ACEITO! 🌟',
+                        html: `
+                            <h3 style="color:#065f46;">+1 Estrela Eco</h3>
+                            <p><b>${data.providerName}</b> aceitou a corrida.</p>
+                            <p>Veículo: ${data.providerVeh}</p>
+                        `,
+                        confirmButtonText: '<i class="fab fa-whatsapp"></i> FALAR COM PRESTADOR',
+                        confirmButtonColor: '#25D366'
+                    }).then(() => {
+                        window.open(`https://wa.me/55${data.providerPhone.replace(/\D/g,'')}`, '_blank');
+                        location.reload();
+                    });
                 }
             });
         }
 
-        function sos() { window.open('tel:190'); }
+        // --- PRESTADOR: ESCUTA NUVEM ---
+        function escutarPedidos() {
+            if(!db) return;
+
+            db.ref('orders').orderByChild('status').equalTo('pending').on('value', (snapshot) => {
+                const list = document.getElementById('orders-list');
+                list.innerHTML = '';
+                
+                if(!snapshot.exists()) {
+                    list.innerHTML = '<p style="text-align:center; color:#94a3b8; padding:20px;">Sem pedidos pendentes.</p>';
+                    return;
+                }
+
+                // Toca som se houver pedido novo
+                audioPing.play().catch(()=>{});
+
+                snapshot.forEach((child) => {
+                    const order = child.val();
+                    const el = document.createElement('div');
+                    el.className = 'order-card';
+                    el.innerHTML = `
+                        <div style="display:flex; justify-content:space-between;">
+                            <b>${order.user}</b>
+                            <span class="status-badge st-pending">${order.type}</span>
+                        </div>
+                        <p>${order.desc}</p>
+                        <button class="btn btn-eco" style="margin-top:10px; padding:10px;" onclick="aceitarPedido('${order.id}')">ACEITAR</button>
+                    `;
+                    list.prepend(el);
+                });
+            });
+        }
+
+        function aceitarPedido(orderId) {
+            db.ref('orders/' + orderId).update({
+                status: 'accepted',
+                providerName: currentUser.name,
+                providerPhone: currentUser.phone,
+                providerVeh: currentUser.vehicle
+            });
+            Swal.fire('Pegou!', 'Você aceitou. O cliente foi avisado.', 'success');
+        }
+
+        function cancelarPedido() {
+            if(currentOrderId) {
+                db.ref('orders/' + currentOrderId).remove();
+                location.reload();
+            }
+        }
     </script>
 </body>
 </html>

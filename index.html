@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>EcoRota | Final</title>
+    <title>EcoRota | Oficial</title>
     
     <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/3202/3202926.png">
     
@@ -49,7 +49,7 @@
         .btn-eco { background: var(--primary); color: white; box-shadow: 0 4px 10px rgba(5, 150, 105, 0.2); }
         .btn-google { background: white; border: 1px solid #cbd5e1; color: #334155; margin-bottom: 20px; }
 
-        /* BOTÕES FLUTUANTES (VOLTARAM!) */
+        /* BOTÕES FLUTUANTES */
         .ui-float { position: absolute; z-index: 150; }
         .top-left { top: 20px; left: 20px; }
         .top-right { top: 20px; right: 20px; }
@@ -228,7 +228,12 @@
         function initMap() {
             map = L.map('map', {zoomControl: false}).setView([-21.135, -44.261], 15);
             L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(map);
-            const iconUrl = role === 'user' ? 'https://cdn-icons-png.flaticon.com/512/1077/1077114.png' : 'https://cdn-icons-png.flaticon.com/512/609/609803.png';
+            
+            // ÍCONE CORRIGIDO: CLIENTE (BONECO), PRESTADOR (CICLISTA)
+            const iconUrl = role === 'user' 
+                ? 'https://cdn-icons-png.flaticon.com/512/1077/1077114.png' 
+                : 'https://cdn-icons-png.flaticon.com/512/2972/2972185.png'; // CICLISTA
+
             navigator.geolocation.getCurrentPosition(p => {
                 currentUser.lat = p.coords.latitude; currentUser.lng = p.coords.longitude;
                 map.setView([currentUser.lat, currentUser.lng], 16);
@@ -290,8 +295,16 @@
                 badge.innerText = "FASE 3/3"; main.innerText = "Prioridade Máxima"; sub.innerText = "Varrendo toda a cidade";
                 setTimeout(() => { 
                     if(currentOrderId) { 
-                        badge.innerText = "ALTA DEMANDA"; main.innerText = "Tentando novamente..."; sub.innerText = "Reiniciando busca em 3s...";
-                        setTimeout(() => { radarPhase=1; runRadarSequence(); }, 3000);
+                        // FIM DO PROCESSO: NINGUÉM ACEITOU
+                        document.getElementById('radar-overlay').classList.add('hidden');
+                        cancelarPedido(); // Remove do banco
+                        Swal.fire({
+                            title: 'Desculpe!',
+                            text: 'Nossos parceiros estão ocupados devido à alta demanda. Por favor, tente novamente em 5 minutos.',
+                            icon: 'info',
+                            confirmButtonText: 'Entendido',
+                            confirmButtonColor: '#64748b'
+                        });
                     } 
                 }, 10000);
             }

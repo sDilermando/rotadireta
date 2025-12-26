@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>EcoRota | App Oficial</title>
+    <title>EcoRota | Final</title>
     
     <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/3202/3202926.png">
     
@@ -19,153 +19,149 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
     <style>
-        /* DESIGN SYSTEM STARTUP */
-        :root { --primary: #059669; --dark: #0f172a; --light: #f8fafc; --gray: #64748b; --radius: 12px; --shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
+        :root { --primary: #059669; --dark: #0f172a; --bg: #f8fafc; --radius: 12px; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { margin: 0; font-family: 'Roboto', sans-serif; background: var(--light); overflow: hidden; height: 100vh; width: 100vw; color: var(--dark); }
+        body { margin: 0; font-family: 'Roboto', sans-serif; background: var(--bg); overflow: hidden; height: 100vh; width: 100vw; color: var(--dark); }
 
         /* TELAS */
-        .screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 50; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; transition: opacity 0.3s ease; }
+        .screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 50; display: flex; flex-direction: column; align-items: center; padding: 20px; overflow-y: auto; }
         .hidden { display: none !important; }
-        
-        .brand { font-size: 2.2rem; font-weight: 800; color: var(--dark); margin-bottom: 30px; letter-spacing: -1px; }
-        .brand span { color: var(--primary); }
+        .center-content { display:flex; flex-direction:column; align-items:center; justify-content:center; width:100%; min-height:100%; }
 
-        /* TAB SELECTOR */
-        .tab-group { display: flex; background: #f1f5f9; padding: 4px; border-radius: 12px; margin-bottom: 20px; width: 100%; max-width: 320px; }
-        .tab-btn { flex: 1; padding: 12px; border: none; background: transparent; border-radius: 8px; font-weight: 600; color: var(--gray); cursor: pointer; transition: 0.3s; }
+        /* DESIGN GERAL */
+        .brand { font-size: 2rem; font-weight: 800; color: var(--dark); margin-bottom: 20px; letter-spacing: -1px; text-align: center; }
+        .brand span { color: var(--primary); }
+        .w-box { width: 100%; max-width: 340px; }
+
+        /* FORMULÁRIO */
+        .tab-group { display: flex; background: #f1f5f9; padding: 4px; border-radius: 10px; margin-bottom: 15px; width: 100%; }
+        .tab-btn { flex: 1; padding: 10px; border: none; background: transparent; border-radius: 8px; font-weight: 600; color: #64748b; transition: 0.2s; }
         .tab-btn.active { background: white; color: var(--primary); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
 
-        /* INPUTS */
-        .input-group { width: 100%; max-width: 320px; margin-bottom: 12px; }
-        .input-field { width: 100%; padding: 16px; border: 1px solid #cbd5e1; border-radius: var(--radius); font-size: 1rem; outline: none; transition: 0.2s; background: white; }
-        .input-field:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.1); }
+        .input-field { width: 100%; padding: 14px; border: 1px solid #cbd5e1; border-radius: var(--radius); font-size: 0.95rem; margin-bottom: 10px; outline: none; background: white; }
+        .legal-box { height: 100px; overflow-y: auto; background: #f8fafc; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 0.7rem; color: #475569; text-align: justify; margin-bottom: 10px; }
+        .legal-title { font-weight: bold; display: block; margin-top: 5px; }
 
-        /* TERMOS JURÍDICOS ROBUSTOS */
-        .legal-wrapper { width: 100%; max-width: 320px; margin-bottom: 15px; }
-        .legal-box { height: 150px; overflow-y: auto; background: #f8fafc; padding: 15px; border: 1px solid #e2e8f0; border-radius: var(--radius); font-size: 0.75rem; color: #475569; text-align: justify; line-height: 1.5; margin-bottom: 10px; }
-        .legal-title { font-weight: bold; color: var(--dark); margin-top: 10px; display: block; }
-        
         /* BOTÕES */
-        .btn { width: 100%; max-width: 320px; padding: 16px; border: none; border-radius: var(--radius); font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 1rem; transition: 0.2s; }
-        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn { width: 100%; padding: 14px; border: none; border-radius: var(--radius); font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 1rem; margin-top: 5px; }
+        .btn:disabled { opacity: 0.5; }
         .btn-primary { background: var(--dark); color: white; }
-        .btn-eco { background: var(--primary); color: white; box-shadow: 0 4px 6px rgba(5, 150, 105, 0.2); }
+        .btn-eco { background: var(--primary); color: white; box-shadow: 0 4px 10px rgba(5, 150, 105, 0.2); }
         .btn-google { background: white; border: 1px solid #cbd5e1; color: #334155; margin-bottom: 20px; }
 
+        /* BOTÕES FLUTUANTES (VOLTARAM!) */
+        .ui-float { position: absolute; z-index: 150; }
+        .top-left { top: 20px; left: 20px; }
+        .top-right { top: 20px; right: 20px; }
+        .icon-btn { width: 45px; height: 45px; border-radius: 50%; background: white; border: none; box-shadow: 0 4px 10px rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; cursor: pointer; color: var(--dark); }
+        .sos-btn { background: #ef4444; color: white; animation: pulse 2s infinite; font-weight: bold; font-size: 0.8rem; }
+
         /* MAPA E PAINÉIS */
-        #map { width: 100%; height: 100%; position: absolute; top:0; left:0; z-index: 1; filter: saturate(0.9); }
-        .bottom-panel { position: absolute; bottom: 0; left: 0; width: 100%; background: white; border-radius: 24px 24px 0 0; padding: 25px; box-shadow: 0 -10px 40px rgba(0,0,0,0.1); transform: translateY(120%); transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); z-index: 100; }
+        #map { width: 100%; height: 100%; position: absolute; top:0; left:0; z-index: 1; }
+        .bottom-panel { position: absolute; bottom: 0; left: 0; width: 100%; background: white; border-radius: 20px 20px 0 0; padding: 20px; box-shadow: 0 -10px 30px rgba(0,0,0,0.1); transform: translateY(120%); transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); z-index: 100; max-height: 80vh; overflow-y: auto; }
         .panel-visible { transform: translateY(0); }
 
-        /* LISTA DE PEDIDOS */
-        #orders-list { max-height: 40vh; overflow-y: auto; }
-        .order-card { background: #ecfdf5; border: 1px solid #d1fae5; padding: 16px; border-radius: 12px; margin-bottom: 12px; animation: slideIn 0.3s; }
-        .badge { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: bold; text-transform: uppercase; background: #059669; color: white; }
+        /* RADAR OVERLAY */
+        #radar-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.95); z-index: 200; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; text-align: center; }
+        .radar-circle { width: 200px; height: 200px; border: 2px solid rgba(16, 185, 129, 0.3); border-radius: 50%; position: relative; display: flex; align-items: center; justify-content: center; margin-bottom: 30px; }
+        .radar-scan { width: 100%; height: 100%; border-radius: 50%; border-top: 2px solid #10b981; border-right: 2px solid transparent; position: absolute; animation: spin-radar 1.5s linear infinite; box-shadow: 0 0 15px rgba(16, 185, 129, 0.5); }
+        .status-badge { background: rgba(255,255,255,0.1); padding: 5px 15px; border-radius: 20px; font-size: 0.8rem; color: #10b981; margin-bottom: 10px; border: 1px solid rgba(16, 185, 129, 0.3); }
         
-        @keyframes slideIn { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes spin-radar { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+
+        /* PEDIDOS */
+        .order-card { background: #ecfdf5; border: 1px solid #d1fae5; padding: 15px; border-radius: 12px; margin-bottom: 10px; }
+        .badge-veh { background: #059669; color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.7rem; }
     </style>
 </head>
 <body>
 
     <div id="screen-auth" class="screen">
-        <div class="brand">Eco<span>Rota</span></div>
-        
-        <button class="btn btn-google" onclick="showForm()">
-            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20"> 
-            Entrar com Google
-        </button>
-
-        <div id="auth-form" class="hidden" style="width:100%; display:flex; flex-direction:column; align-items:center;">
-            
-            <div class="tab-group">
-                <button class="tab-btn active" onclick="switchRole('user')" id="btn-tab-user">Sou Cliente</button>
-                <button class="tab-btn" onclick="switchRole('prov')" id="btn-tab-prov">Sou Prestador</button>
-            </div>
-
-            <div class="input-group">
-                <input id="input-name" class="input-field" placeholder="Nome Completo (RG)">
-            </div>
-            <div class="input-group">
+        <div class="center-content w-box">
+            <div class="brand">Eco<span>Rota</span></div>
+            <button class="btn btn-google" onclick="showForm()">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20"> Entrar com Google
+            </button>
+            <div id="auth-form" class="hidden w-box">
+                <div class="tab-group">
+                    <button class="tab-btn active" onclick="switchRole('user')" id="btn-tab-user">Sou Cliente</button>
+                    <button class="tab-btn" onclick="switchRole('prov')" id="btn-tab-prov">Sou Prestador</button>
+                </div>
+                <input id="input-name" class="input-field" placeholder="Nome Completo">
                 <input id="input-phone" class="input-field" type="tel" placeholder="WhatsApp (DDD)">
-            </div>
-            
-            <div id="group-vehicle" class="input-group hidden">
-                <select id="input-veh" class="input-field" style="background: #f8fafc;">
-                    <option value="" disabled selected>Selecione seu Veículo</option>
-                    <option value="Bike">🚲 Bicicleta Comum</option>
-                    <option value="E-Bike">⚡ Bicicleta Elétrica</option>
-                    <option value="Patinete">🛴 Patinete Elétrico</option>
-                    <option value="A Pé">👟 A Pé (Office Boy)</option>
-                </select>
-            </div>
-
-            <div class="legal-wrapper">
-                <label style="font-size:0.8rem; font-weight:bold; color:var(--dark);">Termos de Uso e Responsabilidade</label>
-                <div class="legal-box" id="legal-scroll">
-                    <span class="legal-title">1. NATUREZA DO SERVIÇO</span>
-                    A plataforma EcoRota atua exclusivamente como intermediadora tecnológica entre Usuários e Prestadores Autônomos. Não possuímos frota e não estabelecemos vínculo empregatício.
-                    
-                    <span class="legal-title">2. RESPONSABILIDADE CIVIL</span>
-                    O uso do serviço é de inteira responsabilidade e conta e risco das partes. A plataforma isenta-se de danos, perdas ou atrasos decorrentes da prestação direta.
-                    
-                    <span class="legal-title">3. PAGAMENTOS P2P</span>
-                    Os valores são negociados e pagos diretamente entre as partes. A plataforma não retém valores financeiros.
-                    
-                    <span class="legal-title">4. COMPROMISSO AMBIENTAL</span>
-                    É estritamente proibido o uso de veículos a combustão. O descumprimento acarretará banimento imediato.
-                    
-                    <span class="legal-title">5. DADOS E PRIVACIDADE</span>
-                    Seus dados de localização são utilizados apenas durante a solicitação ativa.
+                <div id="group-vehicle" class="hidden">
+                    <select id="input-veh" class="input-field">
+                        <option value="" disabled selected>Selecione Veículo</option>
+                        <option value="Bike">🚲 Bicicleta</option>
+                        <option value="E-Bike">⚡ E-Bike</option>
+                        <option value="Patinete">🛴 Patinete</option>
+                        <option value="A Pé">👟 A Pé</option>
+                    </select>
                 </div>
-                <div style="display:flex; align-items:center; gap:10px;">
+                <div class="legal-box">
+                    <span class="legal-title">CONTRATO DE ADESÃO</span>
+                    1. A EcoRota é intermediadora tecnológica P2P.<br>
+                    2. Risco integral assumido pelo usuário.<br>
+                    3. Proibido veículos a combustão.<br>
+                    4. Dados usados apenas para conexão.<br>
+                    <span class="legal-title">RESPONSABILIDADE</span>
+                    Você isenta a plataforma de danos ou atrasos.
+                </div>
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
                     <input type="checkbox" id="check-terms" onchange="toggleEnterBtn()">
-                    <label for="check-terms" style="font-size:0.85rem; color:var(--gray);">Li, compreendi e aceito os termos.</label>
+                    <label for="check-terms" style="font-size:0.8rem;">Li e Aceito os Termos.</label>
                 </div>
+                <button id="btn-enter" class="btn btn-eco" onclick="doLogin()" disabled>ENTRAR</button>
             </div>
-
-            <button id="btn-enter" class="btn btn-eco" onclick="doLogin()" disabled>ACESSAR PLATAFORMA</button>
         </div>
     </div>
 
-    <div id="screen-map" class="screen hidden" style="background:transparent; padding:0;">
+    <div id="radar-overlay" class="hidden">
+        <div class="status-badge" id="radar-badge">FASE 1/3</div>
+        <div class="radar-circle">
+            <div class="radar-scan"></div>
+            <i class="fas fa-search-location" style="font-size:3rem; color:white;"></i>
+        </div>
+        <div style="font-size:1.5rem; font-weight:bold; margin-bottom:5px;" id="radar-main">Buscando...</div>
+        <div style="color:#94a3b8; font-size:0.9rem;" id="radar-sub">Varrendo 500m</div>
+        <button onclick="cancelarPedido()" style="margin-top:30px; background:transparent; border:1px solid #64748b; color:white; padding:8px 20px; border-radius:20px;">Cancelar</button>
+    </div>
+
+    <div id="screen-map" class="screen hidden" style="background:transparent; padding:0; display:block;">
         <div id="map"></div>
 
-        <div id="panel-user" class="bottom-panel">
-            <h3 style="margin-top:0;">Nova Solicitação</h3>
-            <div class="input-group" style="max-width:100%;">
-                <select id="req-type" class="input-field">
-                    <option value="Bike">🚲 Bike (Encomenda)</option>
-                    <option value="E-Bike">⚡ E-Bike (Rápido)</option>
-                    <option value="A Pé">👟 A Pé (Curto)</option>
-                </select>
-            </div>
-            <div class="input-group" style="max-width:100%;">
-                <input id="req-desc" class="input-field" placeholder="O que precisa? (Ex: Buscar chave na Rua X)">
-            </div>
-            <button class="btn btn-primary" style="max-width:100%;" onclick="enviarPedido()">SOLICITAR AGORA</button>
+        <div class="ui-float top-left">
+            <button class="icon-btn" onclick="location.reload()"><i class="fas fa-sign-out-alt"></i></button>
+        </div>
+        <div class="ui-float top-right">
+            <button class="icon-btn sos-btn" onclick="sos()">SOS</button>
         </div>
 
-        <div id="panel-waiting" class="bottom-panel" style="text-align:center;">
-            <div style="width:60px; height:60px; border:4px solid #059669; border-top-color:transparent; border-radius:50%; margin:0 auto 20px auto; animation:spin 1s linear infinite;"></div>
-            <h3>Procurando Parceiro...</h3>
-            <p style="color:var(--gray);">Aguarde, estamos conectando você.</p>
-            <button class="btn btn-outline" style="margin-top:20px; width:100%; border:1px solid #ccc;" onclick="cancelarPedido()">CANCELAR</button>
+        <div id="panel-user" class="bottom-panel">
+            <h3>Nova Solicitação</h3>
+            <select id="req-type" class="input-field">
+                <option value="Bike">🚲 Bike (Encomenda)</option>
+                <option value="E-Bike">⚡ E-Bike (Rápido)</option>
+                <option value="A Pé">👟 A Pé (Curto)</option>
+            </select>
+            <input id="req-desc" class="input-field" placeholder="O que precisa? (Ex: Levar chave)">
+            <button class="btn btn-primary" onclick="iniciarRadar()">SOLICITAR AGORA</button>
         </div>
 
         <div id="panel-prov" class="bottom-panel">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                <h3 style="margin:0;">Pedidos Disponíveis</h3>
-                <span style="background:#dcfce7; color:#166534; padding:5px 10px; border-radius:15px; font-size:0.7rem; font-weight:bold;">● ONLINE</span>
+                <h3 style="margin:0;">Pedidos</h3>
+                <span class="badge-veh">ONLINE</span>
             </div>
-            <div id="orders-list">
-                <p style="text-align:center; color:#94a3b8; padding:20px;">Nenhum pedido na região.</p>
+            <div id="orders-list" style="max-height:50vh; overflow-y:auto;">
+                <p style="text-align:center; color:#94a3b8; padding:20px;">Aguardando chamados...</p>
             </div>
         </div>
     </div>
 
     <script>
-        // --- CHAVES FIREBASE VINCULADAS (MODO TESTE ABERTO) ---
+        // CONFIGURAÇÃO FIREBASE
         const firebaseConfig = {
             apiKey: "AIzaSyBxbRiYNuGde5nwJIaoeRItWdZGR221cpY",
             authDomain: "rota-direta.firebaseapp.com",
@@ -176,219 +172,158 @@
             appId: "1:468273971962:web:f536de2e2aa74f84dfff43"
         };
 
-        // INICIALIZAÇÃO SEGURA
         let db;
         try {
             firebase.initializeApp(firebaseConfig);
             db = firebase.database();
-            console.log("Sistema Conectado.");
-        } catch(e) {
-            Swal.fire('Erro Fatal', 'Falha na conexão com servidor.', 'error');
-        }
+        } catch(e) { console.error(e); }
 
-        // VARIÁVEIS GLOBAIS
         let map, role = 'user', currentUser = {}, currentOrderId = null;
+        let radarPhase = 1;
         const audioAlert = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
 
-        // MÁSCARA TELEFONE AO CARREGAR
         window.onload = () => { IMask(document.getElementById('input-phone'), {mask:'(00) 00000-0000'}); };
 
-        // 1. LÓGICA DE UI (LOGIN)
         function showForm() {
             document.querySelector('.btn-google').classList.add('hidden');
             document.getElementById('auth-form').classList.remove('hidden');
         }
 
-        function switchRole(selectedRole) {
-            role = selectedRole;
-            // Visual das abas
-            document.getElementById('btn-tab-user').className = `tab-btn ${role === 'user' ? 'active' : ''}`;
-            document.getElementById('btn-tab-prov').className = `tab-btn ${role === 'prov' ? 'active' : ''}`;
-            
-            // Mostrar/Esconder campo de veículo
-            const vehGroup = document.getElementById('group-vehicle');
-            if(role === 'prov') {
-                vehGroup.classList.remove('hidden');
-            } else {
-                vehGroup.classList.add('hidden');
-            }
+        function switchRole(r) {
+            role = r;
+            document.getElementById('btn-tab-user').className = `tab-btn ${r==='user'?'active':''}`;
+            document.getElementById('btn-tab-prov').className = `tab-btn ${r==='prov'?'active':''}`;
+            role === 'prov' ? document.getElementById('group-vehicle').classList.remove('hidden') : document.getElementById('group-vehicle').classList.add('hidden');
         }
 
         function toggleEnterBtn() {
             document.getElementById('btn-enter').disabled = !document.getElementById('check-terms').checked;
         }
 
-        // 2. LÓGICA DE ENTRADA (AUTH)
         function doLogin() {
             const name = document.getElementById('input-name').value.trim();
             const phone = document.getElementById('input-phone').value;
-            
-            // Validações Rigorosas
-            if(name.split(' ').length < 2) return Swal.fire('Nome Inválido', 'Por favor, digite Nome e Sobrenome.', 'warning');
-            if(phone.length < 14) return Swal.fire('WhatsApp', 'Número inválido.', 'warning');
+            if(name.split(' ').length < 2) return Swal.fire('Nome', 'Digite nome e sobrenome.', 'warning');
+            if(phone.length < 14) return Swal.fire('Zap', 'Número incompleto.', 'warning');
             
             currentUser = { name, phone };
-
             if(role === 'prov') {
-                const veh = document.getElementById('input-veh').value;
-                if(!veh) return Swal.fire('Veículo', 'Selecione seu tipo de transporte.', 'warning');
-                currentUser.vehicle = veh;
+                const v = document.getElementById('input-veh').value;
+                if(!v) return Swal.fire('Veículo', 'Selecione veículo.', 'warning');
+                currentUser.vehicle = v;
             }
 
-            // Transição de Tela
             document.getElementById('screen-auth').classList.add('hidden');
             document.getElementById('screen-map').classList.remove('hidden');
-            
             initMap();
 
-            // Abre o painel correto
             if(role === 'user') {
-                setTimeout(() => document.getElementById('panel-user').classList.add('panel-visible'), 500);
+                document.getElementById('panel-user').classList.add('panel-visible');
             } else {
-                setTimeout(() => document.getElementById('panel-prov').classList.add('panel-visible'), 500);
-                iniciarEscutaPrestador(); // Começa a ouvir o banco
+                document.getElementById('panel-prov').classList.add('panel-visible');
+                escutarPedidos();
             }
         }
 
-        // 3. MAPA (LEAFLET)
         function initMap() {
             map = L.map('map', {zoomControl: false}).setView([-21.135, -44.261], 15);
             L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(map);
-
-            // Ícone Personalizado
-            const iconUrl = role === 'user' 
-                ? 'https://cdn-icons-png.flaticon.com/512/1077/1077114.png' // User
-                : 'https://cdn-icons-png.flaticon.com/512/609/609803.png';   // Prestador
-
+            const iconUrl = role === 'user' ? 'https://cdn-icons-png.flaticon.com/512/1077/1077114.png' : 'https://cdn-icons-png.flaticon.com/512/609/609803.png';
             navigator.geolocation.getCurrentPosition(p => {
-                const lat = p.coords.latitude;
-                const lng = p.coords.longitude;
-                currentUser.lat = lat; currentUser.lng = lng;
-                
-                map.setView([lat, lng], 16);
-                L.marker([lat, lng], {
-                    icon: L.icon({iconUrl: iconUrl, iconSize: [40, 40]})
-                }).addTo(map);
-            }, () => Swal.fire('GPS', 'Ative sua localização.', 'info'), {enableHighAccuracy:true});
+                currentUser.lat = p.coords.latitude; currentUser.lng = p.coords.longitude;
+                map.setView([currentUser.lat, currentUser.lng], 16);
+                L.marker([currentUser.lat, currentUser.lng], {icon: L.icon({iconUrl:iconUrl, iconSize:[40,40]})}).addTo(map);
+            }, ()=>{}, {enableHighAccuracy:true});
         }
 
-        // 4. CLIENTE: ENVIAR PEDIDO
-        function enviarPedido() {
-            const type = document.getElementById('req-type').value;
+        function iniciarRadar() {
             const desc = document.getElementById('req-desc').value;
+            if(!desc) return Swal.fire('Onde?', 'Descreva o pedido.', 'info');
 
-            if(!desc) return Swal.fire('Atenção', 'Descreva o que precisa ser feito.', 'info');
-
-            // Salva no Firebase
-            const newOrderRef = db.ref('orders').push();
-            currentOrderId = newOrderRef.key;
-
-            const orderData = {
+            const ref = db.ref('orders').push();
+            currentOrderId = ref.key;
+            ref.set({
                 id: currentOrderId,
                 clientName: currentUser.name,
                 clientPhone: currentUser.phone,
-                type: type,
+                type: document.getElementById('req-type').value,
                 desc: desc,
-                lat: currentUser.lat || 0,
-                lng: currentUser.lng || 0,
                 status: 'pending',
                 timestamp: Date.now()
-            };
+            });
 
-            newOrderRef.set(orderData);
-
-            // Troca Painel
             document.getElementById('panel-user').classList.remove('panel-visible');
-            document.getElementById('panel-waiting').classList.add('panel-visible');
+            document.getElementById('radar-overlay').classList.remove('hidden');
+            radarPhase = 1;
+            runRadarSequence();
 
-            // Fica ouvindo se alguém aceita
-            newOrderRef.on('value', (snapshot) => {
-                const data = snapshot.val();
+            ref.on('value', snap => {
+                const data = snap.val();
                 if(data && data.status === 'accepted') {
-                    // SUCESSO!
+                    document.getElementById('radar-overlay').classList.add('hidden');
                     audioAlert.play();
                     Swal.fire({
                         title: 'Parceiro Encontrado! 🌟',
-                        html: `
-                            <div style="text-align:center;">
-                                <h3 style="color:#059669;">${data.provName}</h3>
-                                <p class="badge">${data.provVeh}</p>
-                                <p style="margin-top:10px;">Estou a caminho!</p>
-                            </div>
-                        `,
-                        confirmButtonText: '<i class="fab fa-whatsapp"></i> ABRIR CONVERSA',
+                        html: `<h3 style="color:#059669;">+1 Estrela Eco</h3><p><b>${data.provName}</b> a caminho.</p>`,
+                        confirmButtonText: '<i class="fab fa-whatsapp"></i> ABRIR WHATSAPP',
                         confirmButtonColor: '#25D366'
                     }).then(() => {
-                        const cleanPhone = data.provPhone.replace(/\D/g, '');
-                        window.open(`https://wa.me/55${cleanPhone}`, '_blank');
+                        window.open(`https://wa.me/55${data.provPhone.replace(/\D/g,'')}`, '_blank');
                         location.reload();
                     });
                 }
             });
         }
 
-        // 5. PRESTADOR: OUVIR PEDIDOS
-        function iniciarEscutaPrestador() {
-            const ordersRef = db.ref('orders');
-            
-            // Filtra apenas os pendentes
-            ordersRef.orderByChild('status').equalTo('pending').on('value', (snapshot) => {
+        function runRadarSequence() {
+            const badge = document.getElementById('radar-badge');
+            const main = document.getElementById('radar-main');
+            const sub = document.getElementById('radar-sub');
+
+            if(radarPhase === 1) {
+                badge.innerText = "FASE 1/3"; main.innerText = "Buscando..."; sub.innerText = "Varrendo perímetro (500m)";
+                setTimeout(() => { if(currentOrderId) { radarPhase=2; runRadarSequence(); } }, 10000);
+            } else if(radarPhase === 2) {
+                badge.innerText = "FASE 2/3"; main.innerText = "Expandindo Radar..."; sub.innerText = "Raio aumentado para 2km";
+                setTimeout(() => { if(currentOrderId) { radarPhase=3; runRadarSequence(); } }, 10000);
+            } else if(radarPhase === 3) {
+                badge.innerText = "FASE 3/3"; main.innerText = "Prioridade Máxima"; sub.innerText = "Varrendo toda a cidade";
+                setTimeout(() => { 
+                    if(currentOrderId) { 
+                        badge.innerText = "ALTA DEMANDA"; main.innerText = "Tentando novamente..."; sub.innerText = "Reiniciando busca em 3s...";
+                        setTimeout(() => { radarPhase=1; runRadarSequence(); }, 3000);
+                    } 
+                }, 10000);
+            }
+        }
+
+        function escutarPedidos() {
+            db.ref('orders').orderByChild('status').equalTo('pending').on('value', snap => {
                 const list = document.getElementById('orders-list');
                 list.innerHTML = '';
-
-                if(!snapshot.exists()) {
-                    list.innerHTML = '<p style="text-align:center; color:#94a3b8; padding:20px;">Nenhum pedido na região.</p>';
-                    return;
-                }
-
-                // Toca som se a lista crescer
-                audioAlert.play().catch(e => console.log('Interação necessária para áudio'));
-
-                snapshot.forEach((child) => {
-                    const order = child.val();
-                    const card = document.createElement('div');
-                    card.className = 'order-card';
-                    card.innerHTML = `
-                        <div style="display:flex; justify-content:space-between; align-items:start;">
-                            <div>
-                                <span class="badge">${order.type}</span>
-                                <h4 style="margin:5px 0;">${order.clientName}</h4>
-                            </div>
-                            <small style="color:var(--gray);">Agora</small>
-                        </div>
-                        <p style="color:#475569; font-size:0.9rem;">"${order.desc}"</p>
-                        <button class="btn btn-eco" style="width:100%; margin-top:10px; padding:12px;" onclick="aceitarCorrida('${order.id}')">
-                            ACEITAR CORRIDA
-                        </button>
+                if(!snap.exists()) { list.innerHTML = '<p style="text-align:center; color:#94a3b8; padding:20px;">Sem pedidos.</p>'; return; }
+                audioAlert.play().catch(e=>{});
+                snap.forEach(child => {
+                    const o = child.val();
+                    const div = document.createElement('div');
+                    div.className = 'order-card';
+                    div.innerHTML = `
+                        <div style="display:flex; justify-content:space-between;"><b>${o.clientName}</b> <span class="badge-veh">${o.type}</span></div>
+                        <p style="margin:5px 0;">"${o.desc}"</p>
+                        <button class="btn btn-eco" style="padding:10px;" onclick="aceitar('${o.id}')">ACEITAR</button>
                     `;
-                    list.prepend(card); // Mais recentes primeiro
+                    list.prepend(div);
                 });
             });
         }
 
-        function aceitarCorrida(id) {
-            // Atualiza o pedido com meus dados
-            db.ref('orders/' + id).update({
-                status: 'accepted',
-                provName: currentUser.name,
-                provPhone: currentUser.phone,
-                provVeh: currentUser.vehicle
-            });
-            Swal.fire('Sucesso', 'Corrida aceita! O cliente foi notificado.', 'success');
+        function aceitar(id) {
+            db.ref('orders/'+id).update({ status: 'accepted', provName: currentUser.name, provPhone: currentUser.phone, provVeh: currentUser.vehicle });
+            Swal.fire('Sucesso', 'Corrida aceita!', 'success');
         }
 
-        function cancelarPedido() {
-            if(currentOrderId) {
-                db.ref('orders/' + currentOrderId).remove();
-                location.reload();
-            }
-        }
-
-        /* ANIMAÇÃO CSS */
-        const style = document.createElement('style');
-        style.innerHTML = ` @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } } `;
-        document.head.appendChild(style);
-
+        function cancelarPedido() { if(currentOrderId) { db.ref('orders/'+currentOrderId).remove(); location.reload(); } }
+        function sos() { window.open('tel:190'); }
     </script>
 </body>
 </html>
